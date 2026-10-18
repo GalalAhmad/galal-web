@@ -17,6 +17,7 @@ body {
   direction: rtl;
   text-align: right;
   transition: background-color 0.25s ease, color 0.25s ease;
+  line-height: 1.7;
 }
 
 /* Dark mode by default */
@@ -31,24 +32,13 @@ html:not(.dark) body {
   color: #0F172A;
 }
 
-/* Animated Logo Glow */
-@keyframes logoSoftPulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 2px rgba(255, 91, 34, 0.2));
-  }
-  50% {
-    filter: drop-shadow(0 0 8px rgba(255, 91, 34, 0.45));
-  }
+/* Clean logo interaction without any shadow underneath */
+.logo-clean {
+  transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
-.logo-animated {
-  animation: logoSoftPulse 4s ease-in-out infinite;
-  transition: transform 0.3s ease, filter 0.3s ease;
-}
-
-.logo-animated:hover {
-  transform: scale(1.05);
-  filter: drop-shadow(0 0 12px rgba(255, 91, 34, 0.6));
+.logo-clean:hover {
+  transform: scale(1.04);
 }
 
 /* Custom subtle scrollbar */

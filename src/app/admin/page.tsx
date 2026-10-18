@@ -4,22 +4,24 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 import { 
-  LayoutDashboard, 
-  BookOpen, 
   Calendar, 
+  BookOpen, 
+  Video, 
   Settings, 
   ExternalLink, 
-  CheckCircle, 
-  Clock, 
   PhoneCall, 
   Plus, 
-  Check, 
-  ShieldAlert,
-  ArrowRight
+  Trash2,
+  CheckCircle2, 
+  Clock, 
+  Bookmark,
+  Share2
 } from 'lucide-react';
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<'leads' | 'articles' | 'settings'>('leads');
+  const [activeTab, setActiveTab] = useState<'leads' | 'videos' | 'articles' | 'books' | 'settings'>('leads');
+  
+  // Leads
   const [leads, setLeads] = useState<any[]>([
     {
       id: 'demo-1',
@@ -34,7 +36,7 @@ export default function AdminPage() {
     {
       id: 'demo-2',
       full_name: 'سارة عبد الرحمن',
-      whatsapp: '+966541234567',
+      whatsapp: '+962791234567',
       email: 'sara@example.com',
       track: 'marital',
       delivery_mode: 'online',
@@ -43,6 +45,26 @@ export default function AdminPage() {
     }
   ]);
 
+  // Videos
+  const [videos, setVideos] = useState<any[]>([
+    {
+      id: 'v1',
+      title: 'السلوك رسالة قبل أن يكون مشكلة: كيف نفهم تمرد الأبناء؟',
+      category: 'التربية واليافعين',
+      duration: '14:20',
+      youtubeId: 'dQw4w9WgXcQ'
+    },
+    {
+      id: 'v2',
+      title: 'فقه التوقعات وكسر دوائر الصمت العقابي بين الزوجين',
+      category: 'العلاقات الزوجية',
+      duration: '18:45',
+      youtubeId: 'dQw4w9WgXcQ'
+    }
+  ]);
+  const [newVideo, setNewVideo] = useState({ title: '', category: 'التربية واليافعين', duration: '15:00', youtubeId: '', description: '' });
+
+  // Articles
   const [articles, setArticles] = useState<any[]>([
     {
       id: '1',
@@ -57,18 +79,20 @@ export default function AdminPage() {
       status: 'منشور'
     }
   ]);
+  const [newArticle, setNewArticle] = useState({ title: '', category: 'quranic', excerpt: '', content: '' });
 
-  const [newArticle, setNewArticle] = useState({
-    title: '',
-    category: 'quranic',
-    excerpt: '',
-    content: ''
-  });
+  // Books
+  const [books, setBooks] = useState<any[]>([
+    { id: '1', title: 'كتاب ذات وموضوع', status: 'مسودة متقدمة (قيد النشر)' },
+    { id: '2', title: 'كتاب ظلّي', status: 'قيد المراجعة والتحرير' },
+    { id: '3', title: 'كتاب العادات الوالدية للآباء الأكثر فاعلية', status: 'إصدار تطبيقي قادم' },
+    { id: '4', title: 'كتاب أقومية القرآن في الأسرة والطفل', status: 'مشروع تأسيسي' }
+  ]);
 
-  const [savingArticle, setSavingArticle] = useState(false);
-  const [articleMessage, setArticleMessage] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
 
-  // جلب الطلبات الحقيقية من Supabase إن وُجدت
+  // جلب الطلبات من Supabase
   useEffect(() => {
     async function fetchLeads() {
       if (isSupabaseConfigured && supabase) {
@@ -87,22 +111,25 @@ export default function AdminPage() {
 
   const handleStatusChange = async (leadId: string, newStatus: string) => {
     setLeads(prev => prev.map(item => item.id === leadId ? { ...item, status: newStatus } : item));
-
     if (isSupabaseConfigured && supabase && !leadId.startsWith('demo-')) {
-      await supabase
-        .from('intake_requests')
-        .update({ status: newStatus })
-        .eq('id', leadId);
+      await supabase.from('intake_requests').update({ status: newStatus }).eq('id', leadId);
     }
+  };
+
+  const handleAddVideo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newVideo.title) return;
+    setVideos([{ id: String(Date.now()), ...newVideo }, ...videos]);
+    setNewVideo({ title: '', category: 'التربية واليافعين', duration: '15:00', youtubeId: '', description: '' });
+    setFeedbackMessage('تمت إضافة الفيديو بنجاح!');
+    setTimeout(() => setFeedbackMessage(''), 3000);
   };
 
   const handleAddArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newArticle.title) return;
 
-    setSavingArticle(true);
-    setArticleMessage('');
-
+    setSaving(true);
     const slug = newArticle.title
       .toLowerCase()
       .trim()
@@ -111,7 +138,7 @@ export default function AdminPage() {
       .replace(/^-+|-+$/g, '') || `article-${Date.now()}`;
 
     if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from('articles').insert([
+      await supabase.from('articles').insert([
         {
           title: newArticle.title,
           slug,
@@ -121,40 +148,31 @@ export default function AdminPage() {
           is_published: true
         }
       ]);
-
-      if (error) {
-        setArticleMessage('حدث خطأ في حفظ المقال في سوبا بيز');
-        setSavingArticle(false);
-        return;
-      }
     }
 
-    setArticles(prev => [
-      { id: String(Date.now()), title: newArticle.title, category: newArticle.category, status: 'منشور' },
-      ...prev
-    ]);
-
+    setArticles([{ id: String(Date.now()), title: newArticle.title, category: newArticle.category, status: 'منشور' }, ...articles]);
     setNewArticle({ title: '', category: 'quranic', excerpt: '', content: '' });
-    setSavingArticle(false);
-    setArticleMessage('تمت إضافة المقال بنجاح!');
+    setSaving(false);
+    setFeedbackMessage('تم نشر المقال بنجاح!');
+    setTimeout(() => setFeedbackMessage(''), 3000);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans" dir="rtl">
+    <div className="min-h-screen bg-[#090D11] text-slate-100 flex flex-col font-sans" dir="rtl">
       
       {/* الترويسة العلوية للوحة التحكم */}
-      <header className="border-b border-slate-800 bg-slate-900 px-6 py-4 flex items-center justify-between">
+      <header className="border-b border-slate-800 bg-[#0E1318] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src="/assets/logo-white.png" alt="جلال" className="h-8 w-auto opacity-90" />
+          <img src="/assets/logo-white.png" alt="جلال أحمد" className="h-8 w-auto opacity-90 logo-clean" />
           <div className="flex items-center gap-2">
             <span className="font-extrabold text-white text-base">لوحة تحكم جـلال أحـمد</span>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">
-              {isSupabaseConfigured ? 'متصل بـ Supabase ✓' : 'الوضع المحلي (Mock Mode)'}
+              {isSupabaseConfigured ? 'متصل بقاعدة البيانات ✓' : 'وضع المعاينة السريعة'}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-3 text-xs">
           <Link 
             href="/" 
             className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 transition"
@@ -172,78 +190,107 @@ export default function AdminPage() {
         <aside className="lg:col-span-3 space-y-2">
           <button
             onClick={() => setActiveTab('leads')}
-            className={`w-full flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-bold transition text-right ${
-              activeTab === 'leads' ? 'bg-brand-700 text-white shadow-xs' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+            className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold transition text-right ${
+              activeTab === 'leads' ? 'bg-accent-500 text-white shadow-xs' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
             }`}
           >
             <Calendar className="w-4 h-4" />
             <span>طلبات الحجز والاستشارات</span>
-            <span className="mr-auto px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-emerald-400">
+            <span className="mr-auto px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-emerald-400 font-mono">
               {leads.length}
             </span>
           </button>
 
           <button
+            onClick={() => setActiveTab('videos')}
+            className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold transition text-right ${
+              activeTab === 'videos' ? 'bg-accent-500 text-white shadow-xs' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+            }`}
+          >
+            <Video className="w-4 h-4" />
+            <span>المكتبة المرئية والفيديوهات</span>
+            <span className="mr-auto px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-slate-300 font-mono">
+              {videos.length}
+            </span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('articles')}
-            className={`w-full flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-bold transition text-right ${
-              activeTab === 'articles' ? 'bg-brand-700 text-white shadow-xs' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+            className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold transition text-right ${
+              activeTab === 'articles' ? 'bg-accent-500 text-white shadow-xs' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            <span>المكتبة المعرفية والمقالات</span>
+            <span>المقالات وأقومية القرآن</span>
+            <span className="mr-auto px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-slate-300 font-mono">
+              {articles.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('books')}
+            className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold transition text-right ${
+              activeTab === 'books' ? 'bg-accent-500 text-white shadow-xs' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+            }`}
+          >
+            <Bookmark className="w-4 h-4" />
+            <span>المؤلفات والكتب الأربعة</span>
           </button>
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`w-full flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-bold transition text-right ${
-              activeTab === 'settings' ? 'bg-brand-700 text-white shadow-xs' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+            className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold transition text-right ${
+              activeTab === 'settings' ? 'bg-accent-500 text-white shadow-xs' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
             }`}
           >
             <Settings className="w-4 h-4" />
-            <span>إعدادات النشر و Supabase</span>
+            <span>الربط والنشاط التجاري</span>
           </button>
         </aside>
 
         {/* مساحة العرض الرئيسية */}
-        <main className="lg:col-span-9 bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6">
+        <main className="lg:col-span-9 bg-[#151B23] border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
           
+          {feedbackMessage && (
+            <div className="p-3.5 rounded-2xl bg-emerald-950 text-emerald-300 border border-emerald-800 text-xs flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{feedbackMessage}</span>
+            </div>
+          )}
+
           {/* تبويب 1: طلبات الاستشارات */}
           {activeTab === 'leads' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-                <div>
-                  <h2 className="text-lg font-bold text-white">سجل طلبات التنسيق والحجوزات</h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    كافة الطلبات الواردة عبر الموقع مخزنة بأمان في قاعدة بيانات سوبا بيز
-                  </p>
-                </div>
+              <div className="border-b border-slate-800 pb-4">
+                <h2 className="text-lg font-bold text-white">سجل طلبات التنسيق والاستشارات</h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  كافة الطلبات الواردة عبر الموقع ومخزنة بأمان في قاعدة بيانات Supabase
+                </p>
               </div>
 
               <div className="overflow-x-auto rounded-2xl border border-slate-800">
                 <table className="w-full text-right text-xs">
-                  <thead className="bg-slate-950 text-slate-400 text-[11px]">
+                  <thead className="bg-[#0E1318] text-slate-400 text-[11px]">
                     <tr>
                       <th className="p-3.5">الاسم</th>
                       <th className="p-3.5">المسار المطلوب</th>
                       <th className="p-3.5">النمط</th>
-                      <th className="p-3.5">التواصل</th>
-                      <th className="p-3.5">حالة الطلب</th>
+                      <th className="p-3.5">واتساب</th>
+                      <th className="p-3.5">الحالة</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800 text-slate-200">
                     {leads.map((lead) => (
-                      <tr key={lead.id} className="hover:bg-slate-800/50 transition">
+                      <tr key={lead.id} className="hover:bg-slate-850/50 transition">
                         <td className="p-3.5 font-bold text-white">{lead.full_name}</td>
                         <td className="p-3.5 text-slate-300">
                           {lead.track === 'premarital' && 'رحلة رِفق (مقبلين)'}
                           {lead.track === 'marital' && 'برنامج مِيثاق (متزوجين)'}
                           {lead.track === 'individual' && 'استشارة فردية'}
                           {lead.track === 'teen' && 'تربية ويافعين'}
-                          {lead.track === 'corporate' && 'استشارة مؤسسية'}
+                          {lead.track === 'corporate' && 'استشارة وتدريب مؤسسي'}
                         </td>
-                        <td className="p-3.5 text-slate-400">
-                          {lead.delivery_mode === 'in_person' ? 'حضوري' : 'أونلاين'}
-                        </td>
+                        <td className="p-3.5 text-emerald-400 font-medium">أونلاين</td>
                         <td className="p-3.5">
                           <a 
                             href={`https://wa.me/${lead.whatsapp.replace(/[^0-9]/g, '')}`} 
@@ -260,7 +307,7 @@ export default function AdminPage() {
                           <select
                             value={lead.status || 'new'}
                             onChange={(e) => handleStatusChange(lead.id, e.target.value)}
-                            className="bg-slate-950 border border-slate-700 text-slate-300 text-[11px] rounded-lg px-2 py-1 outline-none"
+                            className="bg-[#0E1318] border border-slate-700 text-slate-300 text-[11px] rounded-lg px-2 py-1 outline-none"
                           >
                             <option value="new">جديد</option>
                             <option value="contacted">تم التواصل</option>
@@ -276,7 +323,98 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* تبويب 2: إدارة المقالات */}
+          {/* تبويب 2: إدارة الفيديوهات */}
+          {activeTab === 'videos' && (
+            <div className="space-y-6">
+              <div className="border-b border-slate-800 pb-4">
+                <h2 className="text-lg font-bold text-white">إضافة وإدارة الفيديوهات والمرئيات</h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  أضف مقاطعك ومحاضراتك على يوتيوب لتظهر في قسم المكتبة المرئية فوراً
+                </p>
+              </div>
+
+              {/* فورم إضافة فيديو */}
+              <form onSubmit={handleAddVideo} className="p-5 rounded-2xl bg-[#0E1318] border border-slate-800 space-y-4 text-xs">
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">عنوان المقطع / المحاضرة *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newVideo.title}
+                    onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
+                    placeholder="مثال: فقه التوقعات وكسر الصمت العقابي"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none focus:ring-1 focus:ring-accent-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-300 mb-1">التصنيف</label>
+                    <select
+                      value={newVideo.category}
+                      onChange={(e) => setNewVideo({ ...newVideo, category: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 outline-none"
+                    >
+                      <option value="العلاقات الزوجية">العلاقات الزوجية</option>
+                      <option value="التربية واليافعين">التربية واليافعين</option>
+                      <option value="بصيرة الذات">بصيرة الذات</option>
+                      <option value="مشروع أقومية القرآن">مشروع أقومية القرآن</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-300 mb-1">معرّف يوتيوب (Video ID)</label>
+                    <input
+                      type="text"
+                      value={newVideo.youtubeId}
+                      onChange={(e) => setNewVideo({ ...newVideo, youtubeId: e.target.value })}
+                      placeholder="مثال: dQw4w9WgXcQ"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-300 mb-1">المدة التقديرية</label>
+                    <input
+                      type="text"
+                      value={newVideo.duration}
+                      onChange={(e) => setNewVideo({ ...newVideo, duration: e.target.value })}
+                      placeholder="مثال: 15:30"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 bg-accent-500 hover:bg-accent-600 text-white font-bold rounded-xl text-xs transition flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>إضافة الفيديو للمكتبة</span>
+                </button>
+              </form>
+
+              {/* قائمة الفيديوهات */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-bold text-slate-400">الفيديوهات الحالية ({videos.length})</h3>
+                <div className="divide-y divide-slate-800 rounded-2xl border border-slate-800 overflow-hidden text-xs">
+                  {videos.map((vid) => (
+                    <div key={vid.id} className="p-4 flex items-center justify-between hover:bg-slate-800/40">
+                      <div>
+                        <div className="font-bold text-white">{vid.title}</div>
+                        <div className="text-[11px] text-slate-400 mt-0.5">{vid.category} • {vid.duration}</div>
+                      </div>
+                      <span className="text-[10px] px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 font-mono">
+                        ID: {vid.youtubeId || 'غير محدد'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* تبويب 3: المقالات */}
           {activeTab === 'articles' && (
             <div className="space-y-6">
               <div className="border-b border-slate-800 pb-4">
@@ -286,14 +424,7 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              {articleMessage && (
-                <div className="p-3 rounded-xl bg-emerald-950 text-emerald-300 border border-emerald-800 text-xs">
-                  {articleMessage}
-                </div>
-              )}
-
-              {/* فورم إضافة مقال */}
-              <form onSubmit={handleAddArticle} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 text-xs">
+              <form onSubmit={handleAddArticle} className="p-5 rounded-2xl bg-[#0E1318] border border-slate-800 space-y-4 text-xs">
                 <div>
                   <label className="block font-bold text-slate-300 mb-1">عنوان المقال *</label>
                   <input
@@ -302,7 +433,7 @@ export default function AdminPage() {
                     value={newArticle.title}
                     onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}
                     placeholder="مثال: فقه التوقعات في بناء البيت المستقر"
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none focus:ring-1 focus:ring-brand-500"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white outline-none focus:ring-1 focus:ring-accent-500"
                   />
                 </div>
 
@@ -345,15 +476,14 @@ export default function AdminPage() {
 
                 <button
                   type="submit"
-                  disabled={savingArticle}
-                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-2"
+                  disabled={saving}
+                  className="px-6 py-2.5 bg-accent-500 hover:bg-accent-600 text-white font-bold rounded-xl text-xs transition flex items-center gap-2"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>{savingArticle ? 'جارٍ النشر...' : 'نشر المقال فوراً'}</span>
+                  <span>{saving ? 'جارٍ النشر...' : 'نشر المقال فوراً'}</span>
                 </button>
               </form>
 
-              {/* قائمة المقالات المنشورة */}
               <div className="space-y-2">
                 <h3 className="text-xs font-bold text-slate-400">المقالات الحالية</h3>
                 <div className="divide-y divide-slate-800 rounded-2xl border border-slate-800 overflow-hidden text-xs">
@@ -373,58 +503,68 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* تبويب 3: إعدادات الربط والمنظومة */}
+          {/* تبويب 4: الكتب والمؤلفات */}
+          {activeTab === 'books' && (
+            <div className="space-y-6">
+              <div className="border-b border-slate-800 pb-4">
+                <h2 className="text-lg font-bold text-white">إصدارات ومؤلفات جلال أحمد</h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  المؤلفات المعروضة في الموقع الرسمي وحالة كل مؤلف
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {books.map((b) => (
+                  <div key={b.id} className="p-5 rounded-2xl bg-[#0E1318] border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Bookmark className="w-4 h-4 text-accent-500" />
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                        {b.status}
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-bold text-white">{b.title}</h4>
+                    <p className="text-[11px] text-slate-400">
+                      مرتبطة بمسودات Google Drive والتحرير النهائي
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* تبويب 5: إعدادات الربط والنشاط التجاري */}
           {activeTab === 'settings' && (
             <div className="space-y-6 text-xs">
               <div className="border-b border-slate-800 pb-4">
-                <h2 className="text-lg font-bold text-white">إعدادات المنظومة (مثل مشروع رفق)</h2>
+                <h2 className="text-lg font-bold text-white">بيانات الربط والنشاط التجاري</h2>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  الخطوات المتبعة لربط Supabase + GitHub + Vercel + Cloudflare
+                  الروابط المتصلة بالموقع لتحسين الظهور في محركات البحث ومزامنة المواعيد
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                <div className="p-5 rounded-2xl bg-[#0E1318] border border-slate-800 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-white">1. قاعدة بيانات سوبا بيز (Supabase)</span>
-                    <span className="text-emerald-400 text-xs">جاهز</span>
+                    <span className="font-bold text-white">نشاط جوجل التجاري (Google Business)</span>
+                    <span className="text-emerald-400 text-xs">مرتبط ✓</span>
                   </div>
                   <p className="text-slate-400 text-[11px] leading-relaxed">
-                    تم إنشاء ملف <code className="text-brand-400">supabase/schema.sql</code>. افتح محرر SQL في Supabase وقم بلصق محتواه لإنشاء الجداول وسياسات الأمان بضغطة زر.
+                    تم ربط الرابط الرسمي ومخطط البيانات المنظمة (JSON-LD Schema) لتحسين الترتيب في خرائط ونتائج بحث Google.
                   </p>
+                  <a href="https://share.google/mcjTrK9P6DPRb07Z0" target="_blank" rel="noopener noreferrer" className="text-accent-500 hover:underline block pt-1 text-[11px]">
+                    فتح النشاط على خرائط جوجل ←
+                  </a>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                <div className="p-5 rounded-2xl bg-[#0E1318] border border-slate-800 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-white">2. الكود على جيت هب (GitHub)</span>
-                    <span className="text-emerald-400 text-xs">جاهز للرفع</span>
+                    <span className="font-bold text-white">جدول المواعيد المباشر (Google Meet)</span>
+                    <span className="text-emerald-400 text-xs">مدمج في الموقع ✓</span>
                   </div>
                   <p className="text-slate-400 text-[11px] leading-relaxed">
-                    المشروع مهيأ بالكامل كـ Git Repository محلي، وجاهز للربط مع المستودع الخاص بك على GitHub فوراً.
+                    تم تضمين التقويم التفاعلي مباشرة داخل الموقع لتمكين العميل من حجز موعده دون الخروج من المنصة.
                   </p>
                 </div>
-
-                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-white">3. الاستضافة والواجهة (Vercel)</span>
-                    <span className="text-emerald-400 text-xs">جاهز للنشر</span>
-                  </div>
-                  <p className="text-slate-400 text-[11px] leading-relaxed">
-                    استيراد المستودع على Vercel بنقرة واحدة، وتعيين متغيرات البيئة ليعمل في ثوانٍ مع شهادة أمان وسرعة عالمية.
-                  </p>
-                </div>
-
-                <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-white">4. ربط النطاق (Hostinger ➔ Cloudflare)</span>
-                    <span className="text-emerald-400 text-xs">الخطوة الأخيرة</span>
-                  </div>
-                  <p className="text-slate-400 text-[11px] leading-relaxed">
-                    تغيير الـ Nameservers في Hostinger لتشير إلى Cloudflare، وتوجيه الـ CNAME في Cloudflare إلى Vercel (`cname.vercel-dns.com`).
-                  </p>
-                </div>
-
               </div>
             </div>
           )}

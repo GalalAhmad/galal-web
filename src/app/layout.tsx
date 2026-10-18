@@ -4,10 +4,11 @@ import { ThemeProvider } from '@/context/ThemeContext';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://galalahmad.com'),
-  title: 'جلال أحمد | استشارات نفسية وتربوية وبناء الإنسان',
+  title: 'جلال أحمد | استشارات نفسية وتربوية وبناء الإنسان والأسرة',
   description: 'الموقع الرسمي لـ جلال أحمد — استشاري الصحة النفسية والتربوية، ومؤسس مركز إنسان ومنصتي رفق ووصلة ومركز مفهوم. «ومَنْ يَصِفُ لَكَ الطَّرِيقَ.. لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ».',
   keywords: [
     'جلال أحمد',
+    'Galal Ahmad',
     'استشارات نفسية',
     'إرشاد أسري وزواجي',
     'تأهيل المقبلين على الزواج',
@@ -17,7 +18,9 @@ export const metadata: Metadata = {
     'مركز إنسان للتدريب والاستشارات',
     'منصة وصلة',
     'مركز مفهوم',
-    'أقومية القرآن'
+    'أقومية القرآن',
+    'ذات وموضوع',
+    'كتاب ظلي'
   ],
   authors: [{ name: 'جلال أحمد', url: 'https://galalahmad.com' }],
   openGraph: {
@@ -44,6 +47,28 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: 'جلال أحمد | Galal Ahmad',
+  url: 'https://galalahmad.com',
+  logo: 'https://galalahmad.com/assets/logo.png',
+  image: 'https://galalahmad.com/assets/dr-galal-speaking.jpg',
+  description: 'استشارات نفسية وتربوية، إرشاد زواجي، تأهيل المقبلين على الزواج، وتطوير المدارس والمؤسسات التعليمية.',
+  telephone: '+201014876666',
+  email: 'info@galalahmad.com',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'القاهرة',
+    addressCountry: 'EG'
+  },
+  sameAs: [
+    'https://share.google/mcjTrK9P6DPRb07Z0',
+    'https://linkedin.com/in/galal3hmad/',
+    'https://www.google.com/search?kgmid=/g/11p_0131cq'
+  ]
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -53,6 +78,10 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/assets/logo.png" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `

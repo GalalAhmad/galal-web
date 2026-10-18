@@ -2,11 +2,13 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Mail, Phone, MapPin, Linkedin, Shield, Video } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Shield, Video, ExternalLink, Star } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
 export default function Footer() {
   const { theme } = useTheme();
+
+  const googleBusinessUrl = 'https://share.google/mcjTrK9P6DPRb07Z0';
 
   return (
     <footer id="contact" className="bg-[#090D11] dark:bg-[#090D11] bg-slate-100 border-t border-slate-800/80 dark:border-slate-800/80 border-slate-200 py-16 px-4 sm:px-6 text-right transition-colors">
@@ -20,7 +22,7 @@ export default function Footer() {
               <img 
                 src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'} 
                 alt="جلال أحمد" 
-                className="h-10 w-auto object-contain logo-animated" 
+                className="h-10 w-auto object-contain logo-clean" 
               />
               <div>
                 <span className="text-xl font-black text-slate-100 dark:text-slate-100 text-slate-900">جـلال أحـمد</span>
@@ -30,19 +32,48 @@ export default function Footer() {
             <p className="text-xs text-slate-300 dark:text-slate-300 text-slate-600 leading-relaxed max-w-sm">
               «ومَنْ يَصِفُ لَكَ الطَّرِيقَ.. لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ» — مساحة استشارية متخصصة تهدف إلى رفع الوعي النفسي والتربوي، ومساندة الأفراد والأزواج والمؤسسات للانتقال من ردود الفعل إلى الوعي والمسؤولية والاتزان.
             </p>
+
+            {/* Google Business Profile Verified Badge */}
+            <div className="pt-2">
+              <a
+                href={googleBusinessUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 p-3 rounded-2xl bg-[#151B23] dark:bg-[#151B23] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 text-xs hover:border-accent-500 transition shadow-xs group"
+              >
+                <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+                  <MapPin className="w-4 h-4 text-blue-400" />
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1.5 font-bold text-slate-200 dark:text-slate-200 text-slate-800 group-hover:text-accent-500 transition-colors">
+                    <span>الملف الرسمي على خرائط Google</span>
+                    <ExternalLink className="w-3 h-3 text-slate-400" />
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] text-amber-400 mt-0.5">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-2.5 h-2.5 fill-current" />
+                      ))}
+                    </div>
+                    <span className="text-slate-400 font-medium">نشاط معتمد على Google Business</span>
+                  </div>
+                </div>
+              </a>
+            </div>
           </div>
 
           <div className="md:col-span-3 space-y-3">
             <h4 className="text-xs font-bold text-accent-500 uppercase tracking-wider">
-              روابط سريعة
+              أقسام الموقع
             </h4>
             <ul className="text-xs text-slate-400 dark:text-slate-400 text-slate-600 space-y-2 font-medium">
-              <li><Link href="#tracks" className="hover:text-accent-500 transition">المسارات الاستشارية</Link></li>
-              <li><Link href="#initiatives" className="hover:text-accent-500 transition">المشاريع والمبادرات التأسيسية</Link></li>
-              <li><Link href="#programs" className="hover:text-accent-500 transition">برامج رِفق ومِيثاق ومِساحة</Link></li>
-              <li><Link href="#assessments" className="hover:text-accent-500 transition">مقاييس التبصر بالذات</Link></li>
-              <li><Link href="#about" className="hover:text-accent-500 transition">المسيرة والمؤهلات الموثقة</Link></li>
-              <li><Link href="#articles" className="hover:text-accent-500 transition">المكتبة المعرفية وأقومية القرآن</Link></li>
+              <li><Link href="#services" className="hover:text-accent-500 transition">خدماتنا ونوع الدعم</Link></li>
+              <li><Link href="#assessments" className="hover:text-accent-500 transition">المقاييس النفسية المصنفة</Link></li>
+              <li><Link href="#books" className="hover:text-accent-500 transition">مؤلفات وكتب جلال أحمد</Link></li>
+              <li><Link href="#videos" className="hover:text-accent-500 transition">المكتبة المرئية والمحاضرات</Link></li>
+              <li><Link href="#testimonials" className="hover:text-accent-500 transition">تجارب وآراء المستفيدين</Link></li>
+              <li><Link href="#about" className="hover:text-accent-500 transition">عن جلال أحمد والمسيرة</Link></li>
+              <li><Link href="#booking" className="hover:text-accent-500 transition">جدول حجز المواعيد المباشر</Link></li>
             </ul>
           </div>
 
@@ -87,7 +118,7 @@ export default function Footer() {
         <div className="p-4 rounded-2xl bg-[#151B23] dark:bg-[#151B23] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 text-[11px] text-slate-400 leading-relaxed flex items-start gap-3">
           <Shield className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
           <p>
-            <strong>تنويه مهني وأخلاقي:</strong> الاستشارات والجلسات المقدمة عبر هذا الموقع مخصصة للدعم النفسي، والإرشاد الأسري والزواجي، والتطوير التربوي، وتخضع لمعايير السرية المهنية وأخلاقيات المهنة. هذه الخدمات استشارية وتنموية وليست بديلاً عن التدخل الطبي النفسي الطارئ. في حالات الخطر المباشر يرجى التوجه فوراً لأقرب مشفى أو مركز طوارئ طبي معتمد في بلدك.
+            <strong>تنويه مهني وأخلاقي:</strong> الاستشارات والجلسات والمقاييس المقدمة عبر هذا الموقع مخصصة للدعم النفسي، والإرشاد الأسري والزواجي، والتطوير التربوي، وتخضع لمعايير السرية المهنية وأخلاقيات المهنة. هذه الخدمات استشارية وتنموية وليست بديلاً عن التدخل الطبي النفسي الطارئ. في حالات الخطر المباشر يرجى التوجه فوراً لأقرب مشفى أو مركز طوارئ طبي معتمد في بلدك.
           </p>
         </div>
 

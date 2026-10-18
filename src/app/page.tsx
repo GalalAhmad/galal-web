@@ -2,10 +2,14 @@ import React from 'react';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
+import ServiceFinder from '@/components/ServiceFinder';
 import Tracks from '@/components/Tracks';
 import InitiativesSection from '@/components/InitiativesSection';
 import Programs from '@/components/Programs';
 import SelfAssessments from '@/components/SelfAssessments';
+import BooksSection from '@/components/BooksSection';
+import VideosSection from '@/components/VideosSection';
+import TestimonialsSection from '@/components/TestimonialsSection';
 import About from '@/components/About';
 import ArticlesSection from '@/components/ArticlesSection';
 import BookingSection from '@/components/BookingSection';
@@ -17,10 +21,14 @@ export default function HomePage() {
       <AnnouncementBanner />
       <Navbar />
       <Hero />
+      <ServiceFinder />
       <Tracks />
       <InitiativesSection />
       <Programs />
       <SelfAssessments />
+      <BooksSection />
+      <VideosSection />
+      <TestimonialsSection />
       <About />
       <ArticlesSection />
       <BookingSection />

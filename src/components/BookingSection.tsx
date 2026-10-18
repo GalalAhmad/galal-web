@@ -1,15 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, Send, CheckCircle2, ShieldCheck, Video, Loader2, Clock, Globe } from 'lucide-react';
+import { Calendar, Send, CheckCircle2, ShieldCheck, Video, Loader2, MessageSquare, Globe, Clock } from 'lucide-react';
 
 export default function BookingSection() {
+  const [activeTab, setActiveTab] = useState<'calendar' | 'form'>('calendar');
   const [formData, setFormData] = useState({
     full_name: '',
     whatsapp: '',
     email: '',
     track: 'marital',
-    delivery_mode: 'online', // Sessions are strictly online via Google Meet
+    delivery_mode: 'online', // Strictly online via Google Meet
     preferred_time: 'any',
     notes: ''
   });
@@ -18,7 +19,7 @@ export default function BookingSection() {
   const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const calendlyUrl = 'https://calendly.com/galal3hmad/insan';
+  const calendlyEmbedUrl = 'https://calendly.com/galal3hmad/insan?embed_domain=galalahmad.com&embed_type=Inline&hide_landing_page_details=1&hide_gdpr_banner=1';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,90 +49,105 @@ export default function BookingSection() {
 
   return (
     <section id="booking" className="py-20 px-4 sm:px-6 bg-[#0D1117] dark:bg-[#0D1117] bg-[#F8FAFC] border-b border-slate-800/80 dark:border-slate-800/80 border-slate-200 transition-colors">
-      <div className="max-w-5xl mx-auto space-y-12">
+      <div className="max-w-5xl mx-auto space-y-10">
         
         {/* ترويسة الحجز */}
         <div className="text-center max-w-2xl mx-auto space-y-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/60 dark:bg-slate-800/60 bg-white border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-xs font-bold text-accent-500 shadow-xs">
             <Calendar className="w-3.5 h-3.5" />
-            <span>حجز المواعيد والجلسات الاستشارية</span>
+            <span>حجز الجلسات المباشر</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight">
-            اختر الطريقة الأنسب لحجز موعدك
+            احجز موعد جلستك الاستشارية مباشرة
           </h2>
 
           <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 text-slate-600 leading-relaxed">
-            جميع الجلسات تُعقد <strong>أونلاين وحصرياً عن بُعد عبر اتصال مرئي مشفر وآمن (Google Meet)</strong> لضمان الخصوصية وسهولة الانعقاد من أي مكان بالعالم.
+            جميع الجلسات تُعقد <strong>أونلاين وحصرياً عن بُعد عبر اتصال مرئي مشفر وآمن (Google Meet)</strong> دون الحاجة للخروج من الموقع.
           </p>
+
+          {/* تبديل التبويب */}
+          <div className="inline-flex p-1.5 rounded-2xl bg-[#151B23] dark:bg-[#151B23] bg-slate-200/80 border border-slate-800 dark:border-slate-800 border-slate-300 gap-1 mt-2">
+            <button
+              onClick={() => setActiveTab('calendar')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition ${
+                activeTab === 'calendar'
+                  ? 'bg-accent-500 text-white shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>التقويم التفاعلي المباشر (Google Meet)</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('form')}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition ${
+                activeTab === 'form'
+                  ? 'bg-accent-500 text-white shadow-xs'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>طلب تنسيق خاص عبر الواتساب</span>
+            </button>
+          </div>
         </div>
 
-        {/* بطاقتان متماثلتان: الحجز الفوري عبر Calendly أو نموذج التنسيق المسبق */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
-          
-          {/* 1. خيار جدول التقويم المباشر (Google Calendar / Calendly) */}
-          <div className="md:col-span-5 p-7 sm:p-8 rounded-3xl bg-[#151B23] dark:bg-[#151B23] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 hover:border-slate-700 dark:hover:border-slate-700 transition-all shadow-sm space-y-5 text-right">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
-                حجز فوري وتأكيد آلي
-              </span>
-              <span className="text-xl">⚡</span>
+        {/* التبويب 1: التقويم التفاعلي المدمج مباشرة داخل الموقع (بدون خروج العميل) */}
+        {activeTab === 'calendar' && (
+          <div className="p-4 sm:p-6 rounded-3xl bg-[#151B23] dark:bg-[#151B23] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 shadow-xl space-y-4 animate-fadeIn">
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-2 pb-3 border-b border-slate-800/80 dark:border-slate-800/80 border-slate-100 text-right">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-200 dark:text-slate-200 text-slate-800">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>جدول المواعيد المباشرة لجلال أحمد</span>
+              </div>
+              <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                <span className="flex items-center gap-1">
+                  <Video className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Google Meet تلقائي</span>
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Globe className="w-3.5 h-3.5 text-accent-500" />
+                  <span>ضبط فرق التوقيت لبلدك</span>
+                </span>
+              </div>
             </div>
 
+            {/* Calendly Inline Embed */}
+            <div className="w-full rounded-2xl overflow-hidden bg-white shadow-inner min-h-[680px]">
+              <iframe
+                src={calendlyEmbedUrl}
+                width="100%"
+                height="700"
+                frameBorder="0"
+                title="جدول مواعيد جلال أحمد"
+                className="w-full h-[700px] rounded-2xl"
+              />
+            </div>
+
+            <div className="text-center text-[11px] text-slate-400 pt-1">
+              🔒 بعد اختيار الموعد، ستصلك رسالة تأكيد إلكترونية فورية برابط الاجتماع المرئي المشفر.
+            </div>
+
+          </div>
+        )}
+
+        {/* التبويب 2: نموذج التنسيق المسبق (Intake Form) */}
+        {activeTab === 'form' && (
+          <div className="max-w-2xl mx-auto p-7 sm:p-9 rounded-3xl bg-[#151B23] dark:bg-[#151B23] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 shadow-xl space-y-6 text-right animate-fadeIn">
+            
             <div>
-              <h3 className="text-xl font-black text-slate-100 dark:text-slate-100 text-slate-900">
-                الحجز المباشر عبر جدول التقويم
+              <span className="text-xs font-bold text-accent-500 bg-accent-500/10 border border-accent-500/20 px-2.5 py-1 rounded-full">
+                تنسيق مسبق
+              </span>
+              <h3 className="text-xl font-black text-slate-100 dark:text-slate-100 text-slate-900 mt-2">
+                طلب استشارة أو تنسيق موعد عبر الواتساب
               </h3>
               <p className="text-xs text-slate-400 dark:text-slate-400 text-slate-500 mt-1">
-                اختر اليوم والساعة الأنسب لك فوراً من المواعيد المتاحة لجلال أحمد.
-              </p>
-            </div>
-
-            <p className="text-xs text-slate-300 dark:text-slate-300 text-slate-600 leading-relaxed font-normal">
-              يتضمن الحجز رابطاً مشفراً لاجتماع <strong>Google Meet</strong> يصلك تلقائياً على بريدك الإلكتروني، مع ضبط فرق التوقيت لبلدك تلقائياً.
-            </p>
-
-            <ul className="text-xs text-slate-300 dark:text-slate-300 text-slate-600 space-y-2.5 pt-3 border-t border-slate-800/60 dark:border-slate-800/60 border-slate-100">
-              <li className="flex items-center gap-2">
-                <Video className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>جلسة أونلاين عبر Google Meet مشفرة بالكامل</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>مطابقة آلية ودقيقة لفرق التوقيت الدولي</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>تذكير تلقائي بالميعاد قبل الجلسة بيوم وساعة</span>
-              </li>
-            </ul>
-
-            <div className="pt-2">
-              <a
-                href={calendlyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3.5 bg-accent-500 hover:bg-accent-600 text-white text-xs font-bold rounded-xl transition shadow-md flex items-center justify-center gap-2 text-center"
-              >
-                <span>فتح جدول المواعيد على التقويم الآن</span>
-              </a>
-            </div>
-          </div>
-
-          {/* 2. خيار نموذج التنسيق المسبق (Intake Form) مع Supabase */}
-          <div className="md:col-span-7 p-7 sm:p-8 rounded-3xl bg-[#151B23] dark:bg-[#151B23] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 shadow-sm space-y-6 text-right">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-accent-500 bg-accent-500/10 border border-accent-500/20 px-2.5 py-1 rounded-full">
-                  تنسيق عبر الواتساب
-                </span>
-                <span className="text-xs text-slate-400">سرية وخصوصية مهنية تامة</span>
-              </div>
-              <h3 className="text-xl font-black text-slate-100 dark:text-slate-100 text-slate-900 mt-2">
-                طلب استشارة أو ترتيب موعد خاص
-              </h3>
-              <p className="text-xs text-slate-400 dark:text-slate-400 text-slate-500 mt-1 leading-relaxed">
-                إذا كنت ترغب في التنسيق المسبق أو لديك استفسار تنظيمي، املأ البيانات وسيتواصل معك المنسق عبر الواتساب.
+                املأ بياناتك الأساسية وسيتواصل معك المنسق لتأكيد التوقيت المناسب وإرسال الرابط.
               </p>
             </div>
 
@@ -144,11 +160,11 @@ export default function BookingSection() {
                   تم استلام طلب التنسيق بنجاح!
                 </h4>
                 <p className="text-xs text-slate-300 dark:text-slate-300 text-slate-600 leading-relaxed max-w-sm mx-auto">
-                  شكراً لثقتك. سيتواصل معك المنسق عبر الواتساب لتأكيد موعد الجلسة ورابط Google Meet خلال <strong>24 ساعة</strong>.
+                  شكراً لثقتك. سيتواصل معك فريق التنسيق عبر الواتساب لإبلاغك بالمواعيد المناسبة خلال <strong>24 ساعة</strong>.
                 </p>
                 <button
                   onClick={() => { setSuccess(false); setFormData({ full_name: '', whatsapp: '', email: '', track: 'marital', delivery_mode: 'online', preferred_time: 'any', notes: '' }); }}
-                  className="px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold rounded-xl hover:bg-slate-700 transition"
+                  className="px-5 py-2 bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold rounded-xl hover:bg-slate-700 transition"
                 >
                   إرسال طلب آخر
                 </button>
@@ -209,16 +225,16 @@ export default function BookingSection() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold text-slate-200 dark:text-slate-200 text-slate-700 mb-1">
-                      المسار أو البرنامج المطلوب *
+                      المسار المطلوب *
                     </label>
                     <select
                       value={formData.track}
                       onChange={(e) => setFormData({ ...formData, track: e.target.value })}
                       className="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 dark:bg-slate-800/60 bg-slate-50 border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-slate-100 dark:text-slate-100 text-slate-900 focus:ring-2 focus:ring-accent-500 outline-none text-xs"
                     >
-                      <option value="premarital" className="bg-[#151B23] text-white">برنامج رحلة رِفق (للمقبلين على الزواج)</option>
-                      <option value="marital" className="bg-[#151B23] text-white">برنامج مِيثاق (للمتزوجين والأسر)</option>
-                      <option value="individual" className="bg-[#151B23] text-white">استشارة نفسية فردية (عن بُعد)</option>
+                      <option value="marital" className="bg-[#151B23] text-white">إرشاد زواجي (برنامج مِيثاق)</option>
+                      <option value="premarital" className="bg-[#151B23] text-white">تأهيل مقبلين (برنامج رحلة رِفق)</option>
+                      <option value="individual" className="bg-[#151B23] text-white">استشارة نفسية فردية</option>
                       <option value="teen" className="bg-[#151B23] text-white">إرشاد اليافعين وتربية المراهقين</option>
                       <option value="corporate" className="bg-[#151B23] text-white">استشارة وتدريب مدرسي / مؤسسي</option>
                     </select>
@@ -239,13 +255,13 @@ export default function BookingSection() {
 
                 <div>
                   <label className="block font-bold text-slate-200 dark:text-slate-200 text-slate-700 mb-1">
-                    ملاحظات أو أسئلة عامة (اختياري)
+                    ملاحظات أو استفسار عام (اختياري)
                   </label>
                   <textarea
                     rows={2}
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="لا داعي لكتابة تفاصيل مشكلتك الحساسة هنا؛ يقتصر هذا الحقل على أي استفسار تنظيمي عام."
+                    placeholder="لا داعي لكتابة التفاصيل الحساسة هنا؛ يقتصر الحقل على أي استفسار تنظيمي عام."
                     className="w-full px-4 py-2 rounded-xl bg-slate-800/60 dark:bg-slate-800/60 bg-slate-50 border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-slate-100 dark:text-slate-100 text-slate-900 focus:ring-2 focus:ring-accent-500 outline-none text-xs"
                   />
                 </div>
@@ -276,8 +292,7 @@ export default function BookingSection() {
               </form>
             )}
           </div>
-
-        </div>
+        )}
 
       </div>
     </section>

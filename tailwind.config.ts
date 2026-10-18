@@ -33,35 +33,26 @@ const config: Config = {
           border: "#26303B",
           subtle: "#303E4D",
         },
+        // Calm, dignified earth tone (Warm Terracotta / Clay) - no more bright loud orange!
         accent: {
-          500: "#FF5B22",
-          600: "#E04812",
-          50: "#FFF5F2",
+          500: "#B85D3B",
+          600: "#9E4E30",
+          700: "#823E24",
+          400: "#C97353",
+          300: "#DC9478",
+          100: "#F6DDD3",
+          50: "#FAF2EE",
         },
         sage: {
-          600: "#3D635A",
-          500: "#4E7B70",
-          400: "#63978B",
-          100: "#E8F0EE",
-          50: "#F4F7F6",
+          600: "#365950",
+          500: "#446E63",
+          400: "#56877B",
+          100: "#E6ECE9",
+          50: "#F2F6F4",
         },
       },
       fontFamily: {
         sans: ["var(--font-tajawal)", "Tajawal", "Cairo", "system-ui", "sans-serif"],
-      },
-      animation: {
-        'pulse-subtle': 'pulseSubtle 3s ease-in-out infinite',
-        'float-slow': 'floatSlow 6s ease-in-out infinite',
-      },
-      keyframes: {
-        pulseSubtle: {
-          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-          '50%': { opacity: '0.85', transform: 'scale(1.02)' },
-        },
-        floatSlow: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-4px)' },
-        },
       },
     },
   },

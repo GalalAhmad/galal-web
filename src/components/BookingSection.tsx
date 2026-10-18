@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, Send, CheckCircle2, ShieldCheck, Video, MapPin, Loader2 } from 'lucide-react';
+import { Calendar, Send, CheckCircle2, ShieldCheck, Video, Loader2, Clock, Globe } from 'lucide-react';
 
 export default function BookingSection() {
   const [formData, setFormData] = useState({
@@ -9,7 +9,7 @@ export default function BookingSection() {
     whatsapp: '',
     email: '',
     track: 'marital',
-    delivery_mode: 'online',
+    delivery_mode: 'online', // Sessions are strictly online via Google Meet
     preferred_time: 'any',
     notes: ''
   });
@@ -18,7 +18,7 @@ export default function BookingSection() {
   const [success, setSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const googleCalendarUrl = process.env.NEXT_PUBLIC_GOOGLE_CALENDAR_URL || 'https://calendar.google.com';
+  const calendlyUrl = 'https://calendly.com/galal3hmad/insan';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,99 +47,108 @@ export default function BookingSection() {
   };
 
   return (
-    <section id="booking" className="py-20 px-4 sm:px-6 bg-brand-800 text-white relative">
-      <div className="max-w-4xl mx-auto space-y-12">
+    <section id="booking" className="py-20 px-4 sm:px-6 bg-[#0D1117] dark:bg-[#0D1117] bg-[#F8FAFC] border-b border-slate-800/80 dark:border-slate-800/80 border-slate-200 transition-colors">
+      <div className="max-w-5xl mx-auto space-y-12">
         
         {/* ترويسة الحجز */}
-        <div className="text-center max-w-xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-xs font-bold text-slate-200">
+        <div className="text-center max-w-2xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800/60 dark:bg-slate-800/60 bg-white border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-xs font-bold text-accent-500 shadow-xs">
             <Calendar className="w-3.5 h-3.5" />
-            <span>حجز الجلسات والمواعيد</span>
+            <span>حجز المواعيد والجلسات الاستشارية</span>
           </div>
-          <h2 className="text-2xl sm:text-4xl font-black">
+
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight">
             اختر الطريقة الأنسب لحجز موعدك
           </h2>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            تُعقد الجلسات عن بُعد عبر اتصال مرئي مشفر وآمن، أو حضورياً بمقرنا في القاهرة.
+
+          <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 text-slate-600 leading-relaxed">
+            جميع الجلسات تُعقد <strong>أونلاين وحصرياً عن بُعد عبر اتصال مرئي مشفر وآمن (Google Meet)</strong> لضمان الخصوصية وسهولة الانعقاد من أي مكان بالعالم.
           </p>
         </div>
 
-        {/* بطاقتان رئيسيتان: جوجل كالندر المباشر أو نموذج التنسيق */}
+        {/* بطاقتان متماثلتان: الحجز الفوري عبر Calendly أو نموذج التنسيق المسبق */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
           
-          {/* 1. خيار تقويم جوجل المباشر (Google Calendar) */}
-          <div className="md:col-span-5 p-7 sm:p-8 rounded-3xl bg-white/5 border border-white/10 hover:border-white/20 transition-all space-y-5 text-right">
+          {/* 1. خيار جدول التقويم المباشر (Google Calendar / Calendly) */}
+          <div className="md:col-span-5 p-7 sm:p-8 rounded-3xl bg-[#151B23] dark:bg-[#151B23] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 hover:border-slate-700 dark:hover:border-slate-700 transition-all shadow-sm space-y-5 text-right">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full">
-                حجز فوري مؤكد
+              <span className="text-xs font-bold px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
+                حجز فوري وتأكيد آلي
               </span>
-              <span className="text-2xl">⚡</span>
+              <span className="text-xl">⚡</span>
             </div>
 
-            <h3 className="text-xl font-bold text-white">
-              الحجز المباشر عبر تقويم جوجل
-            </h3>
+            <div>
+              <h3 className="text-xl font-black text-slate-100 dark:text-slate-100 text-slate-900">
+                الحجز المباشر عبر جدول التقويم
+              </h3>
+              <p className="text-xs text-slate-400 dark:text-slate-400 text-slate-500 mt-1">
+                اختر اليوم والساعة الأنسب لك فوراً من المواعيد المتاحة لجلال أحمد.
+              </p>
+            </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
-              إذا كنت تفضل اختيار الوقت المناسب لك مباشرة من جدول المواعيد المتاحة لد. جلال وتأكيد الموعد فوراً مع رابط <strong>Google Meet</strong> تلقائي:
+            <p className="text-xs text-slate-300 dark:text-slate-300 text-slate-600 leading-relaxed font-normal">
+              يتضمن الحجز رابطاً مشفراً لاجتماع <strong>Google Meet</strong> يصلك تلقائياً على بريدك الإلكتروني، مع ضبط فرق التوقيت لبلدك تلقائياً.
             </p>
 
-            <ul className="text-xs text-slate-300 space-y-2 pt-2 border-t border-white/10">
+            <ul className="text-xs text-slate-300 dark:text-slate-300 text-slate-600 space-y-2.5 pt-3 border-t border-slate-800/60 dark:border-slate-800/60 border-slate-100">
               <li className="flex items-center gap-2">
                 <Video className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>رابط اتصال Google Meet مشفر لكل جلسة</span>
+                <span>جلسة أونلاين عبر Google Meet مشفرة بالكامل</span>
               </li>
               <li className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>مطابقة آلية لفرق التوقيت الدولي</span>
+                <Globe className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>مطابقة آلية ودقيقة لفرق التوقيت الدولي</span>
               </li>
               <li className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>إشعار وتذكير عبر البريد الإلكتروني</span>
+                <Clock className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>تذكير تلقائي بالميعاد قبل الجلسة بيوم وساعة</span>
               </li>
             </ul>
 
-            <a
-              href={googleCalendarUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3.5 bg-white text-brand-800 text-xs font-bold rounded-xl hover:bg-slate-100 transition shadow-md flex items-center justify-center gap-2 text-center"
-            >
-              <span>فتح جدول المواعيد على Google Calendar</span>
-            </a>
+            <div className="pt-2">
+              <a
+                href={calendlyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 bg-accent-500 hover:bg-accent-600 text-white text-xs font-bold rounded-xl transition shadow-md flex items-center justify-center gap-2 text-center"
+              >
+                <span>فتح جدول المواعيد على التقويم الآن</span>
+              </a>
+            </div>
           </div>
 
-          {/* 2. خيار نموذج التنسيق المسبق (Intake Form) متصل بـ Supabase */}
-          <div className="md:col-span-7 p-7 sm:p-8 rounded-3xl bg-white text-slate-800 shadow-xl space-y-6 text-right">
+          {/* 2. خيار نموذج التنسيق المسبق (Intake Form) مع Supabase */}
+          <div className="md:col-span-7 p-7 sm:p-8 rounded-3xl bg-[#151B23] dark:bg-[#151B23] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 shadow-sm space-y-6 text-right">
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-sage-600 bg-sage-50 px-2.5 py-1 rounded-full">
-                  تنسيق مسبق
+                <span className="text-xs font-bold text-accent-500 bg-accent-500/10 border border-accent-500/20 px-2.5 py-1 rounded-full">
+                  تنسيق عبر الواتساب
                 </span>
-                <span className="text-xs text-slate-400">سرية وخصوصية تامة</span>
+                <span className="text-xs text-slate-400">سرية وخصوصية مهنية تامة</span>
               </div>
-              <h3 className="text-xl font-bold text-brand-800 mt-2">
-                طلب استشارة أو تنسيق خاص
+              <h3 className="text-xl font-black text-slate-100 dark:text-slate-100 text-slate-900 mt-2">
+                طلب استشارة أو ترتيب موعد خاص
               </h3>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                املأ بيانات التنسيق الأساسية وسيتواصل معك فريق المركز عبر الواتساب لتأكيد التفاصيل والموعد المناسب.
+              <p className="text-xs text-slate-400 dark:text-slate-400 text-slate-500 mt-1 leading-relaxed">
+                إذا كنت ترغب في التنسيق المسبق أو لديك استفسار تنظيمي، املأ البيانات وسيتواصل معك المنسق عبر الواتساب.
               </p>
             </div>
 
             {success ? (
-              <div className="p-8 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-3">
+              <div className="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-3">
                 <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto text-xl font-bold">
                   ✓
                 </div>
-                <h4 className="text-lg font-bold text-emerald-950">
-                  تم استلام طلبك بنجاح!
+                <h4 className="text-lg font-bold text-slate-100 dark:text-slate-100 text-slate-900">
+                  تم استلام طلب التنسيق بنجاح!
                 </h4>
-                <p className="text-xs text-emerald-800 leading-relaxed max-w-sm mx-auto">
-                  شكراً لثقتك. سيتواصل معك منسق الحجوزات عبر الواتساب أو البريد خلال <strong>24–48 ساعة</strong> لإبلاغك بالمواعيد المناسبة وإتمام التأكيد.
+                <p className="text-xs text-slate-300 dark:text-slate-300 text-slate-600 leading-relaxed max-w-sm mx-auto">
+                  شكراً لثقتك. سيتواصل معك المنسق عبر الواتساب لتأكيد موعد الجلسة ورابط Google Meet خلال <strong>24 ساعة</strong>.
                 </p>
                 <button
                   onClick={() => { setSuccess(false); setFormData({ full_name: '', whatsapp: '', email: '', track: 'marital', delivery_mode: 'online', preferred_time: 'any', notes: '' }); }}
-                  className="px-4 py-2 bg-white border border-emerald-300 text-emerald-900 text-xs font-semibold rounded-xl hover:bg-emerald-100 transition"
+                  className="px-4 py-2 bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold rounded-xl hover:bg-slate-700 transition"
                 >
                   إرسال طلب آخر
                 </button>
@@ -147,13 +156,13 @@ export default function BookingSection() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
                 {errorMessage && (
-                  <div className="p-3 rounded-xl bg-red-50 text-red-700 border border-red-200 text-xs">
+                  <div className="p-3 rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 text-xs">
                     {errorMessage}
                   </div>
                 )}
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">
+                  <label className="block font-bold text-slate-200 dark:text-slate-200 text-slate-700 mb-1">
                     الاسم الكريم (ثنائي أو ثلاثي) *
                   </label>
                   <input
@@ -162,13 +171,13 @@ export default function BookingSection() {
                     value={formData.full_name}
                     onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                     placeholder="مثال: أحمد عبد الله"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-800 outline-none text-xs"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 dark:bg-slate-800/60 bg-slate-50 border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-slate-100 dark:text-slate-100 text-slate-900 focus:ring-2 focus:ring-accent-500 outline-none text-xs"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">
+                    <label className="block font-bold text-slate-200 dark:text-slate-200 text-slate-700 mb-1">
                       رقم الواتساب مع رمز الدولة *
                     </label>
                     <input
@@ -177,12 +186,12 @@ export default function BookingSection() {
                       dir="ltr"
                       value={formData.whatsapp}
                       onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
-                      placeholder="+20 100 000 0000"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-800 outline-none text-xs text-left"
+                      placeholder="+962 70 000 0000 أو +20 100 000 0000"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 dark:bg-slate-800/60 bg-slate-50 border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-slate-100 dark:text-slate-100 text-slate-900 focus:ring-2 focus:ring-accent-500 outline-none text-xs text-left"
                     />
                   </div>
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">
+                    <label className="block font-bold text-slate-200 dark:text-slate-200 text-slate-700 mb-1">
                       البريد الإلكتروني *
                     </label>
                     <input
@@ -192,46 +201,44 @@ export default function BookingSection() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="name@example.com"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-800 outline-none text-xs text-left"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 dark:bg-slate-800/60 bg-slate-50 border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-slate-100 dark:text-slate-100 text-slate-900 focus:ring-2 focus:ring-accent-500 outline-none text-xs text-left"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">
+                    <label className="block font-bold text-slate-200 dark:text-slate-200 text-slate-700 mb-1">
                       المسار أو البرنامج المطلوب *
                     </label>
                     <select
                       value={formData.track}
                       onChange={(e) => setFormData({ ...formData, track: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-800 outline-none text-xs bg-white"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 dark:bg-slate-800/60 bg-slate-50 border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-slate-100 dark:text-slate-100 text-slate-900 focus:ring-2 focus:ring-accent-500 outline-none text-xs"
                     >
-                      <option value="premarital">برنامج رحلة رِفق (للمقبلين على الزواج)</option>
-                      <option value="marital">برنامج مِيثاق (للمتزوجين والأسر)</option>
-                      <option value="individual">استشارة نفسية فردية</option>
-                      <option value="teen">إرشاد اليافعين وتربية المراهقين</option>
-                      <option value="corporate">استشارة وتدريب مؤسسي (مركز إنسان)</option>
+                      <option value="premarital" className="bg-[#151B23] text-white">برنامج رحلة رِفق (للمقبلين على الزواج)</option>
+                      <option value="marital" className="bg-[#151B23] text-white">برنامج مِيثاق (للمتزوجين والأسر)</option>
+                      <option value="individual" className="bg-[#151B23] text-white">استشارة نفسية فردية (عن بُعد)</option>
+                      <option value="teen" className="bg-[#151B23] text-white">إرشاد اليافعين وتربية المراهقين</option>
+                      <option value="corporate" className="bg-[#151B23] text-white">استشارة وتدريب مدرسي / مؤسسي</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      طريقة الانعقاد المفضلة
+                    <label className="block font-bold text-slate-200 dark:text-slate-200 text-slate-700 mb-1">
+                      طريقة الانعقاد
                     </label>
-                    <select
-                      value={formData.delivery_mode}
-                      onChange={(e) => setFormData({ ...formData, delivery_mode: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-800 outline-none text-xs bg-white"
-                    >
-                      <option value="online">عن بُعد (اتصال مرئي مشفر)</option>
-                      <option value="in_person">حضورياً (بمقرنا في القاهرة)</option>
-                    </select>
+                    <input
+                      type="text"
+                      disabled
+                      value="أونلاين عبر اتصال مرئي مشفر (Google Meet)"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-800/30 dark:bg-slate-800/30 bg-slate-100 border border-slate-700/40 dark:border-slate-700/40 border-slate-200 text-emerald-400 font-bold outline-none text-xs"
+                    />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">
+                  <label className="block font-bold text-slate-200 dark:text-slate-200 text-slate-700 mb-1">
                     ملاحظات أو أسئلة عامة (اختياري)
                   </label>
                   <textarea
@@ -239,7 +246,7 @@ export default function BookingSection() {
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     placeholder="لا داعي لكتابة تفاصيل مشكلتك الحساسة هنا؛ يقتصر هذا الحقل على أي استفسار تنظيمي عام."
-                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-brand-800 outline-none text-xs"
+                    className="w-full px-4 py-2 rounded-xl bg-slate-800/60 dark:bg-slate-800/60 bg-slate-50 border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-slate-100 dark:text-slate-100 text-slate-900 focus:ring-2 focus:ring-accent-500 outline-none text-xs"
                   />
                 </div>
 
@@ -247,7 +254,7 @@ export default function BookingSection() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-brand-800 text-white font-bold rounded-xl text-xs hover:bg-black transition flex items-center justify-center gap-2 shadow-md disabled:opacity-70"
+                    className="w-full py-3 bg-accent-500 hover:bg-accent-600 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-md disabled:opacity-70"
                   >
                     {loading ? (
                       <>

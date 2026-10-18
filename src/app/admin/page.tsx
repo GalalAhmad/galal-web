@@ -147,7 +147,7 @@ export default function AdminPage() {
         <div className="flex items-center gap-3">
           <img src="/assets/logo-white.png" alt="جلال" className="h-8 w-auto opacity-90" />
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-white text-base">لوحة تحكم د. جلال أحمد</span>
+            <span className="font-extrabold text-white text-base">لوحة تحكم جـلال أحـمد</span>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800">
               {isSupabaseConfigured ? 'متصل بـ Supabase ✓' : 'الوضع المحلي (Mock Mode)'}
             </span>

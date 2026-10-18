@@ -1,74 +1,107 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Video, Compass, Sparkles } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative py-16 sm:py-24 px-4 sm:px-6 overflow-hidden">
-      <div className="max-w-5xl mx-auto text-center space-y-8">
+    <section className="relative py-16 sm:py-24 px-4 sm:px-6 overflow-hidden border-b border-slate-800/80 dark:border-slate-800/80 border-slate-200 transition-colors">
+      
+      {/* Subtle background ambient gradients */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-accent-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/3 right-10 w-[300px] h-[300px] bg-sage-500/5 blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto relative z-10">
         
-        {/* الصورة الشخصية وشارة التوفر */}
-        <div className="relative inline-block">
-          <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full overflow-hidden mx-auto shadow-lg border-4 border-white bg-slate-100">
-            <img 
-              src="/assets/dr-galal-speaking.jpg" 
-              alt="د. جلال أحمد" 
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="absolute -bottom-1 right-2 px-3 py-1 bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold rounded-full shadow-xs flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>متاح للاستشارات</span>
-          </div>
-        </div>
-
-        {/* النص التعريفي المركزي */}
-        <div className="space-y-4 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-sage-50 text-sage-600 border border-sage-100 text-xs font-bold rounded-full">
-            <span>🌱</span>
-            <span>استشارات نفسية وتربوية وفق الفطرة ورؤية الوحي</span>
-          </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           
-          <h1 className="text-3xl sm:text-5xl lg:text-5xl font-black text-brand-800 tracking-tight leading-tight sm:leading-snug">
-            السلوك رسالة قبل أن يكون مشكلة.. والوعي بداية التغيير.
-          </h1>
+          {/* Right Column: The Core Philosophy & Signature Quote */}
+          <div className="lg:col-span-7 space-y-7 text-right order-2 lg:order-1">
+            
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/60 dark:bg-slate-800/60 bg-slate-100 border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-xs font-bold text-accent-500">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>استشارات نفسية وتربوية برؤية الفطرة والوحي</span>
+            </div>
 
-          <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
-            مساحة استشارية وتربوية متخصصة يديرها <strong className="text-brand-800">د. جلال أحمد</strong>، تجمع بين عمق التأهيل الأكاديمي في علم النفس وخبرة ميدانية تمتد لأكثر من 17 عاماً في القيادة التعليمية وإدارة مركز إنسان، لمساعدتك وأسرتك على الانتقال <span className="text-brand-800 font-bold">من ردود الفعل إلى الوعي والمسؤولية والنمو</span>.
-          </p>
-        </div>
+            {/* The Main Headline Quote explicitly requested */}
+            <div className="space-y-3">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight leading-tight sm:leading-snug">
+                «ومَنْ يَصِفُ لَكَ الطَّرِيقَ.. <br className="hidden sm:inline" />
+                <span className="text-accent-500">لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ</span>»
+              </h1>
+              <p className="text-sm font-semibold text-slate-400 dark:text-slate-400 text-slate-500">
+                السلوك رسالة قبل أن يكون مشكلة.. والوعي بداية التغيير.
+              </p>
+            </div>
 
-        {/* أزرار الإجراء السريع */}
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-          <Link
-            href="#booking"
-            className="px-8 py-3.5 bg-brand-800 text-white text-xs sm:text-sm font-bold rounded-full hover:bg-black transition shadow-md flex items-center gap-2"
-          >
-            <span>طلب موعد استشاري</span>
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <Link
-            href="#tracks"
-            className="px-7 py-3.5 bg-white border border-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-full hover:bg-slate-50 transition shadow-xs"
-          >
-            استكشف المسارات الثلاثة ↓
-          </Link>
-        </div>
+            {/* Subtitle in Dr. Galal's voice */}
+            <p className="text-sm sm:text-base text-slate-300 dark:text-slate-300 text-slate-600 font-normal leading-relaxed max-w-xl">
+              مساحة استشارية وتربوية يقدمها <strong className="text-white dark:text-white text-slate-900 font-bold">جـلال أحـمد</strong>، تجمع بين عمق التأصيل النفسي والخبرة الميدانية الممتدة في قيادة المدارس والمراكز، لمساعدتك على تفكيك المشكلات الزوجية والتربوية، والانتقال من ردود الفعل العشوائية إلى رحابة الوعي، وتحمل المسؤولية، وبناء بيوت آمنة ومستقرة.
+            </p>
 
-        {/* بطاقات الإثبات الموثقة (بدون مبالغة) */}
-        <div className="pt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto border-t border-slate-200/60 text-right">
-          <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-xs">
-            <div className="text-xl font-black text-brand-800">17+ عاماً</div>
-            <div className="text-xs text-slate-500 mt-1">خبرة قيادية وتربوية ميدانية</div>
+            {/* Quick Actions */}
+            <div className="flex flex-wrap items-center gap-3.5 pt-1">
+              <a
+                href="https://calendly.com/galal3hmad/insan"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-7 py-3.5 bg-accent-500 hover:bg-accent-600 text-white text-xs sm:text-sm font-bold rounded-xl transition shadow-lg shadow-accent-500/20 flex items-center gap-2 group"
+              >
+                <span>حجز موعد استشاري (أونلاين)</span>
+                <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              </a>
+
+              <Link
+                href="#assessments"
+                className="px-6 py-3.5 bg-slate-800/80 dark:bg-slate-800/80 bg-white border border-slate-700/80 dark:border-slate-700/80 border-slate-200 text-slate-200 dark:text-slate-200 text-slate-700 text-xs sm:text-sm font-bold rounded-xl hover:bg-slate-700/60 dark:hover:bg-slate-700/60 hover:bg-slate-50 transition shadow-xs flex items-center gap-2"
+              >
+                <Compass className="w-4 h-4 text-accent-500" />
+                <span>مقاييس التبصر بالذات</span>
+              </Link>
+            </div>
+
+            {/* Serene Session Note */}
+            <div className="pt-2 flex items-center gap-2 text-xs text-slate-400 dark:text-slate-400 text-slate-500">
+              <Video className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>جميع الجلسات استشارية فردية أو زوجية وتُعقد أونلاين عبر اتصال مرئي مشفر وآمن (Google Meet)</span>
+            </div>
+
           </div>
-          <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-xs">
-            <div className="text-xl font-black text-brand-800">ماجستير</div>
-            <div className="text-xs text-slate-500 mt-1">علم النفس التربوي والعيادي</div>
+
+          {/* Left Column: Prominent Large Portrait of Galal Ahmad */}
+          <div className="lg:col-span-5 flex justify-center order-1 lg:order-2">
+            <div className="relative w-full max-w-sm sm:max-w-md">
+              
+              {/* Decorative Subtle Frame */}
+              <div className="relative rounded-3xl overflow-hidden bg-slate-800 dark:bg-slate-800 bg-slate-100 border-2 border-slate-700/80 dark:border-slate-700/80 border-slate-200 shadow-2xl group">
+                <img 
+                  src="/assets/dr-galal-speaking.jpg" 
+                  alt="جلال أحمد" 
+                  className="w-full h-[380px] sm:h-[450px] object-cover object-center transition-transform duration-500 group-hover:scale-102"
+                />
+                
+                {/* Subtle gradient overlay at bottom of picture */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0D1117] via-transparent to-transparent opacity-80" />
+                
+                <div className="absolute bottom-4 right-4 left-4 flex items-center justify-between">
+                  <div className="text-right">
+                    <span className="text-lg font-black text-white">جـلال أحـمد</span>
+                    <span className="block text-[11px] text-slate-300 font-medium">استشارات نفسية وبناء الإنسان والأسرة</span>
+                  </div>
+                  <span className="text-xl">🌱</span>
+                </div>
+              </div>
+
+              {/* Online Availability Badge */}
+              <div className="absolute -bottom-3 -right-2 px-3.5 py-1.5 bg-[#161B22] dark:bg-[#161B22] bg-white border border-slate-700 dark:border-slate-700 border-slate-200 text-[11px] font-bold text-slate-200 dark:text-slate-200 text-slate-700 rounded-full shadow-lg flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>متاح للمواعيد أونلاين عبر Google Meet</span>
+              </div>
+
+            </div>
           </div>
-          <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-xs">
-            <div className="text-xl font-black text-brand-800">تصنيف رسمي</div>
-            <div className="text-xs text-slate-500 mt-1">الهيئة السعودية للتخصصات (2025)</div>
-          </div>
+
         </div>
 
       </div>

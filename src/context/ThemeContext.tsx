@@ -15,13 +15,13 @@ const ThemeContext = createContext<ThemeContextType>({
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>('light');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Check saved preference or default to 'dark'
+    // Check saved preference or default to 'light' (Arab Therapy style)
     const saved = localStorage.getItem('galal_theme') as Theme | null;
-    const initial = saved || 'dark';
+    const initial = saved || 'light';
     setTheme(initial);
     if (initial === 'dark') {
       document.documentElement.classList.add('dark');

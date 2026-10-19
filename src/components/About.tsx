@@ -8,27 +8,46 @@ export default function About() {
     <section id="about" className="py-20 px-4 sm:px-6 bg-[#11161D] dark:bg-[#11161D] bg-slate-50 border-b border-slate-800/80 dark:border-slate-800/80 border-slate-200 transition-colors">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-14 items-center">
         
-        {/* الصورة الرسمية مع إطار متناسق */}
+        {/* بطاقة رمزية هادئة تعبر عن النمو والتوازن (تطبيقاً لشرط وضع الصورة الشخصية في صفحة عن د. جلال فقط) */}
         <div className="md:col-span-5 flex justify-center order-2 md:order-1">
           <div className="relative w-full max-w-sm">
-            <div className="rounded-3xl overflow-hidden bg-slate-800 dark:bg-slate-800 bg-white shadow-xl border-2 border-slate-700/80 dark:border-slate-700/80 border-slate-200 group">
-              <img 
-                src="/assets/dr-galal-portrait.jpg" 
-                alt="جلال أحمد" 
-                className="w-full h-84 sm:h-96 object-cover object-top group-hover:scale-102 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#11161D] via-transparent to-transparent opacity-80" />
-            </div>
+            <div className="rounded-3xl p-8 bg-[#161C24] dark:bg-[#161C24] bg-white border border-slate-700/80 dark:border-slate-700/80 border-slate-200 shadow-xl space-y-6 text-right">
+              
+              <div className="flex items-center justify-between border-b border-slate-800 dark:border-slate-800 border-slate-100 pb-4">
+                <div className="text-xs font-bold text-accent-500 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>الخبرة والتأصيل الميداني</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 dark:bg-slate-800 bg-slate-100 text-slate-400">
+                  17+ عاماً
+                </span>
+              </div>
 
-            {/* شارة التأسيس والقيادة */}
-            <div className="absolute -bottom-4 -left-2 sm:-left-4 bg-[#161C24] dark:bg-[#161C24] bg-white text-slate-100 dark:text-slate-100 text-slate-900 p-4 rounded-2xl shadow-xl border border-slate-700 dark:border-slate-700 border-slate-200 text-right max-w-[240px]">
-              <div className="text-xs font-bold text-accent-500 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>مركز إنسان للتدريب</span>
+              {/* Abstract Harmony Visual */}
+              <div className="py-6 flex flex-col items-center justify-center text-center space-y-3">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-accent-500/20 via-emerald-500/10 to-transparent flex items-center justify-center border border-accent-500/30">
+                  <BookCheck className="w-8 h-8 text-accent-500" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-100 dark:text-slate-100 text-slate-900">
+                    أخصائي معتمد ومستشار تربوي
+                  </h3>
+                  <p className="text-[11px] text-slate-400 mt-1 max-w-[220px] mx-auto leading-relaxed">
+                    تصنيف الهيئة السعودية للتخصصات الصحية وماجستير علم النفس التربوي
+                  </p>
+                </div>
               </div>
-              <div className="text-[11px] text-slate-300 dark:text-slate-300 text-slate-600 mt-1 leading-relaxed">
-                مؤسس ومدير مركز إنسان للتدريب والاستشارات — القاهرة
+
+              <div className="pt-2">
+                <a
+                  href="/about"
+                  className="w-full py-2.5 px-4 rounded-xl bg-slate-800/80 dark:bg-slate-800/80 bg-slate-100 hover:bg-accent-500 hover:text-white text-slate-200 dark:text-slate-200 text-slate-700 text-xs font-bold transition flex items-center justify-center gap-2"
+                >
+                  <span>السيرة المهنية الكاملة والمؤهلات</span>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                </a>
               </div>
+
             </div>
           </div>
         </div>

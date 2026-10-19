@@ -63,11 +63,12 @@ const jsonLd = {
     addressCountry: 'EG'
   },
   sameAs: [
-    'https://share.google/mcjTrK9P6DPRb07Z0',
     'https://linkedin.com/in/galal3hmad/',
     'https://www.google.com/search?kgmid=/g/11p_0131cq'
   ]
 };
+
+import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 
 export default function RootLayout({
   children,
@@ -75,7 +76,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="shortcut icon" href="/favicon.ico" />
@@ -88,7 +89,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                const saved = localStorage.getItem('galal_theme') || 'dark';
+                const saved = localStorage.getItem('galal_theme') || 'light';
                 if (saved === 'dark') {
                   document.documentElement.classList.add('dark');
                 } else {
@@ -102,6 +103,7 @@ export default function RootLayout({
       <body className="antialiased selection:bg-accent-500 selection:text-white">
         <ThemeProvider>
           {children}
+          <FloatingWhatsApp />
         </ThemeProvider>
       </body>
     </html>

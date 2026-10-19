@@ -24,7 +24,7 @@ export default function Navbar() {
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl sm:text-2xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight transition-colors">
+            <span className="text-xl sm:text-2xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal transition-colors">
               جـلال أحـمد
             </span>
             <span className="text-[11px] text-slate-400 dark:text-slate-400 text-slate-500 font-semibold leading-none">
@@ -35,13 +35,13 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden xl:flex items-center gap-5 text-xs font-bold text-slate-300 dark:text-slate-300 text-slate-600">
-          <Link href="#services" className="hover:text-accent-500 transition">خدماتنا والمسارات</Link>
-          <Link href="#assessments" className="hover:text-accent-500 transition">المقاييس النفسية</Link>
-          <Link href="#books" className="hover:text-accent-500 transition">المؤلفات والكتب</Link>
-          <Link href="#videos" className="hover:text-accent-500 transition">المكتبة المرئية</Link>
-          <Link href="#testimonials" className="hover:text-accent-500 transition">تجارب العملاء</Link>
-          <Link href="#about" className="hover:text-accent-500 transition">عن جلال أحمد</Link>
-          <Link href="#contact" className="hover:text-accent-500 transition">تواصل</Link>
+          <Link href="/about" className="hover:text-accent-500 transition">عن جلال أحمد</Link>
+          <Link href="/pricing" className="hover:text-accent-500 transition">مسارات الاستثمار والخدمات</Link>
+          <Link href="/#services" className="hover:text-accent-500 transition">الخدمات</Link>
+          <Link href="/#assessments" className="hover:text-accent-500 transition">المقاييس النفسية</Link>
+          <Link href="/#books" className="hover:text-accent-500 transition">المؤلفات والكتب</Link>
+          <Link href="/#videos" className="hover:text-accent-500 transition">المكتبة المرئية</Link>
+          <Link href="/contact" className="hover:text-accent-500 transition">تواصل</Link>
         </nav>
 
         {/* CTA Button, Theme Toggle & Mobile Menu */}
@@ -86,57 +86,57 @@ export default function Navbar() {
       {mobileMenuOpen && (
         <div className="xl:hidden bg-[#0D1117] dark:bg-[#0D1117] bg-white border-b border-slate-800 dark:border-slate-800 border-slate-200 px-6 py-6 space-y-4 text-sm font-bold text-slate-200 dark:text-slate-200 text-slate-700 animate-fadeIn">
           <Link 
-            href="#services" 
+            href="/about" 
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 hover:text-accent-500"
           >
-            خدماتنا ونوع الدعم
+            عن جلال أحمد والمسيرة
           </Link>
           <Link 
-            href="#assessments" 
+            href="/pricing" 
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 hover:text-accent-500"
           >
-            المقاييس النفسية والتربوية
+            مسارات الاستثمار والخدمات
           </Link>
           <Link 
-            href="#books" 
+            href="/#services" 
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 hover:text-accent-500"
+          >
+            دليل الخدمات ونوع الدعم
+          </Link>
+          <Link 
+            href="/#assessments" 
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2 hover:text-accent-500"
+          >
+            المقاييس النفسية الذاتية
+          </Link>
+          <Link 
+            href="/#books" 
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 hover:text-accent-500"
           >
             المؤلفات والكتب
           </Link>
           <Link 
-            href="#videos" 
+            href="/#videos" 
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 hover:text-accent-500"
           >
             المكتبة المرئية
           </Link>
           <Link 
-            href="#testimonials" 
+            href="/contact" 
             onClick={() => setMobileMenuOpen(false)}
             className="block py-2 hover:text-accent-500"
           >
-            تجارب وآراء العملاء
-          </Link>
-          <Link 
-            href="#about" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 hover:text-accent-500"
-          >
-            عن جلال أحمد
-          </Link>
-          <Link 
-            href="#contact" 
-            onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 hover:text-accent-500"
-          >
-            تواصل وتنسيق
+            تواصل وتنسيق المواعيد
           </Link>
           <div className="pt-2">
             <Link
-              href="#booking"
+              href="/#booking"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center justify-center gap-2 w-full py-3 bg-accent-500 text-white text-xs font-bold rounded-xl"
             >

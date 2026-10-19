@@ -17,7 +17,19 @@ body {
   direction: rtl;
   text-align: right;
   transition: background-color 0.25s ease, color 0.25s ease;
-  line-height: 1.7;
+  line-height: 1.85;
+  letter-spacing: normal;
+}
+
+/* Ensure Arabic headings and paragraphs have generous clearance and never collide */
+h1, h2, h3, h4, h5, h6 {
+  line-height: 1.6 !important;
+  letter-spacing: normal !important;
+}
+
+p, li {
+  line-height: 1.85;
+  letter-spacing: normal;
 }
 
 /* Dark mode by default */

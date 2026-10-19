@@ -26,7 +26,7 @@ export default function About() {
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <span>مركز إنسان للتدريب</span>
               </div>
-              <div className="text-[11px] text-slate-300 dark:text-slate-300 text-slate-600 mt-1 leading-snug">
+              <div className="text-[11px] text-slate-300 dark:text-slate-300 text-slate-600 mt-1 leading-relaxed">
                 مؤسس ومدير مركز إنسان للتدريب والاستشارات — القاهرة
               </div>
             </div>
@@ -40,7 +40,7 @@ export default function About() {
             <span className="text-xs font-bold text-accent-500 uppercase tracking-wider block">
               المسيرة والخبرة الميدانية
             </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal">
               الجمع بين عمق التأصيل النفسي والخبرة الميدانية الواقعية
             </h2>
           </div>

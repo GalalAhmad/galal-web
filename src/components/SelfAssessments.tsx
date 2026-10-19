@@ -529,7 +529,7 @@ export default function SelfAssessments() {
             <span>مقاييس التبصر بالذات</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal">
             المقاييس النفسية والتربوية المصنفة
           </h2>
 
@@ -682,7 +682,7 @@ export default function SelfAssessments() {
                 </div>
 
                 <div className="py-2">
-                  <h4 className="text-base sm:text-lg font-bold text-slate-100 dark:text-slate-100 text-slate-900 leading-snug">
+                  <h4 className="text-base sm:text-lg font-bold text-slate-100 dark:text-slate-100 text-slate-900 leading-relaxed">
                     {activeAssessment.questions[currentIndex].text}
                   </h4>
                 </div>

@@ -42,7 +42,7 @@ export default function ArticlesSection() {
             <span className="text-xs font-bold text-accent-500 uppercase tracking-wider block">
               المكتبة المعرفية وأقومية القرآن
             </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal">
               كتابات وأوراق في الوعي والتربية
             </h2>
             <p className="text-slate-400 dark:text-slate-400 text-slate-600 text-xs sm:text-sm">
@@ -75,7 +75,7 @@ export default function ArticlesSection() {
                   </span>
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-100 dark:text-slate-100 text-slate-900 leading-snug group-hover:text-accent-500 transition-colors">
+                <h3 className="text-lg font-bold text-slate-100 dark:text-slate-100 text-slate-900 leading-relaxed group-hover:text-accent-500 transition-colors">
                   {article.title}
                 </h3>
 

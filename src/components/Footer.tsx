@@ -33,32 +33,21 @@ export default function Footer() {
               «ومَنْ يَصِفُ لَكَ الطَّرِيقَ.. لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ» — مساحة استشارية متخصصة تهدف إلى رفع الوعي النفسي والتربوي، ومساندة الأفراد والأزواج والمؤسسات للانتقال من ردود الفعل إلى الوعي والمسؤولية والاتزان.
             </p>
 
-            {/* Google Business Profile Verified Badge */}
+            {/* بطاقة الاعتماد والخدمات عن بُعد الموثقة */}
             <div className="pt-2">
-              <a
-                href={googleBusinessUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 p-3 rounded-2xl bg-[#151B23] dark:bg-[#151B23] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 text-xs hover:border-accent-500 transition shadow-xs group"
-              >
-                <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
-                  <MapPin className="w-4 h-4 text-blue-400" />
+              <div className="inline-flex items-center gap-3 p-3.5 rounded-2xl bg-[#151B23] dark:bg-[#151B23] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 text-xs shadow-xs text-right">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+                  <Shield className="w-4 h-4 text-emerald-400" />
                 </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-1.5 font-bold text-slate-200 dark:text-slate-200 text-slate-800 group-hover:text-accent-500 transition-colors">
-                    <span>الملف الرسمي على خرائط Google</span>
-                    <ExternalLink className="w-3 h-3 text-slate-400" />
+                <div>
+                  <div className="font-bold text-slate-200 dark:text-slate-200 text-slate-800">
+                    تصنيف الهيئة السعودية للتخصصات الصحية
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] text-amber-400 mt-0.5">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-2.5 h-2.5 fill-current" />
-                      ))}
-                    </div>
-                    <span className="text-slate-400 font-medium">نشاط معتمد على Google Business</span>
+                  <div className="text-[10px] text-slate-400 mt-0.5">
+                    أخصائي مساعد علم نفس | علاج وتأهيل (2025)
                   </div>
                 </div>
-              </a>
+              </div>
             </div>
           </div>
 
@@ -67,13 +56,13 @@ export default function Footer() {
               أقسام الموقع
             </h4>
             <ul className="text-xs text-slate-400 dark:text-slate-400 text-slate-600 space-y-2 font-medium">
-              <li><Link href="#services" className="hover:text-accent-500 transition">خدماتنا ونوع الدعم</Link></li>
-              <li><Link href="#assessments" className="hover:text-accent-500 transition">المقاييس النفسية المصنفة</Link></li>
-              <li><Link href="#books" className="hover:text-accent-500 transition">مؤلفات وكتب جلال أحمد</Link></li>
-              <li><Link href="#videos" className="hover:text-accent-500 transition">المكتبة المرئية والمحاضرات</Link></li>
-              <li><Link href="#testimonials" className="hover:text-accent-500 transition">تجارب وآراء المستفيدين</Link></li>
-              <li><Link href="#about" className="hover:text-accent-500 transition">عن جلال أحمد والمسيرة</Link></li>
-              <li><Link href="#booking" className="hover:text-accent-500 transition">جدول حجز المواعيد المباشر</Link></li>
+              <li><Link href="/about" className="hover:text-accent-500 transition">عن جلال أحمد والمسيرة</Link></li>
+              <li><Link href="/pricing" className="hover:text-accent-500 transition">مسارات الاستثمار والخدمات</Link></li>
+              <li><Link href="/#services" className="hover:text-accent-500 transition">دليل الخدمات ونوع الدعم</Link></li>
+              <li><Link href="/#assessments" className="hover:text-accent-500 transition">المقاييس النفسية المصنفة</Link></li>
+              <li><Link href="/#books" className="hover:text-accent-500 transition">المؤلفات والكتب</Link></li>
+              <li><Link href="/#videos" className="hover:text-accent-500 transition">المكتبة المرئية والمحاضرات</Link></li>
+              <li><Link href="/contact" className="hover:text-accent-500 transition">تواصل وتنسيق المواعيد</Link></li>
             </ul>
           </div>
 

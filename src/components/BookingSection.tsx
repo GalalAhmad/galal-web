@@ -58,7 +58,7 @@ export default function BookingSection() {
             <span>حجز الجلسات المباشر</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal">
             احجز موعد جلستك الاستشارية مباشرة
           </h2>
 

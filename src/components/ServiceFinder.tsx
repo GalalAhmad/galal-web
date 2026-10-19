@@ -75,7 +75,7 @@ export default function ServiceFinder() {
             <span className="text-xs font-bold text-accent-500 uppercase tracking-wider block">
               دليلك لاختيار الاستشارة المناسبة
             </span>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal">
               ما هو نوع الدعم أو الاستشارة التي تبحث عنها؟
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 text-slate-600 leading-relaxed">

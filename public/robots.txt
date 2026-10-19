@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Host
+Host: https://www.galalahmad.com
+
+# Sitemaps
+Sitemap: https://www.galalahmad.com/sitemap.xml

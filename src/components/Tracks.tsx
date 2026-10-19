@@ -61,7 +61,7 @@ export default function Tracks() {
             <span>مجالات الحركة والتأثير</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal">
             ثلاثة مسارات رئيسية نتحرك من خلالها
           </h2>
 
@@ -105,7 +105,7 @@ export default function Tracks() {
 
                   <ul className="text-xs text-slate-400 dark:text-slate-400 text-slate-600 space-y-2 pt-3 border-t border-slate-800/60 dark:border-slate-800/60 border-slate-100">
                     {track.items.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2 leading-snug">
+                      <li key={i} className="flex items-start gap-2 leading-relaxed">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                         <span>{item}</span>
                       </li>

@@ -101,7 +101,7 @@ export default function BooksSection() {
             <span>المؤلفات والإصدارات الفكرية</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal">
             مؤلفات وكتابات جـلال أحـمد
           </h2>
 
@@ -130,7 +130,7 @@ export default function BooksSection() {
 
                   <div className="space-y-1">
                     <span className="text-[10px] text-slate-400 block font-mono">مؤلفات جلال أحمد</span>
-                    <h4 className="text-base font-black text-white leading-snug">
+                    <h4 className="text-base font-black text-white leading-relaxed">
                       {book.title.replace('كتاب ', '')}
                     </h4>
                   </div>

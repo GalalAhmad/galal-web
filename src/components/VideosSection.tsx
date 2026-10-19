@@ -66,7 +66,7 @@ export default function VideosSection() {
             <span>المكتبة المرئية والمحاضرات</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal">
             مرئيات ولقاءات جـلال أحـمد
           </h2>
 
@@ -115,7 +115,7 @@ export default function VideosSection() {
                 <div className="p-5 space-y-2">
                   <h3 
                     onClick={() => setActiveVideo(video)}
-                    className="text-sm font-bold text-slate-100 dark:text-slate-100 text-slate-900 group-hover:text-accent-500 transition-colors cursor-pointer leading-snug line-clamp-2"
+                    className="text-sm font-bold text-slate-100 dark:text-slate-100 text-slate-900 group-hover:text-accent-500 transition-colors cursor-pointer leading-relaxed line-clamp-2"
                   >
                     {video.title}
                   </h3>

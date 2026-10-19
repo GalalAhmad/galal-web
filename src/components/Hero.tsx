@@ -25,18 +25,18 @@ export default function Hero() {
             </div>
 
             {/* The Main Headline Quote: Clean separated lines with generous vertical clearance so Tashkeel never collides */}
-            <div className="space-y-4">
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal leading-[1.7] sm:leading-[1.7]">
-                <span className="block mb-2 sm:mb-3">«وَمَنْ يَصِفُ لَكَ الطَّرِيقَ..</span>
-                <span className="block text-accent-500">لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ»</span>
+            <div className="space-y-5">
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-100 dark:text-slate-100 text-slate-900 tracking-normal leading-[1.8] sm:leading-[1.8]">
+                <span className="block mb-3 sm:mb-4">«وَمَنْ يَصِفُ لَكَ الطَّرِيقَ..</span>
+                <span className="block text-accent-500 pb-1">لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ»</span>
               </h1>
-              <p className="text-sm font-semibold text-slate-400 dark:text-slate-400 text-slate-500 pt-1">
+              <p className="text-sm sm:text-base font-semibold text-slate-400 dark:text-slate-400 text-slate-400 pt-1 leading-relaxed">
                 السلوك رسالة قبل أن يكون مشكلة.. والوعي بداية التغيير.
               </p>
             </div>
 
             {/* Subtitle in Galal Ahmad's philosophy */}
-            <p className="text-sm sm:text-base text-slate-300 dark:text-slate-300 text-slate-600 font-normal leading-relaxed max-w-xl">
+            <p className="text-sm sm:text-base text-slate-300 dark:text-slate-300 text-slate-600 font-normal leading-[1.9] max-w-xl">
               مساحة استشارية وتربوية يقدمها <strong className="text-white dark:text-white text-slate-900 font-bold">جـلال أحـمد</strong>، تجمع بين عمق التأصيل النفسي والخبرة الميدانية الممتدة في قيادة المدارس والمراكز، لمساعدتك على تفكيك المشكلات الزوجية والتربوية، والانتقال من ردود الفعل العشوائية إلى رحابة الوعي، وتحمل المسؤولية، وبناء بيوت آمنة ومستقرة.
             </p>
 

@@ -15,6 +15,7 @@ export default function Navbar() {
     { href: '/', label: 'رئيسية' },
     { href: '/services', label: 'استشارات' },
     { href: '/courses', label: 'بناء وتمكين' },
+    { href: '/aqwameyat-quran', label: 'أقومية القرآن' },
     { href: '/tests', label: 'اختبارات نفسية' },
     { href: '/articles', label: 'مقالات' },
     { href: '/about', label: 'من نحن' },

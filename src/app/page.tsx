@@ -63,21 +63,6 @@ export default function HomePage() {
       href: '/services#book',
     },
     {
-      id: 'emergency',
-      title: 'حجز طارئ وعاجل (24 ساعة)',
-      tag: '⚡ استجابة عاجلة للظروف الضاغطة',
-      desc: 'مسار مباشر لمن يمر بظرف نفسي أو أسري ضاغط ويحتاج لجلسة توجيه استثنائية وسريعة خلال 24 ساعة دون انتظار جدول المواعيد.',
-      bg: 'bg-[#FEF2F2] dark:bg-[#2A1515]/70',
-      border: 'border-[#FECACA] dark:border-[#521B1B]',
-      tagBg: 'bg-white/90 dark:bg-black/40 text-rose-700 dark:text-rose-300 font-black',
-      btnBg: 'bg-gradient-to-r from-[#CC4E46] to-[#B33D35] hover:from-[#B33D35] hover:to-[#99261E] text-white shadow-md shadow-[#CC4E46]/25',
-      image: '/assets/arabtherapy/instant-session.svg',
-      btnText: 'احجز الجلسة الطارئة عبر واتساب ⚡',
-      href: 'https://wa.me/201014876666?text=%D8%B7%D9%84%D8%A8%20%D8%AD%D8%AC%D8%B6%20%D8%B7%D8%A7%D8%B1%D8%A6%20%D8%AE%D9%84%D8%A7%D9%84%2024%20%D8%B3%D8%A7%D8%B9%D8%A9',
-      isExternal: true,
-      highlightBadge: true
-    },
-    {
       id: 'parenting',
       title: 'إرشاد تربوي ووالدي',
       tag: 'إرشاد الوالدين والمربين • 50 دقيقة',
@@ -284,19 +269,13 @@ export default function HomePage() {
             <span>مساحة استشارية متخصصة • أونلاين 100% عبر Google Meet وبسرية تامة</span>
           </div>
 
-          {/* Main Title */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.3] max-w-3xl mx-auto">
-            صحتك النفسية واستقرار أسرتك يبدآن من هنا..
-            <span className="block text-[#4E7E76] dark:text-[#5E988E] mt-2">بخطوة واعية وأمان مطلق</span>
-          </h1>
-
-          {/* Galal Ahmad Prominent Name & Professional Titles (Directly from LinkedIn Profile) */}
-          <div className="pt-2 pb-1 space-y-2.5">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+          {/* Galal Ahmad Prominent Name & Professional Titles */}
+          <div className="space-y-4">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.3] max-w-3xl mx-auto">
               جـلال أحـمد
-            </h2>
-            <p className="text-xs sm:text-sm font-bold text-[#4E7E76] dark:text-[#5E988E] max-w-3xl mx-auto leading-relaxed">
-              مستشار التدريب وبناء الإنسان • استشارات وحلول تربوية • علم النفس التربوي • التدريب والتطوير المهني • مؤسس مبادرات رِفق وإنسان ومفهوم
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg font-bold text-[#4E7E76] dark:text-[#5E988E] max-w-3xl mx-auto leading-relaxed">
+              اختصاصي نفسي | استشاري تربوي | إرشاد أسري | إرشاد زواجي | مستشار تعليمي
             </p>
           </div>
 
@@ -350,49 +329,73 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
             
-            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md transition-all flex items-center gap-3 sm:gap-4 text-right">
-              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] flex items-center justify-center p-2 border border-[#D6EEEA] dark:border-[#1F4A42]">
-                <img src="/assets/template-icons/award-1.svg" alt="خبرة" className="w-full h-full object-contain" />
+            {/* Box 1: استشارات متخصصة */}
+            <Link
+              href="/services"
+              className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3 sm:gap-4 text-right group"
+            >
+              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] flex items-center justify-center p-2 border border-[#D6EEEA] dark:border-[#1F4A42] group-hover:scale-105 transition-transform">
+                <img src="/assets/template-icons/award-1.svg" alt="استشارات متخصصة" className="w-full h-full object-contain" />
               </div>
-              <div className="space-y-0.5">
-                <div className="text-base sm:text-xl font-black text-[#4E7E76] dark:text-[#5E988E]">+18 عاماً</div>
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200">خبرة وممارسة مهنية</div>
-                <div className="text-[11px] text-slate-500 hidden sm:block">استشارات وإشراف تربوي</div>
+              <div className="space-y-0.5 min-w-0">
+                <div className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#4E7E76] transition-colors truncate">
+                  استشارات متخصصة
+                </div>
+                <div className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">فردية، زوجية، وتربوية</div>
+                <div className="text-[11px] text-slate-500 hidden sm:block">جلسات أونلاين بسرية تامة</div>
               </div>
-            </div>
+            </Link>
 
-            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md transition-all flex items-center gap-3 sm:gap-4 text-right">
-              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FEF9EC] dark:bg-[#2E2413] flex items-center justify-center p-2 border border-[#FDF0CD] dark:border-[#4D3A1B]">
-                <img src="/assets/template-icons/award-2.svg" alt="تصنيف" className="w-full h-full object-contain" />
+            {/* Box 2: مسارات بناء وتمكين */}
+            <Link
+              href="/courses"
+              className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3 sm:gap-4 text-right group"
+            >
+              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] flex items-center justify-center p-2 border border-[#D6E6F8] dark:border-[#1E3A5F] group-hover:scale-105 transition-transform">
+                <img src="/assets/template-icons/award-3.svg" alt="مسارات بناء وتمكين" className="w-full h-full object-contain" />
               </div>
-              <div className="space-y-0.5">
-                <div className="text-base sm:text-xl font-black text-[#D97706] dark:text-[#F59E0B]">تصنيف رسمي</div>
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200">هيئة التخصصات الصحية</div>
-                <div className="text-[11px] text-slate-500 hidden sm:block">أخصائي مساعد علم نفس (2025)</div>
+              <div className="space-y-0.5 min-w-0">
+                <div className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#154F9C] transition-colors truncate">
+                  مسارات بناء وتمكين
+                </div>
+                <div className="text-xs font-bold text-[#154F9C] dark:text-[#60A5FA]">الأسرة، الشباب، والمؤسسات</div>
+                <div className="text-[11px] text-slate-500 hidden sm:block">برامج تأهيلية وتطبيقية</div>
               </div>
-            </div>
+            </Link>
 
-            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md transition-all flex items-center gap-3 sm:gap-4 text-right">
-              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] flex items-center justify-center p-2 border border-[#D6E6F8] dark:border-[#1E3A5F]">
-                <img src="/assets/template-icons/award-3.svg" alt="مسارات" className="w-full h-full object-contain" />
+            {/* Box 3: مقاييس واختبارات */}
+            <Link
+              href="/tests"
+              className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3 sm:gap-4 text-right group"
+            >
+              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FEF9EC] dark:bg-[#2E2413] flex items-center justify-center p-2 border border-[#FDF0CD] dark:border-[#4D3A1B] group-hover:scale-105 transition-transform">
+                <img src="/assets/template-icons/award-2.svg" alt="مقاييس واختبارات" className="w-full h-full object-contain" />
               </div>
-              <div className="space-y-0.5">
-                <div className="text-base sm:text-xl font-black text-[#154F9C] dark:text-[#60A5FA]">3 مسارات تمكين</div>
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200">الأسرة، المؤسسات، والشباب</div>
-                <div className="text-[11px] text-slate-500 hidden sm:block">برامج تأهيل وبناء وتطبيق</div>
+              <div className="space-y-0.5 min-w-0">
+                <div className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#D97706] transition-colors truncate">
+                  مقاييس واختبارات
+                </div>
+                <div className="text-xs font-bold text-[#D97706] dark:text-[#F59E0B]">+40 مقياساً نفسياً</div>
+                <div className="text-[11px] text-slate-500 hidden sm:block">تقييمات علمية دقيقة وموثوقة</div>
               </div>
-            </div>
+            </Link>
 
-            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md transition-all flex items-center gap-3 sm:gap-4 text-right">
-              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FDF1EE] dark:bg-[#251816] flex items-center justify-center p-2 border border-[#F8DDD9] dark:border-[#42221E]">
-                <img src="/assets/template-icons/time.svg" alt="أونلاين" className="w-full h-full object-contain" />
+            {/* Box 4: معرفة ووعي */}
+            <Link
+              href="/articles"
+              className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3 sm:gap-4 text-right group"
+            >
+              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FDF1EE] dark:bg-[#251816] flex items-center justify-center p-2 border border-[#F8DDD9] dark:border-[#42221E] group-hover:scale-105 transition-transform">
+                <img src="/assets/template-icons/time.svg" alt="معرفة ووعي" className="w-full h-full object-contain" />
               </div>
-              <div className="space-y-0.5">
-                <div className="text-base sm:text-xl font-black text-[#CC4E46] dark:text-[#F87171]">أونلاين 100%</div>
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200">استشارات دولية</div>
-                <div className="text-[11px] text-slate-500 hidden sm:block">جلسات فيديو مشفرة وخاصة</div>
+              <div className="space-y-0.5 min-w-0">
+                <div className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#CC4E46] transition-colors truncate">
+                  معرفة ووعي
+                </div>
+                <div className="text-xs font-bold text-[#CC4E46] dark:text-[#F87171]">رؤى ومقالات فكرية</div>
+                <div className="text-[11px] text-slate-500 hidden sm:block">أقومية القرآن والنفس والتربية</div>
               </div>
-            </div>
+            </Link>
 
           </div>
         </div>
@@ -421,7 +424,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {services.map((srv) => (
               <div
                 key={srv.id}
@@ -456,25 +459,13 @@ export default function HomePage() {
 
                 {/* CTA Button & Pricing */}
                 <div className="pt-6 space-y-2.5">
-                  {srv.isExternal ? (
-                    <a
-                      href={srv.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`w-full py-3 px-4 rounded-full text-xs font-bold flex items-center justify-center gap-2 ${srv.btnBg} transition-all shadow-sm`}
-                    >
-                      <span>{srv.btnText}</span>
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                    </a>
-                  ) : (
-                    <Link
-                      href={srv.href}
-                      className={`w-full py-3 px-4 rounded-full text-xs font-bold flex items-center justify-center gap-2 ${srv.btnBg} transition-all shadow-sm`}
-                    >
-                      <span>{srv.btnText}</span>
-                      <ArrowLeft className="w-3.5 h-3.5" />
-                    </Link>
-                  )}
+                  <Link
+                    href={srv.href}
+                    className={`w-full py-3 px-4 rounded-full text-xs font-bold flex items-center justify-center gap-2 ${srv.btnBg} transition-all shadow-sm`}
+                  >
+                    <span>{srv.btnText}</span>
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                  </Link>
 
                   {servicesPricing[srv.id] && (
                     <div className="text-center pt-0.5">
@@ -753,7 +744,82 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 8. مقالات (Articles Teaser) */}
+      {/* 8. مشروع أقومية القرآن في التربية (Dedicated Project Showcase Section) */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-white via-[#FEF9EC]/30 to-white dark:from-[#0D1117] dark:via-[#2E2413]/20 dark:to-[#0D1117] border-b border-slate-200/70 dark:border-slate-800 relative overflow-hidden">
+        <div className="max-w-6xl mx-auto space-y-10 relative z-10">
+          
+          <div className="text-center space-y-4 max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FEF9EC] dark:bg-[#2E2413] border border-[#FDF0CD] dark:border-[#4D3A1B] text-xs font-bold text-[#D97706] dark:text-[#F59E0B]">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>مشروع تأصيلي معرفي وتطبيقي مستمر</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-snug">
+              مشروع أقومية القرآن في التربية
+              <span className="block text-lg sm:text-2xl text-[#4E7E76] dark:text-[#5E988E] font-bold mt-2">
+                من السلوك الظاهر إلى فهم الجذور وبناء الإنسان
+              </span>
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
+              ﴿إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ﴾ — تأصيل تربوي ونفسي ينطلق من الوحي كمرجعية عليا لفهم السواء الإنساني، مع الاستفادة من منجزات علم النفس التجريبي دون اختزال للسلوك أو إلقاء لوم مسبق.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs hover:shadow-md transition">
+              <div className="w-10 h-10 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] text-[#4E7E76] flex items-center justify-center font-black">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">سؤال الانطلاق القرآني</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                القرآن الكريم يحكم بناء الفكرة وصياغتها من أول خطوة في البحث، لا أن يُضاف كشاهد تزييني بعد نصيحة معلبة.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs hover:shadow-md transition">
+              <div className="w-10 h-10 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] text-[#154F9C] flex items-center justify-center font-black">
+                <Layers className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">الطبقات المعرفية الست</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                فصل صارم بين النص الشرعي، التفسير، الاستنباط التربوي، الفرضية النفسية، الادعاء العلمي، والتطبيق العملي.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs hover:shadow-md transition">
+              <div className="w-10 h-10 rounded-2xl bg-[#FEF9EC] dark:bg-[#2E2413] text-[#D97706] flex items-center justify-center font-black">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">الإنصاف والمسؤولية</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                عدم اختزال السلوك في دافع واحد، وإنصاف علم النفس دون هجوم، ومسؤولية متوازنة تفحص المحيط دون لوم الأسرة.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs hover:shadow-md transition">
+              <div className="w-10 h-10 rounded-2xl bg-[#FDF1EE] dark:bg-[#251816] text-[#CC4E46] flex items-center justify-center font-black">
+                <HeartHandshake className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">جسر الممكن إلى المتمكّن</h3>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                ردم الفجوة بين معرفة القيمة والتمكن من ممارستها عبر تطبيقات منزلية دافئة قابلة للتكرار تسكن البيوت.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center pt-2">
+            <Link
+              href="/aqwameyat-quran"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#4E7E76] hover:bg-[#3D655E] text-white text-xs font-bold rounded-full transition shadow-md shadow-[#4E7E76]/25 hover:scale-[1.02]"
+            >
+              <span>استكشف وثيقة وتفاصيل مشروع أقومية القرآن كاملة</span>
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 9. مقالات (Articles Teaser) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#FEF9EC]/40 dark:bg-[#2E2413]/20 border-b border-slate-200/70 dark:border-slate-800">
         <div className="max-w-6xl mx-auto space-y-10">
           

@@ -51,7 +51,7 @@ export default function FloatingWhatsApp() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-300"></span>
           </span>
           <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-          <span>جلسة طارئة (24 ساعة)</span>
+          <span>جلسة طارئة (خلال 24 ساعة)</span>
         </a>
 
         {/* Floating Sticky WhatsApp Button */}

@@ -30,31 +30,31 @@ import {
 } from 'lucide-react';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import { servicesPricing } from '@/data/pricing';
-import { siteConfig } from '@/data/siteConfig';
-import CrisisModal from '@/components/CrisisModal';
-import ConfidentialityModal from '@/components/ConfidentialityModal';
-import DismissibleSafetyBar from '@/components/DismissibleSafetyBar';
-import NewsletterLeadMagnet from '@/components/NewsletterLeadMagnet';
-import BooksAndInstitutionsStrip from '@/components/BooksAndInstitutionsStrip';
+import initialFaqs from '@/data/faqs.json';
 
 export default function HomePage() {
-  const [crisisModalOpen, setCrisisModalOpen] = useState(false);
-  const [confidentialityModalOpen, setConfidentialityModalOpen] = useState(false);
-  // FAQ open states (First two questions open by default including cancellation policy)
-  const [openFaqs, setOpenFaqs] = useState<number[]>([0, 1]);
+  // FAQ open states
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [faqsList, setFaqsList] = useState(initialFaqs);
 
-  const toggleFaq = (idx: number) => {
-    setOpenFaqs((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
-    );
-  };
+  // Sync latest FAQs if updated in admin
+  React.useEffect(() => {
+    fetch('/api/admin/faqs')
+      .then(res => res.json())
+      .then(data => {
+        if (data.faqs && Array.isArray(data.faqs)) {
+          setFaqsList(data.faqs);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const services = [
     {
       id: 'psychological',
       title: 'استشارات نفسية فردية',
       tag: 'جلسة خاصة • 50 دقيقة',
-      desc: 'مساحة استماع آمنة لفهم القلق والتعامل معه، فهم المشاعر العميقة، واستعادة الاتزان والقدرة على الصمود برؤية قيمية متزنة.',
+      desc: 'مساحة استماع آمنة لتفكيك القلق والضغوط اليومية، فهم المشاعر العميقة، واستعادة الاتزان والصلابة الذاتية.',
       bg: 'bg-[#FDF1EE] dark:bg-[#251816]/70',
       border: 'border-[#F8DDD9] dark:border-[#42221E]',
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#CC4E46]',
@@ -67,7 +67,7 @@ export default function HomePage() {
       id: 'marital',
       title: 'استشارات زوجية وأسرية',
       tag: 'جلسة ثنائية أو فردية • 60-75 دقيقة',
-      desc: 'معالجة الخلافات وحين يتوقف الحوار بينكما، وإعادة بناء جسور الأمان والمودة والتفاهم المشترك برؤية مستمدة من الوحي.',
+      desc: 'معالجة الخلافات المتكررة وفك الانسداد الحواري، وإعادة بناء جسور الأمان والمودة والتفاهم المشترك بين الشريكين.',
       bg: 'bg-[#EDF5FD] dark:bg-[#122238]/70',
       border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#154F9C]',
@@ -77,23 +77,10 @@ export default function HomePage() {
       href: '/services#book',
     },
     {
-      id: 'adolescent',
-      title: 'علاج وإرشاد المراهقين',
-      tag: 'لليافعين • بمشاركة الوالدين',
-      desc: 'مساندة دافئة لاستيعاب تحولات سن المراهقة وبناء الثقة، مع جلسات توجيه دورية للوالدين لتوفير بيئة أسرية محتضنة.',
-      bg: 'bg-[#FEF9EC] dark:bg-[#2E2413]/70',
-      border: 'border-[#FDF0CD] dark:border-[#4D3A1B]',
-      tagBg: 'bg-white/80 dark:bg-black/30 text-[#D97706]',
-      btnBg: 'bg-[#D97706] hover:bg-[#B45309] text-white',
-      image: '/assets/arabtherapy/boy-animation.svg',
-      btnText: 'احجز استشارة للمراهق',
-      href: '/services#book',
-    },
-    {
       id: 'parenting',
       title: 'إرشاد تربوي ووالدي',
       tag: 'إرشاد الوالدين والمربين • 50 دقيقة',
-      desc: 'فهم الرسائل خلف سلوك الأبناء، وتطوير مهارات تربوية تجمع بين الرفق والحزم لتعزيز الهدوء والتفاهم في البيت.',
+      desc: 'فهم الدوافع النفسية خلف سلوك الأبناء واليافعين، وتطوير أساليب تربوية تجمع بين الرفق والحزم دون صراخ.',
       bg: 'bg-[#EDF7F5] dark:bg-[#112924]/70',
       border: 'border-[#D6EEEA] dark:border-[#1F4A42]',
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#4E7E76]',
@@ -103,47 +90,34 @@ export default function HomePage() {
       href: '/services#book',
     },
     {
-      id: 'groupTherapy',
-      title: 'المجموعات الإرشادية',
-      tag: 'قريباً • قائمة انتظار',
-      desc: 'مساحات تعافٍ وتشارك جماعية مغلقة وميسرة لتبادل الخبرات وتجاوز التحديات في بيئة تسودها الألفة والسرية المطلقة.',
-      bg: 'bg-[#F4EFFC] dark:bg-[#241738]/70',
-      border: 'border-[#E5D9F8] dark:border-[#3D2561]',
-      tagBg: 'bg-white/80 dark:bg-black/30 text-[#7C3AED]',
-      btnBg: 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white',
-      image: '/assets/arabtherapy/instant-session.svg',
-      btnText: 'سجّل في قائمة الانتظار',
-      href: '/services',
-    },
-    {
-      id: 'institutions',
-      title: 'تطوير المعلمين والمؤسسات',
-      tag: 'للمدارس والمنظمات التعليمية',
-      desc: 'ورش عمل وتأهيل مهني للكوادر التربوية وتصميم أدلة التدخل السلوكي ورعاية المتعلمين وفق أحدث الاستراتيجيات.',
-      bg: 'bg-[#EDF5FD] dark:bg-[#122238]/70',
-      border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
-      tagBg: 'bg-white/80 dark:bg-black/30 text-[#154F9C]',
-      btnBg: 'bg-[#154F9C] hover:bg-[#103D7A] text-white',
-      image: '/assets/arabtherapy/instant-session.svg',
-      btnText: 'استكشف التدريب المؤسسي',
-      href: '/courses/institutions',
+      id: 'premarital-inst',
+      title: 'تأهيل المقبلين واستشارات المؤسسات',
+      tag: 'تأهيل البدايات وتطوير المدارس',
+      desc: 'برامج وقائية للمقبلين على الزواج لبناء شراكة واعية، واستشارات متخصصة لتطوير بيئات التعلم ورعاية المتعلمين.',
+      bg: 'bg-[#FEF9EC] dark:bg-[#2E2413]/70',
+      border: 'border-[#FDF0CD] dark:border-[#4D3A1B]',
+      tagBg: 'bg-white/80 dark:bg-black/30 text-[#D97706]',
+      btnBg: 'bg-[#D97706] hover:bg-[#B45309] text-white',
+      image: '/assets/arabtherapy/why-02.svg',
+      btnText: 'اكتشف برامج بناء وتمكين',
+      href: '/courses',
     },
   ];
 
   const trustPillars = [
     {
-      title: 'نلتزم بالسرية المهنية',
-      desc: 'نحمي بياناتك بإجراءات أمنية مناسبة، ونلتزم بأخلاقيات المهنة المعتمدة، وجلسات الفيديو تتم عبر Google Meet.',
+      title: 'سرية وأمان تام 100%',
+      desc: 'بياناتك ومحادثاتك مشفرة ومحمية بأعلى المعايير الأخلاقية والمهنية. مساحتك آمنة وخاصة تماماً.',
       image: '/assets/arabtherapy/why-01.svg',
     },
     {
       title: 'إرشاد معتمد وموثوق',
-      desc: `تصنيف ${siteConfig.scfhsClassification} مع أكثر من 18 عاماً من الخبرة الاستشارية والميدانية.`,
+      desc: 'مصنف من الهيئة السعودية للتخصصات الصحية (2025) مع أكثر من 18 عاماً من الخبرة الاستشارية والميدانية.',
       image: '/assets/arabtherapy/why-02.svg',
     },
     {
       title: 'مرونة كاملة في المواعيد',
-      desc: 'نقدّر ظروفك؛ إمكانية إلغاء أو إعادة جدولة جلستك مجاناً وبكل سهولة حتى 24 ساعة قبل الموعد.',
+      desc: 'نقدّر ظروفك؛ إمكانية إلغاء أو إعادة جدولة جلستك مجاناً وبكل سهولة حتى 48 ساعة قبل الموعد.',
       image: '/assets/arabtherapy/why-03.svg',
     },
     {
@@ -169,7 +143,7 @@ export default function HomePage() {
     {
       number: '3',
       title: 'التقِ في مساحة آمنة',
-      desc: 'استلم رابط اللقاء المباشر على Google Meet والتقِ بأمان وسرية مهنية.',
+      desc: 'استلم رابط اللقاء المباشر على Google Meet والتقِ بخصوصية وسرية تامة.',
       icon: '/assets/arabtherapy/quality.svg',
     },
   ];
@@ -177,9 +151,9 @@ export default function HomePage() {
   const featuredTests = [
     {
       id: 'gad7',
-      title: 'مقياس القلق العام (GAD-7)',
+      title: 'مقياس القلق العام',
       category: 'القلق والتوتر',
-      desc: 'مقياس مستخدم عالمياً للفحص المبدئي لأعراض القلق والتوتر النفسي خلال الأسبوعين الماضيين.',
+      desc: 'أداة طبية عالمية معتمدة لقياس أعراض القلق والتوتر النفسي خلال الأسبوعين الماضيين.',
       time: '4 دقائق',
       questions: '7 أسئلة',
       bg: 'bg-[#FFCCCD]/60 dark:bg-[#3D1A1E]/60',
@@ -189,9 +163,9 @@ export default function HomePage() {
     },
     {
       id: 'phq9',
-      title: 'مقياس تقييم الاكتئاب (PHQ-9)',
+      title: 'مقياس تقييم الاكتئاب',
       category: 'المزاج والاكتئاب',
-      desc: 'مقياس مستخدم عالمياً للفحص المبدئي لتقييم حدة تقلبات المزاج ومؤشرات الاكتئاب اليومية.',
+      desc: 'المقياس الإكلينيكي المعتمد لتقييم حدة تقلبات المزاج ومؤشرات الاكتئاب اليومية.',
       time: '6 دقائق',
       questions: '9 أسئلة',
       bg: 'bg-[#A1D0F7]/40 dark:bg-[#122238]/60',
@@ -255,41 +229,10 @@ export default function HomePage() {
     },
   ];
 
-  const faqs = [
-    {
-      q: 'كيف تتم الجلسات الاستشارية؟ وهل تتطلب الحضور شخصياً؟',
-      a: 'جميع الجلسات تتم أونلاين عبر لقاء خاص على منصة Google Meet نلتزم فيه بالسرية المهنية، ويمكنك الانضمام من هاتفك أو حاسوبك من أي مكان في العالم براحة واطمئنان.',
-    },
-    {
-      q: 'ما هي سياسة الإلغاء أو إعادة الجدولة؟',
-      a: 'نلتزم بمرونة كاملة تقديراً لظروفك؛ يمكنك إعادة جدولة الموعد أو إلغاؤه واسترداد رسومك مجاناً بالكامل عند إشعارنا قبل 24 ساعة على الأقل من موعد الجلسة.',
-    },
-    {
-      q: 'ما حدود السرية المهنية؟',
-      a: 'نلتزم بالسرية المهنية الصارمة وفق أخلاقيات المهنة المعتمدة، ولا يتم تسجيل الجلسات أو مشاركة بياناتك. الاستثناءات الوحيدة نظاماً وأخلاقياً تقتصر على وجود خطر وشيك ومباشر على الحياة (إيذاء النفس أو الغير) أو إيذاء القُصّر أو بموجب أمر قضائي ملزم.',
-    },
-    {
-      q: 'هل الجلسات تناسب المراهقين، ومن يحضر؟',
-      a: 'نعم، نقدم استشارات متخصصة للمراهقين واليافعين بمشاركة وإشراف الوالدين في الجلسة الاستكشافية الأولى لوضع أهداف واضحة، مع توفير مساحة استماع آمنة ومستقلة للمراهق تكسب ثقته.',
-    },
-    {
-      q: 'هل الجلسة الطارئة مناسبة للأزمات وحالات الخطر المباشر؟',
-      a: 'الجلسة الطارئة (خلال 24 ساعة) مخصصة لتنسيق موعد استشاري عاجل للضغوط والقرارات الملحة، وليست خدمة إسعاف أو إنقاذ للحالات الحرجة. في حالات الخطر المباشر أو الأفكار الانتحارية الحادة، يجب التواصل فوراً مع أرقام الطوارئ والدعم النفسي في بلدك أو التوجه لأقرب مستشفى.',
-    },
-    {
-      q: 'ما الفرق بين الجلسة العادية والحجز الطارئ (خلال 24 ساعة)؟',
-      a: 'الجلسة العادية تُحجز وفق المواعيد المتاحة على التقويم. أما الحجز الطارئ فهو مسار مخصص للظروف الضاغطة والملحة التي لا تحتمل الانتظار، ويتم تنسيق موعدها مباشرة عبر واتساب خلال 24 ساعة.',
-    },
-    {
-      q: 'هل بياناتي وتفاصيل الجلسة محمية بالسرية؟',
-      a: 'نعم، بكل تأكيد. نلتزم بأعلى معايير السرية المهنية والأخلاقية، وتُحفظ بيانات التواصل بإجراءات أمنية مناسبة، وجلسات الفيديو تتم عبر Google Meet دون تسجيل.',
-    },
-  ];
-
   const faqJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: faqs.map((faq) => ({
+    mainEntity: faqsList.map((faq: any) => ({
       '@type': 'Question',
       name: faq.q,
       acceptedAnswer: {
@@ -306,48 +249,28 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      {/* Top Dismissible Safety Bar */}
-      <DismissibleSafetyBar onOpenCrisisModal={() => setCrisisModalOpen(true)} />
       <Navbar />
 
       {/* 1. Hero Section */}
-      <section className="relative pt-10 pb-14 sm:pt-16 sm:pb-20 px-4 sm:px-6 overflow-hidden">
+      <section className="relative pt-12 pb-14 sm:pt-20 sm:pb-20 px-4 sm:px-6 overflow-hidden">
         {/* Soft background aura */}
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#4E7E76]/10 via-[#CC4E46]/5 to-transparent blur-[120px] rounded-full pointer-events-none" />
 
         <div className="max-w-4xl mx-auto text-center space-y-6 relative z-10">
-          
-          {/* Professional Photo Slot & Verified Credentials Line */}
-          <div className="flex flex-col items-center gap-3 pt-1">
-            <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-[#4E7E76] via-[#D6EEEA] to-[#CC4E46] shadow-md">
-              <img 
-                src="/assets/dr-galal-speaking.jpg" 
-                alt="المستشار جلال أحمد"
-                loading="eager"
-                fetchPriority="high"
-                width={128}
-                height={128}
-                className="w-full h-full object-cover rounded-full"
-              />
-            </div>
-            <div className="text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white/90 dark:bg-[#161F2B]/90 px-4 py-1.5 rounded-full border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-              <span>خبرة {siteConfig.experienceYears} • {siteConfig.scfhsClassification} • ترخيص: {siteConfig.licenseNumber}</span>
-            </div>
-          </div>
 
-          {/* Single Clear Headline & Subline */}
-          <div className="space-y-3">
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.25] max-w-4xl mx-auto">
-              إرشاد أسري وزواجي وتربوي بالرفق
+          {/* Galal Ahmad Prominent Name & Professional Titles */}
+          <div className="space-y-4">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.25] max-w-3xl mx-auto">
+              جـلال أحـمد
             </h1>
-            <p className="text-base sm:text-lg md:text-xl font-bold text-[#4E7E76] dark:text-[#5E988E] max-w-2xl mx-auto leading-relaxed">
-              مع جلال أحمد ({siteConfig.officialTitle}) — {siteConfig.experienceYears} من الخبرة
+            <p className="text-sm sm:text-base md:text-lg font-bold text-[#4E7E76] dark:text-[#5E988E] max-w-3xl mx-auto leading-relaxed">
+              اختصاصي نفسي | استشاري تربوي | إرشاد أسري | إرشاد زواجي | مستشار تعليمي
             </p>
           </div>
 
           {/* Foundational Quote */}
           <div className="pt-1">
-            <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 rounded-2xl py-2 px-5 inline-block shadow-2xs">
+            <p className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 rounded-2xl py-2.5 px-6 inline-block shadow-2xs">
               «وَمَنْ يَصِفُ لَكَ الطَّرِيقَ.. لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ»
             </p>
           </div>
@@ -375,18 +298,11 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-6 pt-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76]" />
-              <span>نلتزم بالسرية المهنية وفق أخلاقيات المهنة</span>
-              <button
-                type="button"
-                onClick={() => setConfidentialityModalOpen(true)}
-                className="text-[11px] font-bold text-[#2D5650] dark:text-[#5E988E] underline hover:no-underline mr-1 cursor-pointer"
-              >
-                (ما حدود السرية؟)
-              </button>
+              <span>سرية وخصوصية تامة 100%</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76]" />
-              <span>إلغاء مجاني حتى 24 ساعة</span>
+              <span>إلغاء مجاني حتى 48 ساعة</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76]" />
@@ -405,33 +321,33 @@ export default function HomePage() {
             {/* Box 1: استشارات متخصصة */}
             <Link
               href="/services"
-              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
+              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] flex items-center justify-center p-2 border border-[#D6EEEA] dark:border-[#1F4A42] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/award-1.svg" alt="" aria-hidden="true" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/award-1.svg" alt="استشارات متخصصة" className="w-full h-full object-contain" />
               </div>
-              <div className="space-y-0.5 min-w-0">
-                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#4E7E76] transition-colors whitespace-normal leading-snug">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#4E7E76] transition-colors whitespace-nowrap overflow-hidden">
                   استشارات متخصصة
                 </div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">فردية، زوجية، وتربوية</div>
-                <div className="text-[11px] text-slate-500 hidden sm:block">جلسات أونلاين بسرية مهنية</div>
+                <div className="text-[11px] sm:text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] whitespace-nowrap overflow-hidden">فردية، زوجية، وتربوية</div>
+                <div className="text-[11px] text-slate-500 hidden sm:block">جلسات أونلاين بسرية تامة</div>
               </div>
             </Link>
 
             {/* Box 2: بناء وتمكين */}
             <Link
               href="/courses"
-              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
+              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] flex items-center justify-center p-2 border border-[#D6E6F8] dark:border-[#1E3A5F] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/award-3.svg" alt="" aria-hidden="true" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/award-3.svg" alt="بناء وتمكين" className="w-full h-full object-contain" />
               </div>
-              <div className="space-y-0.5 min-w-0">
-                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#154F9C] transition-colors whitespace-normal leading-snug">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#154F9C] transition-colors whitespace-nowrap overflow-hidden">
                   بناء وتمكين
                 </div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#154F9C] dark:text-[#60A5FA]">الأسرة، الشباب، والمؤسسات</div>
+                <div className="text-[11px] sm:text-xs font-bold text-[#154F9C] dark:text-[#60A5FA] whitespace-nowrap overflow-hidden">الأسرة، الشباب، والمؤسسات</div>
                 <div className="text-[11px] text-slate-500 hidden sm:block">برامج تأهيلية وتطبيقية</div>
               </div>
             </Link>
@@ -439,16 +355,16 @@ export default function HomePage() {
             {/* Box 3: مقاييس واختبارات */}
             <Link
               href="/tests"
-              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
+              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FEF9EC] dark:bg-[#2E2413] flex items-center justify-center p-2 border border-[#FDF0CD] dark:border-[#4D3A1B] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/award-2.svg" alt="" aria-hidden="true" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/award-2.svg" alt="مقاييس واختبارات" className="w-full h-full object-contain" />
               </div>
-              <div className="space-y-0.5 min-w-0">
-                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#D97706] transition-colors whitespace-normal leading-snug">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#D97706] transition-colors whitespace-nowrap overflow-hidden">
                   مقاييس واختبارات
                 </div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#D97706] dark:text-[#F59E0B]">+40 مقياساً نفسياً</div>
+                <div className="text-[11px] sm:text-xs font-bold text-[#D97706] dark:text-[#F59E0B] whitespace-nowrap overflow-hidden">+40 مقياساً نفسياً</div>
                 <div className="text-[11px] text-slate-500 hidden sm:block">تقييمات علمية دقيقة وموثوقة</div>
               </div>
             </Link>
@@ -456,60 +372,20 @@ export default function HomePage() {
             {/* Box 4: معرفة ووعي */}
             <Link
               href="/articles"
-              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
+              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FDF1EE] dark:bg-[#251816] flex items-center justify-center p-2 border border-[#F8DDD9] dark:border-[#42221E] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/time.svg" alt="" aria-hidden="true" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/time.svg" alt="معرفة ووعي" className="w-full h-full object-contain" />
               </div>
-              <div className="space-y-0.5 min-w-0">
-                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#CC4E46] transition-colors whitespace-normal leading-snug">
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#CC4E46] transition-colors whitespace-nowrap overflow-hidden">
                   معرفة ووعي
                 </div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#CC4E46] dark:text-[#F87171]">رؤى ومقالات فكرية</div>
+                <div className="text-[11px] sm:text-xs font-bold text-[#CC4E46] dark:text-[#F87171] whitespace-nowrap overflow-hidden">رؤى ومقالات فكرية</div>
                 <div className="text-[11px] text-slate-500 hidden sm:block">أقومية القرآن والنفس والتربية</div>
               </div>
             </Link>
 
-          </div>
-        </div>
-      </section>
-
-      {/* 2.5 من أنا (Short human connection block - max 3 lines) */}
-      <section className="py-6 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-right">
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 shadow-sm">
-              <img
-                src="/assets/dr-galal-speaking.jpg"
-                alt="جلال أحمد"
-                width={96}
-                height={96}
-                loading="lazy"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="space-y-2 flex-1">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
-                  من أنا
-                </h2>
-                <span className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">
-                  {siteConfig.officialTitle}
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-                أرافق الأفراد والأزواج منذ أكثر من عقد في تفكيك التحديات النفسية وبناء استقرار العلاقات، منطلقاً من إطار علمي إكلينيكي رصين يتكامل مع المرجعية القيمية للإنسان. غايتي أن تجد في الجلسة مساحة آمنة تفهم ألمك وتمنحك خطة عملية واضحة تناسب واقعك.
-              </p>
-              <div className="pt-1">
-                <Link
-                  href="/about"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] hover:underline"
-                >
-                  <span>اقرأ المزيد عن المسيرة والخبرات في صفحة «من أنا»</span>
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -537,7 +413,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {services.map((srv) => (
               <div
                 key={srv.id}
@@ -604,7 +480,7 @@ export default function HomePage() {
               لماذا تبدأ رحلتك الاستشارية معنا؟
             </h2>
             <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-              معايير مهنية عالية تضمن لك الراحة والخصوصية والدعم العملي الذي يناسب حالتك
+              معايير مهنية عالية تضمن لك الراحة والخصوصية والنتائج الواقعية الملموسة
             </p>
           </div>
 
@@ -618,8 +494,6 @@ export default function HomePage() {
                   <img 
                     src={pillar.image} 
                     alt={pillar.title} 
-                    width={112}
-                    height={112}
                     loading="lazy"
                     className="h-28 w-auto max-w-full object-contain" 
                   />
@@ -662,7 +536,7 @@ export default function HomePage() {
                   <div className="w-12 h-12 rounded-2xl bg-[#CC4E46]/10 text-[#CC4E46] flex items-center justify-center text-xl font-black">
                     {st.number}
                   </div>
-                  <img src={st.icon} alt={st.title} width={40} height={40} className="w-10 h-10 object-contain opacity-80" />
+                  <img src={st.icon} alt={st.title} className="w-10 h-10 object-contain opacity-80" />
                 </div>
                 <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">
                   {st.title}
@@ -722,9 +596,9 @@ export default function HomePage() {
                   <Heart className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="flex items-center justify-between mb-1 gap-2">
+                  <div className="flex items-center justify-between mb-1">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition">مسار الأسرة</h3>
-                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold shrink-0">نشط</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold">نشط</span>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     برامج رحلة رِفق التفاعلية: برنامج ميثاق (للمتزوجين) وبرنامج وعي (للمقبلين على الزواج) شاملة كراسات التطبيق والمواثيق.
@@ -746,9 +620,9 @@ export default function HomePage() {
                   <Building2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="flex items-center justify-between mb-1 gap-2">
+                  <div className="flex items-center justify-between mb-1">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition">مسار المؤسسات التعليمية</h3>
-                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-bold shrink-0">طلب مباشر</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-bold">طلب مباشر</span>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     تأهيل الكوادر الإدارية والتعليمية، بناء البيئات المدرسية الآمنة، وتصميم الحقائب التدريبية المتخصصة.
@@ -770,9 +644,9 @@ export default function HomePage() {
                   <Compass className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="flex items-center justify-between mb-1 gap-2">
+                  <div className="flex items-center justify-between mb-1">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition">مسار الشباب - المكلفين</h3>
-                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 font-bold shrink-0">قيد الإعداد</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 font-bold">قيد الإعداد</span>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     برامج تعزيز الهوية، بناء الصلابة النفسية، وسؤال المعنى وتحديات مرحلة التكليف لليافعين والشباب.
@@ -801,7 +675,7 @@ export default function HomePage() {
                 اختبارات نفسية
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                اختبارات مقننة ومجانية 100% تساعدك على قياس مستوى القلق، الاكتئاب، الضغوط، والرضى الزواجي بسرية
+                اختبارات مقننة ومجانية 100% تساعدك على قياس مستوى القلق، الاكتئاب، الضغوط، والرضى الزواجي بدقة وسرية
               </p>
             </div>
             <Link 
@@ -813,7 +687,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {featuredTests.map((tst) => (
               <div
                 key={tst.id}
@@ -879,7 +753,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div className="p-6 rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs hover:shadow-md transition">
               <div className="w-10 h-10 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] text-[#4E7E76] flex items-center justify-center font-black">
                 <BookOpen className="w-5 h-5" />
@@ -923,7 +797,7 @@ export default function HomePage() {
 
           <div className="text-center pt-2">
             <Link
-              href="/aqwameyat-quran"
+              href="/aqwamiyya"
               className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#4E7E76] hover:bg-[#3D655E] text-white text-xs font-bold rounded-full transition shadow-md shadow-[#4E7E76]/25 hover:scale-[1.02]"
             >
               <span>استكشف وثيقة وتفاصيل مشروع أقومية القرآن كاملة</span>
@@ -964,9 +838,9 @@ export default function HomePage() {
                 className={`p-6 sm:p-7 rounded-3xl border ${art.bg} ${art.border} flex flex-col justify-between space-y-5 shadow-2xs hover:shadow-md transition-all`}
               >
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-[11px] font-bold">
-                    <span className="text-[#854d0e] dark:text-[#fde047]">{art.category}</span>
-                    <span className="text-slate-600 dark:text-slate-400 font-normal">{art.readTime}</span>
+                  <div className="flex items-center justify-between text-[11px] font-bold text-[#D97706]">
+                    <span>{art.category}</span>
+                    <span className="text-slate-500 font-normal">{art.readTime}</span>
                   </div>
                   <h3 className="text-base font-black text-slate-900 dark:text-slate-100 leading-snug">
                     {art.title}
@@ -979,7 +853,7 @@ export default function HomePage() {
                 <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
                   <Link
                     href="/articles"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#854d0e] hover:text-[#78350f] dark:text-[#fbbf24] transition"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D97706] hover:text-[#B45309] transition"
                   >
                     <span>قراءة المقال والمناقشة</span>
                     <ArrowLeft className="w-3.5 h-3.5" />
@@ -1023,9 +897,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Books and Institutions Strip (Auto-hides if empty) */}
-      <BooksAndInstitutionsStrip />
-
       {/* 10. أسئلة شائعة (FAQ Accordion) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#EDF5FD]/40 dark:bg-[#122238]/20 border-y border-slate-200/70 dark:border-slate-800">
         <div className="max-w-4xl mx-auto space-y-10">
@@ -1040,22 +911,15 @@ export default function HomePage() {
           </div>
 
           <div className="space-y-3">
-            {faqs.map((faq, idx) => {
-              const isOpen = openFaqs.includes(idx);
+            {faqsList.map((faq: any, idx: number) => {
+              const isOpen = openFaq === idx;
               return (
                 <div
                   key={idx}
                   className="bg-white dark:bg-[#161F2B] rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden transition-all shadow-2xs"
                 >
                   <button
-                    onClick={() => toggleFaq(idx)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        toggleFaq(idx);
-                      }
-                    }}
-                    aria-expanded={isOpen}
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
                     className="w-full p-5 sm:p-6 text-right flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 cursor-pointer"
                   >
                     <span>{faq.q}</span>
@@ -1063,29 +927,7 @@ export default function HomePage() {
                   </button>
                   {isOpen && (
                     <div className="px-5 pb-5 sm:px-6 sm:pb-6 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800/60 pt-4 font-normal">
-                      <p>{faq.a}</p>
-                      {faq.q.includes('الطارئة') && (
-                        <div className="pt-2">
-                          <button
-                            type="button"
-                            onClick={() => setCrisisModalOpen(true)}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400 underline hover:no-underline cursor-pointer"
-                          >
-                            <span>عرض خطوط المساعدة وأرقام الطوارئ في بلدك ←</span>
-                          </button>
-                        </div>
-                      )}
-                      {faq.q.includes('السرية') && (
-                        <div className="pt-2">
-                          <button
-                            type="button"
-                            onClick={() => setConfidentialityModalOpen(true)}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] underline hover:no-underline cursor-pointer"
-                          >
-                            <span>قراءة تفاصيل وثيقة وحدود السرية المهنية ←</span>
-                          </button>
-                        </div>
-                      )}
+                      {faq.a}
                     </div>
                   )}
                 </div>
@@ -1093,13 +935,6 @@ export default function HomePage() {
             })}
           </div>
 
-        </div>
-      </section>
-
-      {/* Free Lead Magnet Section */}
-      <section className="py-12 px-4 sm:px-6 bg-white dark:bg-[#0D1117]">
-        <div className="max-w-4xl mx-auto">
-          <NewsletterLeadMagnet source="homepage_bottom" />
         </div>
       </section>
 
@@ -1141,10 +976,6 @@ export default function HomePage() {
 
         </div>
       </section>
-
-      {/* Safety & Crisis Modals */}
-      <CrisisModal isOpen={crisisModalOpen} onClose={() => setCrisisModalOpen(false)} />
-      <ConfidentialityModal isOpen={confidentialityModalOpen} onClose={() => setConfidentialityModalOpen(false)} />
 
       <Footer />
     </main>

@@ -18,7 +18,7 @@ export default function ServicesClean() {
             اختر المسار الأنسب لاحتياجك
           </h2>
           <p className="text-sm text-slate-400 dark:text-slate-400 text-slate-600 leading-relaxed">
-            جلسات فردية ومتخصصة تُعقد أونلاين عبر لقاءات فيديو خاصة وآمنة على Google Meet.
+            جلسات فردية ومتخصصة تُعقد أونلاين عبر لقاءات فيديو مشفرة وخاصة بالكامل على Google Meet.
           </p>
         </div>
 

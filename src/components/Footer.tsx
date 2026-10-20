@@ -1,17 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { Mail, Phone, Video, Shield, Clock, Linkedin } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { siteConfig } from '@/data/siteConfig';
-import CrisisModal from '@/components/CrisisModal';
-import ConfidentialityModal from '@/components/ConfidentialityModal';
 
 export default function Footer() {
   const { theme } = useTheme();
-  const [isCrisisOpen, setIsCrisisOpen] = useState(false);
-  const [isConfidentialityOpen, setIsConfidentialityOpen] = useState(false);
 
   return (
     <footer className="bg-slate-50 dark:bg-[#090D11] border-t border-slate-200/70 dark:border-slate-800 py-16 px-4 sm:px-6 text-right transition-colors">
@@ -26,13 +22,11 @@ export default function Footer() {
               <img 
                 src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'} 
                 alt="جلال أحمد" 
-                width={140}
-                height={36}
                 className="h-9 w-auto object-contain logo-clean" 
               />
               <div>
                 <span className="text-xl font-black text-slate-900 dark:text-slate-100">جـلال أحـمد</span>
-                <p className="text-xs text-[#2D5650] dark:text-[#5E988E] font-bold">استشارات وبناء الإنسان والأسرة</p>
+                <p className="text-xs text-[#4E7E76] dark:text-[#5E988E] font-bold">استشارات وبناء الإنسان والأسرة</p>
               </div>
             </div>
             
@@ -40,9 +34,9 @@ export default function Footer() {
               «ومَنْ يَصِفُ لَكَ الطَّرِيقَ.. لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ» — مساحة استشارية وتربوية متخصصة تجمع بين عمق التأصيل النفسي والخبرة الميدانية، لمساعدتك على استعادة الاتزان وبناء علاقات سوية ومستقرة.
             </p>
 
-            <div className="flex items-center gap-2 pt-1 text-xs text-[#2D5650] dark:text-[#5E988E] font-semibold">
+            <div className="flex items-center gap-2 pt-1 text-xs text-[#4E7E76] dark:text-[#5E988E] font-semibold">
               <Clock className="w-4 h-4 shrink-0 text-[#CC4E46]" />
-              <span>مرونة المواعيد: إعادة الجدولة والإلغاء متاح مجاناً حتى 24 ساعة قبل الموعد.</span>
+              <span>مرونة المواعيد: إعادة الجدولة والإلغاء متاح مجاناً حتى 48 ساعة قبل الموعد.</span>
             </div>
 
             {/* Social Media Links Icons (Configurable via src/data/siteConfig.ts) */}
@@ -76,31 +70,29 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* روابط أقسام الموقع بدون ال التعريف */}
-          <div className="md:col-span-3 space-y-3">
-            <h3 className="text-xs font-black text-[#2D5650] dark:text-[#5E988E] uppercase tracking-wider">
+          {/* روابط أقسام الموقع بتوزيع متوازن على عمودين */}
+          <div className="md:col-span-4 space-y-3">
+            <h4 className="text-xs font-black text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">
               أقسام الموقع
-            </h3>
-            <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-2.5 font-semibold">
-              <li><Link href="/" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">رئيسية</Link></li>
-              <li><Link href="/services" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">استشارات</Link></li>
-              <li><Link href="/courses" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">بناء وتمكين</Link></li>
-              <li><Link href="/aqwameyat-quran" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مشروع أقومية القرآن</Link></li>
-              <li><Link href="/tests" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">اختبارات نفسية</Link></li>
-              <li><Link href="/articles" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مقالات</Link></li>
-              {siteConfig.showVideos && (
-                <li><Link href="/videos" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مرئيات</Link></li>
-              )}
-              <li><Link href="/feedback" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تقييم جلسات</Link></li>
-              <li><Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">من أنا</Link></li>
-            </ul>
+            </h4>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs text-slate-600 dark:text-slate-400 font-semibold">
+              <Link href="/" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">رئيسية</Link>
+              <Link href="/articles" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مقالات</Link>
+              <Link href="/services" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">استشارات</Link>
+              <Link href="/videos" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مرئيات</Link>
+              <Link href="/courses" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">بناء وتمكين</Link>
+              <Link href="/feedback" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تقييم جلسات</Link>
+              <Link href="/aqwameyat-quran" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">أقومية القرآن</Link>
+              <Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">من أنا</Link>
+              <Link href="/tests" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition col-span-2">اختبارات ومقاييس نفسية</Link>
+            </div>
           </div>
 
           {/* التواصل والتنسيق الرسمي */}
-          <div className="md:col-span-4 space-y-3">
-            <h3 className="text-xs font-black text-[#2D5650] dark:text-[#5E988E] uppercase tracking-wider">
+          <div className="md:col-span-3 space-y-3">
+            <h4 className="text-xs font-black text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">
               التواصل والتنسيق المباشر
-            </h3>
+            </h4>
             <div className="space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-[#4E7E76] shrink-0" />
@@ -116,7 +108,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Video className="w-4 h-4 text-[#4E7E76] shrink-0" />
-                <span>جلسات أونلاين خاصة عبر Google Meet في جميع الدول</span>
+                <span>جلسات أونلاين خاصة عبر Google Meet</span>
               </div>
               <div className="flex items-center gap-2 pt-1">
                 <Linkedin className="w-4 h-4 text-[#154F9C] shrink-0" />
@@ -138,23 +130,7 @@ export default function Footer() {
         <div className="p-4 rounded-2xl bg-white dark:bg-[#12171E] border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 leading-relaxed flex items-start gap-3 shadow-xs">
           <Shield className="w-4 h-4 text-[#4E7E76] shrink-0 mt-0.5" />
           <p>
-            <strong>تنويه مهني وأخلاقي:</strong> الجلسات والاستشارات المقدمة عبر هذا الموقع مخصصة للدعم النفسي، والإرشاد الأسري والتربوي، <strong>ونلتزم بالسرية المهنية</strong> وفق أخلاقيات المهنة المعتمدة (
-            <button
-              type="button"
-              onClick={() => setIsConfidentialityOpen(true)}
-              className="text-[#4E7E76] dark:text-[#5E988E] underline font-bold mx-1 hover:opacity-80"
-            >
-              ما حدود السرية؟
-            </button>
-            ). هذه الخدمات ليست بديلاً عن التدخل الطبي النفسي الطارئ. في حالات الخطر المباشر يرجى التوجه فوراً لأقرب مشفى أو مركز طوارئ طبي معتمد في بلدك (
-            <button
-              type="button"
-              onClick={() => setIsCrisisOpen(true)}
-              className="text-rose-600 dark:text-rose-400 underline font-bold mx-1 hover:opacity-80"
-            >
-              عرض أرقام الطوارئ والدعم المباشر
-            </button>
-            ).
+            <strong>تنويه مهني وأخلاقي:</strong> الجلسات والاستشارات المقدمة عبر هذا الموقع مخصصة للدعم النفسي، والإرشاد الأسري والتربوي، وتخضع لأعلى معايير السرية المهنية. هذه الخدمات ليست بديلاً عن التدخل الطبي النفسي الطارئ. في حالات الخطر المباشر يرجى التوجه فوراً لأقرب مشفى أو مركز طوارئ طبي معتمد في بلدك.
           </p>
         </div>
 
@@ -165,13 +141,12 @@ export default function Footer() {
           </div>
           <div className="flex gap-4 text-slate-500 font-semibold">
             <Link href="/policies" className="hover:underline">السياسات والخصوصية</Link>
+            <span>•</span>
+            <Link href="/admin" className="hover:underline text-slate-400">لوحة الإدارة</Link>
           </div>
         </div>
 
       </div>
-
-      <CrisisModal isOpen={isCrisisOpen} onClose={() => setIsCrisisOpen(false)} />
-      <ConfidentialityModal isOpen={isConfidentialityOpen} onClose={() => setIsConfidentialityOpen(false)} />
     </footer>
   );
 }

@@ -95,7 +95,7 @@ export default function FooterClean() {
         <div className="p-4 rounded-2xl bg-[#12171E] dark:bg-[#12171E] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 text-[11px] text-slate-400 leading-relaxed flex items-start gap-3">
           <Shield className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
           <p>
-            <strong>تنويه مهني وأخلاقي:</strong> الجلسات والاستشارات المقدمة عبر هذا الموقع مخصصة للدعم النفسي، والإرشاد الأسري والتربوي، ونلتزم بالسرية المهنية وفق أخلاقيات المهنة. هذه الخدمات ليست بديلاً عن التدخل الطبي النفسي الطارئ. في حالات الخطر المباشر يرجى التوجه فوراً لأقرب مشفى أو مركز طوارئ طبي معتمد في بلدك.
+            <strong>تنويه مهني وأخلاقي:</strong> الجلسات والاستشارات المقدمة عبر هذا الموقع مخصصة للدعم النفسي، والإرشاد الأسري والتربوي، وتخضع لأعلى معايير السرية المهنية. هذه الخدمات ليست بديلاً عن التدخل الطبي النفسي الطارئ. في حالات الخطر المباشر يرجى التوجه فوراً لأقرب مشفى أو مركز طوارئ طبي معتمد في بلدك.
           </p>
         </div>
 
@@ -106,6 +106,8 @@ export default function FooterClean() {
           </div>
           <div className="flex gap-4 text-slate-400">
             <Link href="/policies" className="hover:underline">الخصوصية والسياسات</Link>
+            <span>•</span>
+            <Link href="/admin" className="hover:underline text-slate-500">بوابة الإدارة</Link>
           </div>
         </div>
 

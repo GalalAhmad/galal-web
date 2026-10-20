@@ -4,7 +4,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { full_name, whatsapp, email, track, preferred_approach, delivery_mode, preferred_time, notes } = body;
+    const { full_name, whatsapp, email, track, delivery_mode, preferred_time, notes } = body;
 
     if (!full_name || !whatsapp || !email || !track) {
       return NextResponse.json(
@@ -20,7 +20,6 @@ export async function POST(request: Request) {
           whatsapp,
           email,
           track,
-          preferred_approach: preferred_approach || 'islamic_framework',
           delivery_mode: delivery_mode || 'online',
           preferred_time: preferred_time || 'any',
           notes: notes || '',

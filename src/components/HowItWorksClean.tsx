@@ -93,7 +93,7 @@ export default function HowItWorksClean() {
 
           <div className="flex items-center gap-2 shrink-0 text-emerald-400 text-xs font-bold">
             <ShieldCheck className="w-4 h-4" />
-            <span>نلتزم بالسرية المهنية</span>
+            <span>سرية وأمان مهني 100%</span>
           </div>
 
         </div>

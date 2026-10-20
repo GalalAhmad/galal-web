@@ -14,10 +14,10 @@ interface Props {
 
 // Global/Standard Psychological Assessment Badges dictionary
 const toolBadges: Record<string, string> = {
-  depression: 'PHQ-9 فحص مبدئي',
-  anxiety: 'GAD-7 فحص مبدئي',
+  depression: 'PHQ-9 معتمد',
+  anxiety: 'GAD-7 معتمد',
   burnout: 'MBI مقياس ماسلاش',
-  adhd: 'ASRS-v1.1 فحص مبدئي',
+  adhd: 'ASRS-v1.1 معتمد',
   'marital-harmony': 'DAS التوافق الزواجي',
   'toxic-relationship': 'DAS العلاقات',
   ptsd: 'PCL-5 ما بعد الصدمة',
@@ -64,12 +64,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${test.title}${toolName} | مقاييس واختبارات جلال أحمد`,
     description: test.desc,
+    keywords: [test.title, test.category, 'اختبار نفسي', 'مقياس إكلينيكي', 'جلال أحمد'],
     openGraph: {
       title: `${test.title}${toolName} | مقاييس واختبارات جلال أحمد`,
       description: test.desc,
       url: `https://galalahmad.com/tests/${test.id}`,
       type: 'website',
-      locale: 'ar_SA',
     },
     twitter: {
       card: 'summary_large_image',

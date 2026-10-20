@@ -5,24 +5,22 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Calendar, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
-import { siteConfig } from '@/data/siteConfig';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
 
-  const allNavLinks = [
+  const navLinks = [
     { href: '/', label: 'رئيسية' },
     { href: '/services', label: 'استشارات' },
     { href: '/courses', label: 'بناء وتمكين' },
     { href: '/aqwameyat-quran', label: 'أقومية القرآن' },
     { href: '/tests', label: 'اختبارات نفسية' },
     { href: '/articles', label: 'مقالات' },
-    ...(siteConfig.showVideos ? [{ href: '/videos', label: 'مرئيات', badge: 'قريباً' }] : []),
+    { href: '/videos', label: 'مرئيات' },
     { href: '/about', label: 'من أنا' },
   ];
-  const navLinks = allNavLinks;
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 transition-colors shadow-xs">
@@ -33,8 +31,6 @@ export default function Navbar() {
           <img 
             src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
             alt="شعار جلال أحمد" 
-            width={160}
-            height={48}
             className="h-11 sm:h-12 w-auto object-contain logo-clean transition-transform group-hover:scale-105"
           />
         </Link>
@@ -47,18 +43,13 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`transition-all py-1 relative inline-flex items-center gap-1.5 ${
+                className={`transition-all py-1 relative ${
                   isActive
                     ? 'text-[#4E7E76] dark:text-[#5E988E] font-black'
                     : 'hover:text-[#4E7E76] dark:hover:text-[#5E988E]'
                 }`}
               >
-                <span>{link.label}</span>
-                {link.badge && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 leading-none">
-                    {link.badge}
-                  </span>
-                )}
+                {link.label}
                 {isActive && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4E7E76] dark:bg-[#5E988E] rounded-full" />
                 )}
@@ -113,14 +104,9 @@ export default function Navbar() {
               key={link.href}
               href={link.href} 
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center justify-between py-2.5 border-b border-slate-50 dark:border-slate-800/60 hover:text-[#4E7E76] dark:hover:text-[#5E988E]"
+              className="block py-2.5 border-b border-slate-50 dark:border-slate-800/60 hover:text-[#4E7E76] dark:hover:text-[#5E988E]"
             >
-              <span>{link.label}</span>
-              {link.badge && (
-                <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  {link.badge}
-                </span>
-              )}
+              {link.label}
             </Link>
           ))}
           <div className="pt-2">

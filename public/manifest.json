@@ -1,5 +1,5 @@
 {
-  "name": "جلال أحمد | استشارات وبناء الإنسان والأسرة",
+  "name": "جلال أحمد",
   "short_name": "جلال أحمد",
   "description": "منصة الاستشارات النفسية والزوجية والتربوية وبرامج بناء الإنسان مع المستشار جلال أحمد.",
   "start_url": "/",
@@ -8,26 +8,20 @@
   "orientation": "portrait-primary",
   "dir": "rtl",
   "lang": "ar",
-  "background_color": "#070D18",
-  "theme_color": "#081422",
+  "background_color": "#FAFCFA",
+  "theme_color": "#4E7E76",
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
       "src": "/apple-touch-icon.png",

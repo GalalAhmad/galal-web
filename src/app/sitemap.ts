@@ -1,7 +1,6 @@
 import { MetadataRoute } from 'next';
 import { initialArticles } from '@/data/articles';
 import { allTestsData } from '@/data/testsData';
-import { siteConfig } from '@/data/siteConfig';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://www.galalahmad.com';
@@ -64,6 +63,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/aqwamiyya`,
+      lastModified: currentDate,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
       url: `${baseUrl}/tests`,
       lastModified: currentDate,
       changeFrequency: 'weekly',
@@ -75,12 +80,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.95,
     },
-    ...(siteConfig.showVideos ? [{
+    {
       url: `${baseUrl}/videos`,
       lastModified: currentDate,
-      changeFrequency: 'weekly' as const,
+      changeFrequency: 'weekly',
       priority: 0.9,
-    }] : []),
+    },
     {
       url: `${baseUrl}/about`,
       lastModified: currentDate,

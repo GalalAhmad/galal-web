@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AdviceBoxSection from '@/components/AdviceBoxSection';
-import { siteConfig } from '@/data/siteConfig';
 import { 
   ShieldCheck, 
   Award, 
@@ -20,28 +19,6 @@ import {
 } from 'lucide-react';
 
 export default function AboutPage() {
-  const aboutJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'AboutPage',
-    mainEntity: {
-      '@type': 'Person',
-      name: 'جلال أحمد',
-      alternateName: 'Galal Ahmad',
-      jobTitle: siteConfig.officialTitle,
-      description: 'باحث ومستشار في الصحة النفسية والإرشاد الأسري والتربوي، ومطور برامج بناء الإنسان وتأهيل القيادات التعليمية.',
-      url: 'https://www.galalahmad.com/about',
-      image: 'https://www.galalahmad.com/assets/dr-galal-portrait.webp',
-      sameAs: siteConfig.socialLinks.map((s) => s.url),
-      knowsAbout: [
-        'الإرشاد النفسي والأسري',
-        'الإرشاد الزواجي وتأهيل المقبلين على الزواج',
-        'التربية بالرفق والتعامل مع المراهقين',
-        'تطوير القيادات والمؤسسات التعليمية',
-        'مشروع أقومية القرآن'
-      ]
-    }
-  };
-
   const initiatives = [
     {
       name: 'منصة رِفق',
@@ -83,10 +60,6 @@ export default function AboutPage() {
 
   return (
     <main className="min-h-screen flex flex-col bg-[#FAFCFA] dark:bg-[#0D1117] text-slate-900 dark:text-slate-100 transition-colors">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }}
-      />
       <Navbar />
 
       {/* Hero Header with Portrait Photo (Sole Authorized Location for Personal Portrait) */}
@@ -108,17 +81,8 @@ export default function AboutPage() {
                   <span className="block text-[#4E7E76] dark:text-[#5E988E]">والوعي بداية كل اتزان»</span>
                 </h1>
                 <p className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 leading-relaxed">
-                  جـلال أحـمد ({siteConfig.officialTitle}) — باحث ومستشار في الصحة النفسية والإرشاد الأسري والتربوي، ومطور برامج بناء الإنسان وتأهيل القيادات التعليمية.
+                  جـلال أحـمد — باحث ومستشار في الصحة النفسية والإرشاد الأسري والتربوي، ومطور برامج بناء الإنسان وتأهيل القيادات التعليمية.
                 </p>
-              </div>
-
-              {/* مجالات ومسميات الاختصاص الخمسة */}
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">اختصاصي نفسي</span>
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">استشاري تربوي</span>
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">إرشاد أسري</span>
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">إرشاد زواجي</span>
-                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">مستشار تعليمي</span>
               </div>
 
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
@@ -130,9 +94,9 @@ export default function AboutPage() {
                 <div className="inline-flex items-center gap-2.5 p-3.5 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 text-xs shadow-2xs">
                   <ShieldCheck className="w-5 h-5 text-[#4E7E76] shrink-0" />
                   <div>
-                    <strong className="text-slate-900 dark:text-slate-100 font-bold">الهيئة السعودية للتخصصات الصحية</strong>
+                    <strong className="text-slate-900 dark:text-slate-100 font-bold">تصنيف الهيئة السعودية للتخصصات الصحية</strong>
                     <span className="block text-[11px] text-slate-500 mt-0.5 font-normal">
-                      {siteConfig.scfhsClassification} | ترخيص: {siteConfig.licenseNumber}
+                      أخصائي مساعد علم نفس | علاج وتأهيل (2025)
                     </span>
                   </div>
                 </div>
@@ -211,7 +175,7 @@ export default function AboutPage() {
                   تصنيف مهني رسمي — الهيئة السعودية للتخصصات الصحية (SCFHS)
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-                  مصنف رسمياً بدرجة «{siteConfig.scfhsClassification}» بترخيص رقم {siteConfig.licenseNumber}، لممارسة وتقديم الجلسات والدعم النفسي والاستشاري وفق المعايير المهنية والأخلاقية المعتمدة.
+                  مصنف بدرجة «أخصائي مساعد علم نفس | علاج وتأهيل» برقم تسجيل معتمد، لممارسة وتقديم الجلسات والدعم النفسي وفق المعايير الطبية والمهنية المعتمدة.
                 </p>
               </div>
             </div>
@@ -377,7 +341,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ساعات العمل وصندوق النصيحة والكروت المساندة */}
+      {/* صندوق النصيحة والملاحظات */}
       <AdviceBoxSection />
 
       <Footer />

@@ -26,7 +26,11 @@ import {
   Lock,
   LogOut,
   Video,
-  Play
+  Play,
+  HelpCircle,
+  Edit3,
+  Inbox,
+  MessageSquareHeart
 } from 'lucide-react';
 import { articlesData as initialArticles } from '@/data/articles';
 
@@ -37,7 +41,7 @@ export default function AdminDashboardPage() {
   const [inputPassword, setInputPassword] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
 
-  const [activeTab, setActiveTab] = useState<'inquiries' | 'advice' | 'feedback' | 'pricing' | 'tracks' | 'videos' | 'articles' | 'settings'>('inquiries');
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'advice' | 'feedback' | 'faqs' | 'pricing' | 'tracks' | 'videos' | 'articles' | 'settings'>('inquiries');
   
   // Institutional Inquiries
   const [inquiries, setInquiries] = useState<any[]>([]);
@@ -50,6 +54,23 @@ export default function AdminDashboardPage() {
   // Client Feedback
   const [feedbackList, setFeedbackList] = useState<any[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(true);
+  const [showManualReviewForm, setShowManualReviewForm] = useState(false);
+  const [manualReview, setManualReview] = useState({
+    clientName: '',
+    sessionType: 'استشارة نفسية فردية',
+    serviceCategory: 'psychological',
+    rating: 5,
+    feedback: '',
+    location: 'أونلاين',
+    isPublished: true,
+  });
+
+  // FAQs
+  const [faqsList, setFaqsList] = useState<any[]>([]);
+  const [loadingFaqs, setLoadingFaqs] = useState<boolean>(true);
+  const [newFaq, setNewFaq] = useState({ q: '', a: '' });
+  const [editingFaqId, setEditingFaqId] = useState<string | null>(null);
+  const [editFaqData, setEditFaqData] = useState({ q: '', a: '' });
 
   // Videos List
   const [videosList, setVideosList] = useState<any[]>([]);
@@ -170,6 +191,12 @@ export default function AdminDashboardPage() {
       if (advData.advice) {
         setAdviceList(advData.advice);
       }
+
+      const faqRes = await fetch('/api/admin/faqs');
+      const faqData = await faqRes.json();
+      if (faqData.faqs) {
+        setFaqsList(faqData.faqs);
+      }
     } catch (err) {
       console.error('Error fetching admin data:', err);
     } finally {
@@ -177,6 +204,7 @@ export default function AdminDashboardPage() {
       setLoadingFeedback(false);
       setLoadingVideos(false);
       setLoadingAdvice(false);
+      setLoadingFaqs(false);
     }
   };
 
@@ -243,6 +271,37 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Add Manual Review
+  const handleAddManualReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualReview.feedback) return;
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(manualReview),
+      });
+      const data = await res.json();
+      if (data.success && data.item) {
+        setFeedbackList(prev => [data.item, ...prev]);
+        setShowManualReviewForm(false);
+        setManualReview({
+          clientName: '',
+          sessionType: 'استشارة نفسية فردية',
+          serviceCategory: 'psychological',
+          rating: 5,
+          feedback: '',
+          location: 'أونلاين',
+          isPublished: true,
+        });
+        setSaveSuccessMsg('تم حفظ التقييم بنجاح وإدراجه في قائمة الآراء');
+        setTimeout(() => setSaveSuccessMsg(''), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Save Settings
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -268,12 +327,12 @@ export default function AdminDashboardPage() {
   // Toggle Videos Live Status
   const handleToggleVideosLive = async () => {
     const nextStatus = !settings.videosEnabled;
-    setSettings((prev: any) => ({ ...prev, videosEnabled: nextStatus }));
+    setSettings((prev: any) => ({ ...prev, videosEnabled: nextStatus, videosPublished: nextStatus }));
     try {
       await fetch('/api/admin/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videosEnabled: nextStatus }),
+        body: JSON.stringify({ videosEnabled: nextStatus, videosPublished: nextStatus }),
       });
       setSaveSuccessMsg(nextStatus ? 'تم تفعيل صفحة المرئيات بث حي للجمهور بنجاح' : 'تم تحويل صفحة المرئيات إلى وضع (قريباً) بنجاح');
       setTimeout(() => setSaveSuccessMsg(''), 4000);
@@ -291,6 +350,74 @@ export default function AdminDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus }),
       });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteAdvice = async (id: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذه الرسالة من صندوق النصيحة؟')) return;
+    setAdviceList(prev => prev.filter(item => item.id !== id));
+    try {
+      await fetch(`/api/advice?id=${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // FAQ Handlers
+  const handleAddFaq = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFaq.q || !newFaq.a) return;
+    try {
+      const res = await fetch('/api/admin/faqs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newFaq),
+      });
+      const data = await res.json();
+      if (data.faqs) {
+        setFaqsList(data.faqs);
+        setNewFaq({ q: '', a: '' });
+        setSaveSuccessMsg('تمت إضافة السؤال الشائع بنجاح للموقع');
+        setTimeout(() => setSaveSuccessMsg(''), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveEditFaq = async (id: string) => {
+    try {
+      const res = await fetch('/api/admin/faqs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'edit', id, ...editFaqData }),
+      });
+      const data = await res.json();
+      if (data.faqs) {
+        setFaqsList(data.faqs);
+        setEditingFaqId(null);
+        setSaveSuccessMsg('تم تعديل السؤال بنجاح');
+        setTimeout(() => setSaveSuccessMsg(''), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteFaq = async (id: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا السؤال الشائع؟')) return;
+    try {
+      const res = await fetch('/api/admin/faqs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id }),
+      });
+      const data = await res.json();
+      if (data.faqs) {
+        setFaqsList(data.faqs);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -615,6 +742,21 @@ export default function AdminDashboardPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab('faqs')}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition text-right cursor-pointer ${
+              activeTab === 'faqs' ? 'bg-[#154F9C] text-white shadow-md' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <HelpCircle className="w-4 h-4 text-sky-400" />
+              <span>الأسئلة الشائعة (FAQ)</span>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+              {faqsList.length}
+            </span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('settings')}
             className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold transition text-right cursor-pointer ${
               activeTab === 'settings' ? 'bg-[#154F9C] text-white shadow-md' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -626,8 +768,8 @@ export default function AdminDashboardPage() {
 
           <div className="pt-4 px-3">
             <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 text-[11px] text-slate-400 space-y-1.5">
-              <span className="font-bold text-slate-200 block">💡 نظام الإدارة المركزي:</span>
-              <p>تم تنظيف لوحة التحكم وحذف الأقسام غير الموجودة (فيديوهات وكتب) لتطابق الموقع تماماً.</p>
+              <span className="font-bold text-slate-200 block">💡 نظام الإدارة المركزي الشامل:</span>
+              <p>تحكم كامل في الطلبات المؤسسية، صندوق النصيحة، تقييمات العملاء، الأسئلة الشائعة، المرئيات، الأسعار، ومواعيد الدفعات.</p>
             </div>
           </div>
 
@@ -927,6 +1069,105 @@ export default function AdminDashboardPage() {
                     <span>مشاركة مباشرة عبر واتساب</span>
                   </a>
                 </div>
+              </div>
+
+              {/* Manual Review Addition Box */}
+              <div className="p-5 rounded-3xl bg-[#0E1524] border border-slate-800 space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Plus className="w-4 h-4 text-emerald-400" />
+                      <span>إضافة تجربة / تقييم يدوي مباشرة إلى الموقع</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      إذا وصلك رأي أو شكر عبر واتساب أو بعد انتهاء الجلسة، يمكنك إدراجه هنا ليظهر فوراً في قسم آراء المستفيدين
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowManualReviewForm(!showManualReviewForm)}
+                    className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition cursor-pointer"
+                  >
+                    {showManualReviewForm ? 'إخفاء النموذج' : '+ إضافة تقييم يدوي'}
+                  </button>
+                </div>
+
+                {showManualReviewForm && (
+                  <form onSubmit={handleAddManualReview} className="space-y-3.5 pt-3 border-t border-slate-800">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-300 mb-1">اسم المستفيد أو الكنية *</label>
+                        <input
+                          type="text"
+                          required
+                          value={manualReview.clientName}
+                          onChange={(e) => setManualReview({ ...manualReview, clientName: e.target.value })}
+                          placeholder="مثال: أ. محمد السعيد أو مستفيد - الرياض"
+                          className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-300 mb-1">نوع الجلسة</label>
+                        <select
+                          value={manualReview.sessionType}
+                          onChange={(e) => setManualReview({ ...manualReview, sessionType: e.target.value })}
+                          className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                        >
+                          <option value="استشارة نفسية فردية">استشارة نفسية فردية</option>
+                          <option value="استشارة زوجية وأسرية">استشارة زوجية وأسرية</option>
+                          <option value="إرشاد والدي وتربوي">إرشاد والدي وتربوي</option>
+                          <option value="حجز طارئ">حجز طارئ</option>
+                          <option value="برنامج رحلة رفق وميثاق">برنامج رحلة رفق وميثاق</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-300 mb-1">التقييم بالنجوم</label>
+                        <select
+                          value={manualReview.rating}
+                          onChange={(e) => setManualReview({ ...manualReview, rating: Number(e.target.value) })}
+                          className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                        >
+                          <option value={5}>★★★★★ (5 نجوم - ممتاز)</option>
+                          <option value={4}>★★★★☆ (4 نجوم - جيد جداً)</option>
+                          <option value={3}>★★★☆☆ (3 نجوم - جيد)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-300 mb-1">نص التقييم والتجربة *</label>
+                      <textarea
+                        rows={3}
+                        required
+                        value={manualReview.feedback}
+                        onChange={(e) => setManualReview({ ...manualReview, feedback: e.target.value })}
+                        placeholder="ماذا قال المستفيد عن تجربته مع المستشار جلال أحمد..."
+                        className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white leading-relaxed"
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
+                      <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={manualReview.isPublished}
+                          onChange={(e) => setManualReview({ ...manualReview, isPublished: e.target.checked })}
+                          className="rounded text-[#154F9C] focus:ring-0"
+                        />
+                        <span>نشر التقييم مباشرة في الصفحة الرئيسية والموقع</span>
+                      </label>
+
+                      <button
+                        type="submit"
+                        className="px-6 py-2 rounded-xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                      >
+                        حفظ ونشر التقييم
+                      </button>
+                    </div>
+                  </form>
+                )}
               </div>
 
               {/* Submitted Feedback List */}
@@ -1519,6 +1760,141 @@ export default function AdminDashboardPage() {
                     </Link>
                   </div>
                 ))}
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB: FAQS MANAGEMENT */}
+          {activeTab === 'faqs' && (
+            <div className="space-y-6">
+              
+              {/* Add New FAQ Form */}
+              <div className="p-6 rounded-3xl bg-[#0E1524] border border-slate-800 space-y-4">
+                <div className="border-b border-slate-800 pb-2.5">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Plus className="w-4 h-4 text-sky-400" />
+                    <span>إضافة سؤال شائع جديد</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    يظهر السؤال فوراً في قسم الأسئلة الشائعة في الصفحة الرئيسية
+                  </p>
+                </div>
+
+                <form onSubmit={handleAddFaq} className="space-y-3.5 text-right">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">نص السؤال *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newFaq.q}
+                      onChange={(e) => setNewFaq({ ...newFaq, q: e.target.value })}
+                      placeholder="مثال: كيف يتم تسديد الرسوم الاستشارية؟"
+                      className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">الإجابة الوافية *</label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={newFaq.a}
+                      onChange={(e) => setNewFaq({ ...newFaq, a: e.target.value })}
+                      placeholder="اكتب الإجابة بأسلوب واضح ومطمئن للمستفيد..."
+                      className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="text-left">
+                    <button
+                      type="submit"
+                      className="px-6 py-2 rounded-xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs font-bold transition shadow-xs cursor-pointer"
+                    >
+                      إضافة السؤال الشائع
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Current FAQs List */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <h3 className="text-sm font-bold text-white">الأسئلة الشائعة المنشورة حالياً ({faqsList.length})</h3>
+                </div>
+
+                {loadingFaqs ? (
+                  <div className="p-8 text-center text-xs text-slate-500">جارٍ التحميل...</div>
+                ) : faqsList.length === 0 ? (
+                  <div className="p-8 text-center rounded-2xl bg-slate-900/50 border border-slate-800 text-slate-400 text-xs">
+                    لا توجد أسئلة شائعة مضافة.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {faqsList.map((item, idx) => (
+                      <div key={item.id || idx} className="p-4 rounded-2xl bg-[#0E1524] border border-slate-800 space-y-2">
+                        {editingFaqId === item.id ? (
+                          <div className="space-y-3">
+                            <input
+                              type="text"
+                              value={editFaqData.q}
+                              onChange={(e) => setEditFaqData({ ...editFaqData, q: e.target.value })}
+                              className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white font-bold"
+                            />
+                            <textarea
+                              rows={3}
+                              value={editFaqData.a}
+                              onChange={(e) => setEditFaqData({ ...editFaqData, a: e.target.value })}
+                              className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white leading-relaxed"
+                            />
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleSaveEditFaq(item.id)}
+                                className="px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer"
+                              >
+                                حفظ التعديل
+                              </button>
+                              <button
+                                onClick={() => setEditingFaqId(null)}
+                                className="px-4 py-1.5 rounded-xl bg-slate-800 text-slate-300 text-xs transition cursor-pointer"
+                              >
+                                إلغاء
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-start justify-between gap-3 pb-2 border-b border-slate-800/60">
+                              <span className="text-xs font-bold text-white">{item.q}</span>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  onClick={() => {
+                                    setEditingFaqId(item.id);
+                                    setEditFaqData({ q: item.q, a: item.a });
+                                  }}
+                                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer"
+                                  title="تعديل السؤال"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteFaq(item.id)}
+                                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 transition cursor-pointer"
+                                  title="حذف السؤال"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-xs text-slate-400 leading-relaxed font-normal pt-1">
+                              {item.a}
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>

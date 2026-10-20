@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       rating: Number(rating) || 5,
       feedback: feedback.trim(),
       location: location || 'أونلاين',
-      isPublished: false,
+      isPublished: body.isPublished !== undefined ? Boolean(body.isPublished) : false,
       created_at: new Date().toISOString(),
     };
 

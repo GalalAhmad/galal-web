@@ -227,7 +227,7 @@ export default function SelfAssessmentLeadMagnet() {
           <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
             <p className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-[#4E7E76] shrink-0" />
-              <span>خصوصية وسرية تامة: الإجابات تُعالج لحظياً على متصفحك فقط ولا يتم حفظها أو مشاركتها مع أي جهة. هذا المقياس أداة استرشادية لرفع الوعي وليس تشخيصاً طبياً.</span>
+              <span>خصوصية تامة 100%: الإجابات تُعالج لحظياً على متصفحك فقط ولا يتم حفظها أو مشاركتها مع أي جهة. هذا المقياس أداة استرشادية لرفع الوعي وليس تشخيصاً طبياً.</span>
             </p>
           </div>
 

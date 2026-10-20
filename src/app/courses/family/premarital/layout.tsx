@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     description: 'برنامج عملي متدرج في 8 محطات للإعداد الواعي للزواج وبناء شراكة قائمة على المودة والرحمة.',
     url: 'https://www.galalahmad.com/courses/family/premarital',
     siteName: 'جلال أحمد',
-    locale: 'ar_SA',
+    locale: 'ar_EG',
     type: 'website',
   },
   alternates: {

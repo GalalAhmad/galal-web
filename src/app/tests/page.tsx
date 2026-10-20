@@ -18,9 +18,11 @@ import {
   Sparkles,
   ChevronRight,
   Zap,
-  AlertCircle
+  AlertCircle,
+  Phone
 } from 'lucide-react';
 import { allTestsData, TestItem } from '@/data/testsData';
+import CrisisModal from '@/components/CrisisModal';
 
 export default function PsychologicalTestsPage() {
   const [activeCategory, setActiveCategory] = useState<string>('الكل');
@@ -32,6 +34,7 @@ export default function PsychologicalTestsPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [showResult, setShowResult] = useState<boolean>(false);
+  const [isCrisisModalOpen, setIsCrisisModalOpen] = useState<boolean>(false);
 
   const categories = ['الكل', 'الصحة النفسية', 'الشخصية', 'العلاقات والأسرة'];
 
@@ -163,7 +166,7 @@ export default function PsychologicalTestsPage() {
           
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EDF5FD] dark:bg-[#122238] border border-[#D6E6F8] dark:border-[#1E3A5F] text-xs font-bold text-[#154F9C] dark:text-[#60A5FA]">
             <Brain className="w-3.5 h-3.5" />
-            <span>أدوات فحص واكتشاف الذات • 41 مقياساً واختباراً معتمداً</span>
+            <span>أدوات فحص واكتشاف الذات • 41 مقياساً للفحص المبدئي</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -411,12 +414,39 @@ export default function PsychologicalTestsPage() {
               /* Results View */
               <div className="space-y-6 text-center animate-fadeIn">
                 
+                {/* Critical Alert if Depression Self-Harm Item 9 is Positive (Rendered BEFORE Score) */}
+                {activeTest.id === 'depression' && answers[8] !== undefined && answers[8] > 0 && (
+                  <div className="p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/70 border-2 border-rose-500 shadow-lg text-rose-950 dark:text-rose-100 text-right space-y-2.5 animate-pulse">
+                    <div className="flex items-center gap-2 font-black text-xs sm:text-sm text-rose-600 dark:text-rose-400">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>تنبيه سلامة عاجل وهام: صحتك وسلامتك أولوية قصوى</span>
+                    </div>
+                    <p className="text-xs leading-relaxed font-semibold">
+                      أشرت في إجاباتك إلى وجود مشاعر أو أفكار تتعلق بإيذاء النفس. نرجو منك أن تعلم أنك لست وحدك، وأن هناك مساندة متخصصة ومجانية متاحة لك فوراً.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setIsCrisisModalOpen(true)}
+                      className="px-4 py-2 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition flex items-center gap-1.5"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      <span>عرض أرقام خطوط الطوارئ والدعم النفسي ⭠</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Screening Disclaimer Badge */}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-xs font-bold">
+                  <ShieldAlert className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                  <span>هذه النتيجة فحص مبدئي وليست تشخيصاً طبياً</span>
+                </div>
+
                 <div className="w-16 h-16 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] text-[#154F9C] mx-auto flex items-center justify-center">
                   <CheckCircle2 className="w-9 h-9" />
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-xs font-bold text-slate-500">نتيجة التقييم الذاتي</span>
+                  <span className="text-xs font-bold text-slate-500">نتيجة الفحص المبدئي التقديري</span>
                   <h4 className={`text-xl font-black ${resultInterpretation.color}`}>
                     {resultInterpretation.level}
                   </h4>
@@ -425,19 +455,23 @@ export default function PsychologicalTestsPage() {
                   </p>
                 </div>
 
-                {/* صندوق طوارئ للاختبارات الحساسة */}
-                {sensitiveTestIds.includes(activeTest.id) && (
+                {/* Sensitive Tests Emergency Warning Box (Required for Depression, Bipolar, Schizophrenia, PTSD) */}
+                {sensitiveTestIds.includes(activeTest.id) && !(activeTest.id === 'depression' && answers[8] > 0) && (
                   <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200 text-xs text-right space-y-1.5">
                     <div className="flex items-center gap-1.5 font-black text-rose-700 dark:text-rose-300">
                       <AlertCircle className="w-4 h-4 shrink-0" />
-                      <span>تنبيه سلامة عاجل</span>
+                      <span>تنبيه سلامة استرشادي</span>
                     </div>
                     <p className="leading-relaxed">
                       إذا كنت تفكر في إيذاء نفسك أو كنت في خطر، تواصل فوراً مع أقرب مركز طوارئ أو اتصل بأرقام الطوارئ في بلدك.
                     </p>
-                    <Link href="/policies" className="block text-[11px] font-bold underline hover:text-rose-800">
-                      راجع إرشادات الطوارئ في صفحة السياسات ←
-                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setIsCrisisModalOpen(true)}
+                      className="block text-[11px] font-bold text-rose-700 dark:text-rose-300 underline hover:opacity-80"
+                    >
+                      عرض أرقام خطوط الطوارئ والدعم النفسي المعتمدة ⭠
+                    </button>
                   </div>
                 )}
 
@@ -450,6 +484,20 @@ export default function PsychologicalTestsPage() {
                     {resultInterpretation.rec}
                   </p>
                 </div>
+
+                {/* Gentle Recommendation for Moderate/High */}
+                {scorePercent >= 35 && (
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-right text-[11px] text-slate-600 dark:text-slate-300 flex items-center justify-between">
+                    <span>تحتاج مساندة إضافية؟</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsCrisisModalOpen(true)}
+                      className="text-rose-600 dark:text-rose-400 font-bold underline hover:opacity-80"
+                    >
+                      عرض أرقام الطوارئ والدعم المباشر
+                    </button>
+                  </div>
+                )}
 
                 {/* تنبيه استرشادي فوق أزرار الإجراءات مباشرة */}
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium text-center">
@@ -483,6 +531,7 @@ export default function PsychologicalTestsPage() {
       )}
 
       <Footer />
+      <CrisisModal isOpen={isCrisisModalOpen} onClose={() => setIsCrisisModalOpen(false)} />
     </main>
   );
 }

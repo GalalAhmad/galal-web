@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { TestItem } from '@/data/testsData';
+import { getScaleInfo } from '@/data/scaleInfo';
+import CrisisModal from '@/components/CrisisModal';
 import { 
   Clock, 
   ArrowLeft, 
@@ -14,7 +16,10 @@ import {
   AlertCircle,
   HelpCircle,
   ChevronRight,
-  Share2
+  Share2,
+  BookOpen,
+  Phone,
+  Info
 } from 'lucide-react';
 
 interface Props {
@@ -27,6 +32,10 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [showResult, setShowResult] = useState<boolean>(false);
+  const [showScaleDetails, setShowScaleDetails] = useState<boolean>(false);
+  const [isCrisisModalOpen, setIsCrisisModalOpen] = useState<boolean>(false);
+
+  const scaleInfo = getScaleInfo(test.id, test.title, test.category);
 
   const handleSelectOption = (score: number) => {
     const updated = [...answers, score];
@@ -50,6 +59,10 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
   const maxPossible = test.questions.length * 3;
   const percentage = Math.round((totalScore / Math.max(1, maxPossible)) * 100);
 
+  // Self-harm item detection: item 9 (index 8) for PHQ-9 depression
+  const hasDepressionSelfHarmRisk = test.id === 'depression' && answers[8] !== undefined && answers[8] > 0;
+  const isModerateOrHigh = percentage >= 34;
+
   const getResultDetails = () => {
     if (percentage < 34) {
       return test.scoreResults[0] || {
@@ -59,15 +72,15 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
       };
     } else if (percentage < 67) {
       return test.scoreResults[1] || {
-        title: 'مستوى متوسط يستدعي الانتباه',
-        text: 'توجد بعض الأعراض أو التحديات التي تؤثر نسبياً على جودة يومك.',
-        recommendation: 'يُنصح بمراجعة العادات اليومية أو استشارة مرشد نفسي لتفكيك الضغوط.'
+        title: 'مستوى متوسط يستدعي الانتباه والدعم',
+        text: 'توجد بعض الأعراض أو التحديات التي تؤثر نسبياً على جودة يومك واستقرارك النفسي.',
+        recommendation: 'يُنصح بمراجعة العادات اليومية أو استشارة أخصائي نفسي مؤهل لتفكيك مصادر الضغط ووضع خطة مساندة.'
       };
     } else {
       return test.scoreResults[2] || {
-        title: 'مستوى مرتفع يستدعي الرعاية',
-        text: 'المؤشرات تشير إلى ضغوط أو أعراض واضحة قد تعيق الأداء والاستقرار النفسي.',
-        recommendation: 'يُوصى بشدة بطلب استشارة متخصصة لتقديم خطة دعم ملائمة.'
+        title: 'مستوى مرتفع يستدعي الرعاية المتخصصة',
+        text: 'المؤشرات تشير إلى ضغوط أو أعراض واضحة قد تعيق الأداء اليومي والاتزان النفسي.',
+        recommendation: 'يُوصى بحجز جلسة استشارية خاصة لمناقشة هذه الأعراض وبناء خطة دعم تلائم حالتك.'
       };
     }
   };
@@ -87,11 +100,9 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
               <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#EDF7F5] dark:bg-[#112924] text-[#4E7E76] dark:text-[#5E988E]">
                 {test.category}
               </span>
-              {toolBadge && (
-                <span className="text-xs font-black px-3 py-1 rounded-full bg-[#FEF9EC] dark:bg-[#2E2413] text-[#D97706] dark:text-[#F59E0B] border border-[#FDF0CD] dark:border-[#4D3A1B]">
-                  الأداة: {toolBadge}
-                </span>
-              )}
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
+                {scaleInfo.code}: مقياس مستخدم عالمياً للفحص المبدئي
+              </span>
             </div>
             <span className="text-xs text-slate-500 flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
@@ -105,6 +116,46 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
             {test.desc}
           </p>
+
+          {/* About the Scale Info Card (عن المقياس والاعتماد العلمي) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-[#121924] border border-slate-200/70 dark:border-slate-800/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-slate-100">
+                <BookOpen className="w-4 h-4 text-[#4E7E76]" />
+                <span>عن المقياس والمرجعية العلمية</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowScaleDetails(!showScaleDetails)}
+                className="text-[11px] font-bold text-[#4E7E76] dark:text-[#5E988E] hover:underline"
+              >
+                {showScaleDetails ? 'إخفاء التفاصيل' : 'عرض التوثيق والبيانات ⭠'}
+              </button>
+            </div>
+
+            <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1">
+              <p>
+                <strong>الاسم الرسمي:</strong> {scaleInfo.officialName}
+              </p>
+              <p>
+                <strong>ما يقيسه:</strong> {scaleInfo.measures}
+              </p>
+            </div>
+
+            {showScaleDetails && (
+              <div className="pt-2.5 border-t border-slate-200/60 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 space-y-1.5 animate-fadeIn">
+                <p>
+                  <strong>جهة التطوير / الباحث:</strong> {scaleInfo.developer}
+                </p>
+                <p>
+                  <strong>التوثيق والمرجع المعتمد:</strong> <code className="px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono text-[10px]">{scaleInfo.citation}</code>
+                </p>
+                <p className="text-slate-400 dark:text-slate-500">
+                  {scaleInfo.disclaimer}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Main Interactive Card */}
@@ -164,9 +215,43 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
             /* Results View */
             <div className="space-y-6 animate-fadeIn">
               
+              {/* Critical Alert if Depression Self-Harm Item 9 is Positive (Rendered BEFORE Score) */}
+              {hasDepressionSelfHarmRisk && (
+                <div className="p-6 rounded-3xl bg-rose-50 dark:bg-rose-950/70 border-2 border-rose-500 shadow-xl space-y-3 text-rose-950 dark:text-rose-100 text-right animate-pulse">
+                  <div className="flex items-center gap-2 font-black text-base text-rose-600 dark:text-rose-400">
+                    <AlertCircle className="w-5 h-5 shrink-0" />
+                    <span>تنبيه سلامة عاجل وهام: صحتك وسلامتك أولوية قصوى</span>
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold leading-relaxed">
+                    أشرت في إجاباتك على المقياس إلى وجود أفكار أو مشاعر ترتبط بإيذاء النفس. نرجو منك أن تعلم أنك لست وحدك، وأن هناك مساندة متخصصة ومجانية متاحة لك في هذه اللحظة.
+                  </p>
+                  <p className="text-xs text-rose-800 dark:text-rose-200">
+                    جلسات موقعنا مخصصة للاستشارات المجدولة وليست خدمة طوارئ أو إنقاذ. يُرجى التوجه فوراً لأقرب قسم طوارئ في مستشفى أو التواصل مع خطوط المساعدة النفسية أدناه:
+                  </p>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsCrisisModalOpen(true)}
+                      className="px-5 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-black transition shadow-md flex items-center gap-2"
+                    >
+                      <Phone className="w-4 h-4" />
+                      <span>عرض أرقام خطوط الطوارئ والدعم النفسي المعتمدة ⭠</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Initial Screening Disclaimer Badge on Every Result */}
+              <div className="flex justify-center">
+                <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-200 text-xs font-bold">
+                  <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>هذه النتيجة فحص مبدئي وليست تشخيصاً طبياً</span>
+                </div>
+              </div>
+
               {/* Score Badge */}
               <div className="text-center space-y-2 py-2">
-                <span className="text-xs font-bold text-slate-500">النتيجة الاسترشادية التقديرية</span>
+                <span className="text-xs font-bold text-slate-500">مؤشر الفحص المبدئي التقديري</span>
                 <div className="text-4xl font-black text-[#4E7E76] dark:text-[#5E988E]">
                   {percentage}%
                 </div>
@@ -176,19 +261,23 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
               </div>
 
               {/* Sensitive Tests Emergency Warning Box (Required for Depression, Bipolar, Schizophrenia, PTSD) */}
-              {isSensitive && (
+              {isSensitive && !hasDepressionSelfHarmRisk && (
                 <div className="p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-300 dark:border-rose-800 space-y-2 text-rose-900 dark:text-rose-200">
                   <div className="flex items-center gap-2 font-black text-xs sm:text-sm">
                     <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>تنبيه سلامة عاجل وهام</span>
+                    <span>تنبيه سلامة استرشادي</span>
                   </div>
                   <p className="text-xs leading-relaxed font-medium">
-                    إذا كنت تفكر في إيذاء نفسك أو كنت في خطر، تواصل فوراً مع أقرب مركز طوارئ أو اتصل بأرقام الطوارئ في بلدك.
+                    إذا كنت تشعر بضيق حاد لا يمكن تحمله أو أفكار مؤذية، تواصل فوراً مع أقرب مركز طوارئ في مدينتك.
                   </p>
-                  <div className="pt-1 text-[11px]">
-                    <Link href="/policies" className="underline font-bold hover:text-rose-700">
-                      راجع إرشادات الطوارئ وسياسة الدعم في صفحة السياسات ←
-                    </Link>
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsCrisisModalOpen(true)}
+                      className="text-[11px] underline font-bold text-rose-700 dark:text-rose-300 hover:opacity-80"
+                    >
+                      أرقام خطوط الدعم والطوارئ المعتمدة ←
+                    </button>
                   </div>
                 </div>
               )}
@@ -206,12 +295,35 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
               {/* Recommendation Box */}
               <div className="p-5 rounded-2xl bg-[#FEF9EC] dark:bg-[#2E2413]/40 border border-[#FDF0CD] dark:border-[#4D3A1B] space-y-2 text-right">
                 <strong className="block text-xs font-black text-[#D97706] dark:text-[#F59E0B]">
-                  التوصية المقترحة:
+                  التوصية الاسترشادية:
                 </strong>
                 <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
                   {result.recommendation}
                 </p>
               </div>
+
+              {/* Gentle Recommendation Box for Moderate / High Scores */}
+              {isModerateOrHigh && (
+                <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 text-right">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-slate-100">
+                    <Info className="w-4 h-4 text-[#4E7E76]" />
+                    <span>توصية لطيفة من فريق الاستشارات</span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    تشير درجاتك إلى أنك قد تستفيد كثيراً من مساحة استماع آمنة ومتخصصة لمناقشة هذه الأعراض وتفكيك الضغوط. يمكنك حجز استشارة فردية مجدولة مع المستشار جلال أحمد لبناء خطة مساندة تناسبك.
+                  </p>
+                  <div className="pt-1 flex items-center justify-between text-[11px]">
+                    <span className="text-slate-400">في حالة الطوارئ النفسية الحادة:</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsCrisisModalOpen(true)}
+                      className="text-rose-600 dark:text-rose-400 font-bold underline hover:opacity-80"
+                    >
+                      عرض أرقام الطوارئ والدعم النفسي ⭠
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
@@ -244,7 +356,7 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
             className="inline-flex items-center gap-1.5 text-[#4E7E76] hover:underline"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>تصفح كافة المقاييس الـ 41 المعتمدة</span>
+            <span>تصفح كافة مقاييس الفحص المبدئي (41 مقياساً)</span>
           </Link>
 
           <a
@@ -259,6 +371,8 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
         </div>
 
       </div>
+
+      <CrisisModal isOpen={isCrisisModalOpen} onClose={() => setIsCrisisModalOpen(false)} />
     </div>
   );
 }

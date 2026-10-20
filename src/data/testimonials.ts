@@ -58,7 +58,7 @@ export const testimonialsData: Testimonial[] = [
   },
   {
     id: 't4',
-    name: 'د. فاطمة م.',
+    name: 'أ. فاطمة م.',
     initial: 'ف',
     avatarBg: 'from-[#7C3AED] to-[#5B21B6]',
     avatarText: 'text-white',

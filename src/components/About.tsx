@@ -8,7 +8,7 @@ export default function About() {
     <section id="about" className="py-20 px-4 sm:px-6 bg-[#11161D] dark:bg-[#11161D] bg-slate-50 border-b border-slate-800/80 dark:border-slate-800/80 border-slate-200 transition-colors">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-14 items-center">
         
-        {/* بطاقة رمزية هادئة تعبر عن النمو والتوازن (تطبيقاً لشرط وضع الصورة الشخصية في صفحة عن د. جلال فقط) */}
+        {/* بطاقة رمزية هادئة تعبر عن النمو والتوازن (تطبيقاً لشرط وضع الصورة الشخصية في صفحة عن جلال أحمد فقط) */}
         <div className="md:col-span-5 flex justify-center order-2 md:order-1">
           <div className="relative w-full max-w-sm">
             <div className="rounded-3xl p-8 bg-[#161C24] dark:bg-[#161C24] bg-white border border-slate-700/80 dark:border-slate-700/80 border-slate-200 shadow-xl space-y-6 text-right">

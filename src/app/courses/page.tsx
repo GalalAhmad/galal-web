@@ -52,7 +52,7 @@ export default function PathwaysPage() {
         'تأهيل المعلمين والمشرفين التربويين',
         'بناء البيئة المدرسية الآمنة والوقاية من التنمر',
         'تصميم الحقائب الإرشادية والمناهج المخصصة',
-        'استشارات مؤسسية مباشرة مع د. جلال أحمد'
+        'استشارات مؤسسية مباشرة مع جلال أحمد'
       ],
       link: '/courses/institutions',
       linkText: 'تفاصيل المسار والطلب المؤسسي'
@@ -107,10 +107,10 @@ export default function PathwaysPage() {
             </a>
 
             <a
-              href="#active-courses"
+              href="#methodology"
               className="px-6 py-2.5 rounded-full border border-slate-300 dark:border-slate-700 hover:border-[#154F9C] text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-semibold transition"
             >
-              برامج رحلة رِفق المتاحة
+              منهجية العمل والتمكين
             </a>
           </div>
 
@@ -182,129 +182,8 @@ export default function PathwaysPage() {
         </div>
       </section>
 
-      {/* Active Flagship Programs (The Two Rifq Programs in Family Track) */}
-      <section id="active-courses" className="py-14 sm:py-20 border-b border-slate-100 dark:border-slate-800/60 bg-[#FDFCFB] dark:bg-[#0C111C]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          
-          <div className="text-center mb-12">
-            <span className="text-xs font-bold text-[#168962] tracking-wider uppercase mb-2 block">البرامج النشطة حاليًا</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-              برامج «رحلة رِفق» المتاحة للتسجيل
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-2 max-w-xl mx-auto">
-              برنامجان متكاملان ضمن مسار الأسرة؛ للمقبلين على الزواج وللمتزوجين
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* Program 1: Mithaq */}
-            <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121A2C] p-6 sm:p-8 flex flex-col justify-between shadow-xs hover:border-[#154F9C]/40 transition">
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#154F9C]/10 text-[#154F9C] text-xs font-bold">
-                    <HeartHandshake className="w-3.5 h-3.5" />
-                    <span>للمتزوجين</span>
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">8 محطات تدريبية</span>
-                </div>
-
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">
-                  رحلة رِفق | ميثاق
-                </h3>
-
-                <p className="text-xs font-semibold text-[#154F9C] dark:text-[#4A8BE8] mb-3">
-                  البيوت لا تُبنى بحفلات الزفاف وحدها، بل بالوعي والمهارات والرفق.
-                </p>
-
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                  برنامج عملي يساعد الزوجين على فهم أنماط التفاعل بينهما، والتعبير عن الاحتياجات بوضوح، وإدارة الخلافات بوعي، وتجديد المودة والمسؤولية المشتركة.
-                </p>
-
-                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-1.5 mb-6">
-                  <div>🎯 <strong>أبرز المحطات:</strong> فك الشفرة، الحوار الآمن، إدارة العاصفة، ميثاق الأسرة.</div>
-                  <div>📦 <strong>المخرجات:</strong> كراسة المتدرب، ميثاق الأسرة، خطة متابعة مستمرة.</div>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <Link
-                  href="/courses/family/mithaq"
-                  className="w-full sm:flex-1 py-2.5 px-4 rounded-full bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs font-bold text-center transition flex items-center justify-center gap-1.5"
-                >
-                  <span>تفاصيل البرنامج الكاملة</span>
-                  <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-0" />
-                </Link>
-
-                <a
-                  href="https://wa.me/201014876666?text=مرحبًا د. جلال، أود التسجيل في برنامج رحلة رفق ميثاق للمتزوجين"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto py-2.5 px-4 rounded-full border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold text-center hover:border-[#154F9C] transition flex items-center justify-center gap-1.5"
-                >
-                  <MessageCircle className="w-3.5 h-3.5 text-[#168962]" />
-                  <span>حجز عبر واتساب</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Program 2: Premarital */}
-            <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121A2C] p-6 sm:p-8 flex flex-col justify-between shadow-xs hover:border-[#168962]/40 transition">
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-4">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#168962]/10 text-[#168962] text-xs font-bold">
-                    <Compass className="w-3.5 h-3.5" />
-                    <span>للمقبلين على الزواج</span>
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">8 محطات تدريبية</span>
-                </div>
-
-                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">
-                  رحلة رِفق | للمقبلين على الزواج
-                </h3>
-
-                <p className="text-xs font-semibold text-[#168962] dark:text-[#28B082] mb-3">
-                  ابدأ رحلتك بوعي… فكل بيت مطمئن يبدأ بخطوة واعية.
-                </p>
-
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-6">
-                  برنامج عملي يساعدك على اكتشاف نفسك، وفهم دوافعك للزواج، والتعرّف على معايير الاختيار الواعي، واكتساب المهارات الأساسية لبناء علاقة زوجية صحية ومستقرة.
-                </p>
-
-                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-black/20 border border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-1.5 mb-6">
-                  <div>🧭 <strong>المحطة الأولى:</strong> اعرف نفسك (بمحاورها الخمسة المتعمقة).</div>
-                  <div>📦 <strong>المخرجات:</strong> كراسة المسافر، جواز سفر الرحلة، خطة الاستعداد الشخصي.</div>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-2 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <Link
-                  href="/courses/family/premarital"
-                  className="w-full sm:flex-1 py-2.5 px-4 rounded-full bg-[#168962] hover:bg-[#127251] text-white text-xs font-bold text-center transition flex items-center justify-center gap-1.5"
-                >
-                  <span>تفاصيل البرنامج الكاملة</span>
-                  <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-0" />
-                </Link>
-
-                <a
-                  href="https://wa.me/201014876666?text=مرحبًا د. جلال، أود التسجيل في برنامج رحلة رفق للمقبلين على الزواج"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto py-2.5 px-4 rounded-full border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold text-center hover:border-[#168962] transition flex items-center justify-center gap-1.5"
-                >
-                  <MessageCircle className="w-3.5 h-3.5 text-[#168962]" />
-                  <span>حجز عبر واتساب</span>
-                </a>
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
       {/* Methodology & Supervision */}
-      <section className="py-14 sm:py-20 border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#0E1524]">
+      <section id="methodology" className="py-14 sm:py-20 border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#0E1524]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
@@ -339,7 +218,7 @@ export default function PathwaysPage() {
               </div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">إشراف استشاري مباشر</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
-                تصميم وقيادة مباشرة من د. جلال أحمد، استشاري تربوي ونفسي ومعالج أسري.
+                تصميم وقيادة مباشرة من جلال أحمد، استشاري تربوي ونفسي ومعالج أسري.
               </p>
             </div>
           </div>

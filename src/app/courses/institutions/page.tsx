@@ -27,26 +27,41 @@ export default function InstitutionsTrackPage() {
   const [inquiry, setInquiry] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage('');
 
-    const message = `طلب استشارة / برنامج مؤسسي - مسار المؤسسات التعليمية%0Aالمؤسسة: ${instName}%0Aالمسؤول: ${contactPerson}%0Aالهاتف: ${phone}%0Aالنوع: ${instType}%0Aتفاصيل الطلب: ${inquiry || 'لا يوجد'}`;
-    const whatsappUrl = `https://wa.me/201014876666?text=${message}`;
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instName,
+          contactPerson,
+          phone,
+          instType,
+          inquiry
+        }),
+      });
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'حدث خطأ أثناء الإرسال');
+      }
+
       setSubmitted(true);
-      window.open(whatsappUrl, '_blank');
-      setTimeout(() => {
-        setSubmitted(false);
-        setInstName('');
-        setContactPerson('');
-        setPhone('');
-        setInquiry('');
-      }, 2500);
-    }, 400);
+      setInstName('');
+      setContactPerson('');
+      setPhone('');
+      setInquiry('');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'تعذر إرسال الطلب حالياً، يرجى المحاولة لاحقاً');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -101,7 +116,7 @@ export default function InstitutionsTrackPage() {
               مجالات التدريب والاستشارات للمؤسسات
             </h2>
             <p className="text-xs sm:text-sm text-slate-500 mt-2 max-w-xl mx-auto">
-              نقدم حلولًا متكاملة مبنية على الخبرة الميدانية لدكتور جلال أحمد في الإشراف التربوي والنفسي
+              نقدم حلولًا متكاملة مبنية على الخبرة الميدانية لالمستشار جلال أحمد في الإشراف التربوي والنفسي
             </p>
           </div>
 
@@ -177,11 +192,29 @@ export default function InstitutionsTrackPage() {
             </div>
 
             {submitted ? (
-              <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-center text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
-                ✓ تم توجيه طلبك بنجاح عبر واتساب، وسيتم التواصل معك في أقرب وقت.
+              <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center space-y-3">
+                <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400 mx-auto" />
+                <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
+                  تم استلام طلبكم المؤسسي بنجاح
+                </h4>
+                <p className="text-xs text-emerald-700 dark:text-emerald-400 leading-relaxed max-w-md mx-auto">
+                  وصل إشعار بالطلب مباشرة إلى إدارة المستشار جلال أحمد، وسيقوم فريق العمل بالتواصل معكم هاتفياً لمناقشة الاحتياجات وتصميم البرنامج المناسب.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSubmitted(false)}
+                  className="mt-2 px-4 py-2 text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-white dark:bg-emerald-900/60 rounded-xl border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 transition cursor-pointer"
+                >
+                  إرسال طلب مؤسسي آخر
+                </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                {errorMessage && (
+                  <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs">
+                    {errorMessage}
+                  </div>
+                )}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                     اسم المؤسسة / المدرسة *
@@ -263,7 +296,7 @@ export default function InstitutionsTrackPage() {
                   className="w-full py-3.5 px-6 rounded-full bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shadow-md shadow-[#154F9C]/20 disabled:opacity-50 cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
-                  <span>{isSubmitting ? 'جارٍ المعالجة...' : 'إرسال طلب المؤسسة عبر واتساب'}</span>
+                  <span>{isSubmitting ? 'جارٍ إرسال الطلب...' : 'إرسال طلب المؤسسة المباشر للإدارة'}</span>
                 </button>
               </form>
             )}

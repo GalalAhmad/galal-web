@@ -1,0 +1,35 @@
+[
+  {
+    "id": "fb-1792464303511",
+    "clientName": "أ. سامي ع.",
+    "sessionType": "استشارة نفسية فردية",
+    "serviceCategory": "psychological",
+    "rating": 5,
+    "feedback": "جلسة ممتازة ومثمرة جداً ساعدتني على تنظيم أولوياتي بهدوء.",
+    "location": "الدمام",
+    "isPublished": false,
+    "created_at": "2026-10-20T02:45:03.511Z"
+  },
+  {
+    "id": "fb-1",
+    "clientName": "أ. أحمد س.",
+    "sessionType": "استشارة نفسية فردية",
+    "serviceCategory": "psychological",
+    "rating": 5,
+    "feedback": "استفدت جداً من أدوات تنظيم الضغوط وتحديد أولويات الحياة. الأستاذ جلال مستمع متميز ويضع يده على أصل المشكلة مباشرة دون تشتيت.",
+    "location": "الرياض",
+    "isPublished": true,
+    "created_at": "2026-10-19T18:20:00.000Z"
+  },
+  {
+    "id": "fb-2",
+    "clientName": "منى وعاصم",
+    "sessionType": "استشارة زوجية وأسرية",
+    "serviceCategory": "marital",
+    "rating": 5,
+    "feedback": "الجلسة ساعدتنا على فك احتقان استمر أشهراً وفهم احتياجات بعضنا في التربية والتواصل بهدوء. أنصح بشدة.",
+    "location": "جدة",
+    "isPublished": false,
+    "created_at": "2026-10-20T03:10:00.000Z"
+  }
+]

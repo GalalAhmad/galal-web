@@ -261,10 +261,47 @@ export default function RifqMithaqPage() {
             </a>
           </div>
 
-          <div className="pt-2">
-            <span className="inline-block text-[11px] font-semibold text-slate-500">
-              ⚡ 8 محطات تدريبية وتطبيقية شاملة كراسة المتدرب وميثاق الأسرة
-            </span>
+          {/* Quick Metrics Pills - Matching Premarital Style */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto mt-8 text-right">
+            <div className="p-3.5 rounded-2xl bg-white dark:bg-[#121A2C] border border-slate-100 dark:border-slate-800/80 shadow-xs flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#EDF5FD] dark:bg-[#122238] text-[#154F9C] flex items-center justify-center shrink-0">
+                <Compass className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white">8 محطات تدريبية</div>
+                <div className="text-[11px] text-slate-500">شراكة وميثاق مستمر</div>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-white dark:bg-[#121A2C] border border-slate-100 dark:border-slate-800/80 shadow-xs flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#F2FBF7] dark:bg-[#0D261E] text-[#168962] flex items-center justify-center shrink-0">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white">كراسة المتدرب</div>
+                <div className="text-[11px] text-slate-500">تمارين وميثاق الأسرة</div>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-white dark:bg-[#121A2C] border border-slate-100 dark:border-slate-800/80 shadow-xs flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#FDF9F0] dark:bg-[#2A2312] text-[#B87A14] flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white">إشراف استشاري</div>
+                <div className="text-[11px] text-slate-500">جلال أحمد</div>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-white dark:bg-[#121A2C] border border-slate-100 dark:border-slate-800/80 shadow-xs flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#F5F3FF] dark:bg-[#201938] text-[#7452B8] flex items-center justify-center shrink-0">
+                <HeartHandshake className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-slate-900 dark:text-white">تأصيل وتطبيق</div>
+                <div className="text-[11px] text-slate-500">شرعي ونفسي عملي</div>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -534,7 +571,7 @@ export default function RifqMithaqPage() {
             <div className="md:col-span-8 space-y-4">
               <span className="text-xs font-bold text-[#154F9C] uppercase tracking-wider">مقدّم البرنامج</span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-                د. جلال أحمد
+                جلال أحمد
               </h2>
               <p className="text-xs sm:text-sm font-bold text-[#4E7E76] dark:text-[#5E988E]">
                 استشاري تربوي ونفسي ومعالج أسري
@@ -551,7 +588,7 @@ export default function RifqMithaqPage() {
               <div className="w-48 sm:w-56 aspect-square rounded-3xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 dark:bg-slate-900">
                 <img
                   src="/assets/dr-galal-portrait.webp"
-                  alt="د. جلال أحمد"
+                  alt="جلال أحمد"
                   loading="lazy"
                   className="w-full h-full object-cover object-top"
                 />

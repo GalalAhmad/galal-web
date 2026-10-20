@@ -79,7 +79,7 @@ export default function BookingClean() {
                 width="100%"
                 height="680"
                 frameBorder="0"
-                title="جدول مواعيد د. جلال أحمد"
+                title="جدول مواعيد جلال أحمد"
                 className="w-full h-[680px]"
               />
             </div>

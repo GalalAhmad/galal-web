@@ -15,8 +15,9 @@ export default function Navbar() {
     { href: '/', label: 'الرئيسية' },
     { href: '/services', label: 'الجلسات والاستشارات' },
     { href: '/courses', label: 'مسارات بناء وتمكين' },
-    { href: '/articles', label: 'المقالات والمحتوى' },
-    { href: '/about', label: 'عن د. جلال' },
+    { href: '/tests', label: 'الاختبارات النفسية' },
+    { href: '/articles', label: 'المقالات والمنتدى' },
+    { href: '/about', label: 'عن جلال أحمد' },
   ];
 
   return (

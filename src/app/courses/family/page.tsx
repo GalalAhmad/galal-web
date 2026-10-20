@@ -128,7 +128,7 @@ export default function FamilyTrackPage() {
                 </Link>
 
                 <a
-                  href="https://wa.me/201014876666?text=مرحبًا د. جلال، أود الاستفسار والتسجيل في برنامج رحلة رفق ميثاق للمتزوجين"
+                  href="https://wa.me/201014876666?text=مرحبًا جلال أحمد، أود الاستفسار والتسجيل في برنامج رحلة رفق ميثاق للمتزوجين"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto py-3 px-5 rounded-full border border-slate-300 dark:border-slate-700 hover:border-[#154F9C] text-slate-700 dark:text-slate-300 text-xs font-semibold text-center transition flex items-center justify-center gap-2"
@@ -190,7 +190,7 @@ export default function FamilyTrackPage() {
                 </Link>
 
                 <a
-                  href="https://wa.me/201014876666?text=مرحبًا د. جلال، أود الاستفسار والتسجيل في برنامج رحلة رفق للمقبلين على الزواج"
+                  href="https://wa.me/201014876666?text=مرحبًا جلال أحمد، أود الاستفسار والتسجيل في برنامج رحلة رفق للمقبلين على الزواج"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto py-3 px-5 rounded-full border border-slate-300 dark:border-slate-700 hover:border-[#168962] text-slate-700 dark:text-slate-300 text-xs font-semibold text-center transition flex items-center justify-center gap-2"
@@ -211,7 +211,7 @@ export default function FamilyTrackPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-              لماذا برامج «مسار الأسرة» مع د. جلال أحمد؟
+              لماذا برامج «مسار الأسرة» مع جلال أحمد؟
             </h2>
           </div>
 

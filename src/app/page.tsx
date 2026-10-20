@@ -16,27 +16,20 @@ import {
   HeartHandshake, 
   Building2, 
   GraduationCap, 
-  CheckCircle2,
-  FileText,
-  ChevronDown,
-  X,
-  Phone,
-  Send,
-  Zap,
-  Award,
-  Compass,
-  Heart
+  CheckCircle2, 
+  ChevronDown, 
+  X, 
+  Phone, 
+  Send, 
+  Compass, 
+  Heart,
+  Activity,
+  FileCheck2,
+  Brain,
+  MessageSquareHeart,
+  MessageSquare
 } from 'lucide-react';
-import { 
-  VectorIndividualTherapy, 
-  VectorCoupleTherapy, 
-  VectorPremaritalTherapy, 
-  VectorParentingTherapy, 
-  VectorEmergencyTherapy,
-  VectorInstitutionalTherapy
-} from '@/components/Vectors';
 import TestimonialsSection from '@/components/TestimonialsSection';
-import SelfAssessmentLeadMagnet from '@/components/SelfAssessmentLeadMagnet';
 import { servicesPricing, coursesPricing } from '@/data/pricing';
 
 export default function HomePage() {
@@ -212,6 +205,57 @@ export default function HomePage() {
     },
   ];
 
+  const featuredTests = [
+    {
+      id: 'gad7',
+      title: 'مقياس القلق العام (GAD-7)',
+      category: 'القلق والتوتر',
+      desc: 'أداة طبية عالمية معتمدة لقياس أعراض القلق والتوتر النفسي خلال الأسبوعين الماضيين.',
+      time: '3 دقائق',
+      questions: '7 أسئلة',
+      bg: 'bg-[#EDF7F5] dark:bg-[#112924]',
+      border: 'border-[#D6EEEA] dark:border-[#1F4A42]',
+      tagColor: 'text-[#4E7E76] dark:text-[#5E988E]',
+      href: '/tests'
+    },
+    {
+      id: 'phq9',
+      title: 'مقياس تقييم المزاج والاكتئاب (PHQ-9)',
+      category: 'المزاج والاكتئاب',
+      desc: 'المقياس الإكلينيكي المعتمد لتقييم حدة تقلبات المزاج ومؤشرات الاكتئاب اليومية.',
+      time: '4 دقائق',
+      questions: '9 أسئلة',
+      bg: 'bg-[#FDF1EE] dark:bg-[#251816]',
+      border: 'border-[#F8DDD9] dark:border-[#42221E]',
+      tagColor: 'text-[#CC4E46] dark:text-[#F87171]',
+      href: '/tests'
+    },
+    {
+      id: 'marital-harmony',
+      title: 'مقياس الرضا والتوافق الزواجي',
+      category: 'العلاقات والزواج',
+      desc: 'تقييم جودة التواصل، الأمان العاطفي، وإدارة الخلافات الزوجية بين الشريكين.',
+      time: '5 دقائق',
+      questions: '10 أسئلة',
+      bg: 'bg-[#EDF5FD] dark:bg-[#122238]',
+      border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
+      tagColor: 'text-[#154F9C] dark:text-[#60A5FA]',
+      href: '/tests'
+    },
+    {
+      id: 'burnout',
+      title: 'مقياس الإجهاد والاحتراق النفسي',
+      category: 'الضغوط والعمل',
+      desc: 'فحص مؤشرات الاستنزاف النفسي والإنهاك العصبي الناتج عن ضغوط العمل والمسؤوليات.',
+      time: '3 دقائق',
+      questions: '8 أسئلة',
+      bg: 'bg-[#F4EFFC] dark:bg-[#241738]',
+      border: 'border-[#E5D9F8] dark:border-[#3D2561]',
+      tagColor: 'text-[#7C3AED] dark:text-[#A78BFA]',
+      href: '/tests'
+    }
+  ];
+
   const recentArticles = [
     {
       id: 'aqwameyat-quran-family',
@@ -352,7 +396,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. Impact & Credentials Ribbon (Extracted & Adapted from Template) */}
+      {/* 2. Impact & Credentials Ribbon */}
       <section className="pb-10 pt-2 px-4 sm:px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
@@ -381,12 +425,12 @@ export default function HomePage() {
 
             <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md transition-all flex items-center gap-3 sm:gap-4 text-right">
               <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] flex items-center justify-center p-2 border border-[#D6E6F8] dark:border-[#1E3A5F]">
-                <img src="/assets/template-icons/award-3.svg" alt="مبادرات" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/award-3.svg" alt="مسارات" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5">
-                <div className="text-base sm:text-xl font-black text-[#154F9C] dark:text-[#60A5FA]">4 مؤسسات</div>
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200">مبادرات ومراكز مؤسسة</div>
-                <div className="text-[11px] text-slate-500 hidden sm:block">رِفق، وصلة، مفهوم، إنسان</div>
+                <div className="text-base sm:text-xl font-black text-[#154F9C] dark:text-[#60A5FA]">3 مسارات تمكين</div>
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-200">الأسرة، المؤسسات، والشباب</div>
+                <div className="text-[11px] text-slate-500 hidden sm:block">برامج تأهيل وبناء وتطبيق</div>
               </div>
             </div>
 
@@ -405,17 +449,27 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. Arab Therapy Pastel Consultation Cards */}
+      {/* 3. Arab Therapy Pastel Consultation Cards (Services Teaser) */}
       <section className="py-12 px-4 sm:px-6 border-y border-slate-200/70 dark:border-slate-800 bg-white/50 dark:bg-black/10">
         <div className="max-w-6xl mx-auto space-y-8">
           
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-              اختر نوع الجلسة المناسب لاحتياجك
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              مسارات استشارية متخصصة ومصممة لتمنحك الوضوح والدعم العملي المباشر
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">الجلسات والاستشارات</span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
+                اختر نوع الجلسة المناسب لاحتياجك
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                مسارات استشارية متخصصة ومصممة لتمنحك الوضوح والدعم العملي المباشر
+              </p>
+            </div>
+            <Link 
+              href="/services" 
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4E7E76] hover:text-[#3D655E] transition"
+            >
+              <span>دليل الجلسات والأسعار كاملاً</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -488,7 +542,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. "لماذا د. جلال أحمد؟" (Arab Therapy 4 Trust Pillars with Authentic Illustrations) */}
+      {/* 4. "لماذا جلال أحمد؟" (Arab Therapy 4 Trust Pillars) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto space-y-12">
           
@@ -530,7 +584,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. "كيف تسير الجلسة في 3 خطوات بسيطة؟" (Arab Therapy 3-Step Flow) */}
+      {/* 5. "كيف تسير الجلسة في 3 خطوات بسيطة؟" */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#EDF7F5]/50 dark:bg-[#112924]/20 border-y border-slate-200/70 dark:border-slate-800">
         <div className="max-w-5xl mx-auto space-y-12 text-center">
           
@@ -578,14 +632,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 4. آراء وتجارب المستفيدين (Testimonials Section) */}
-      <TestimonialsSection 
-        title="تجارب وآراء المستفيدين" 
-        subtitle="أصداء حقيقية من جلسات الاستشارة والبرامج التفاعلية (مع الالتزام الصارم بالسرية والخصوصية التامة)"
-        limit={6}
-      />
-
-      {/* 5. مسارات بناء وتمكين */}
+      {/* 6. مسارات بناء وتمكين (Pathways Teaser) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto space-y-8">
           
@@ -706,7 +753,7 @@ export default function HomePage() {
                   </Link>
                   <button
                     onClick={() => setModalCourse(crs.title)}
-                    className="py-2.5 px-4 bg-white dark:bg-black/40 hover:bg-slate-50 dark:hover:bg-black/60 text-[#154F9C] dark:text-[#60A5FA] border border-[#D6E6F8] dark:border-[#1E3A5F] rounded-full text-xs font-bold transition"
+                    className="py-2.5 px-4 bg-white dark:bg-black/40 hover:bg-slate-50 dark:hover:bg-black/60 text-[#154F9C] dark:text-[#60A5FA] border border-[#D6E6F8] dark:border-[#1E3A5F] rounded-full text-xs font-bold transition cursor-pointer"
                   >
                     طلب التسجيل
                   </button>
@@ -718,28 +765,94 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. مقياس الاتزان النفسي الذاتي (Lead Magnet) */}
-      <SelfAssessmentLeadMagnet />
-
-      {/* 6. مشروع أقومية القرآن والمقالات (Section 5) */}
-      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#FEF9EC]/40 dark:bg-[#2E2413]/20 border-y border-slate-200/70 dark:border-slate-800">
+      {/* 7. الاختبارات والمقاييس النفسية (Psychological Tests Teaser - Arab Therapy Style) */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#EDF7F5]/40 dark:bg-[#112924]/20 border-y border-slate-200/70 dark:border-slate-800">
         <div className="max-w-6xl mx-auto space-y-10">
           
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-2">
-              <span className="text-xs font-bold text-[#D97706] uppercase tracking-wider">التأصيل المعرفي</span>
+              <span className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">أدوات الفحص والتقييم الذاتي</span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-                مشروع أقومية القرآن ومقالات التوعية
+                الاختبارات والمقاييس النفسية المعتمدة
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                رؤية تأصيلية تستلهم هدايات الوحي في بناء السواء النفسي والاستقرار الأسري
+                اختبارات مقننة ومجانية 100% تساعدك على قياس مستوى القلق، الاكتئاب، الضغوط، والرضى الزواجي بدقة وسرية
+              </p>
+            </div>
+            <Link 
+              href="/tests" 
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4E7E76] hover:text-[#3D655E] transition"
+            >
+              <span>تصفح كافة المقاييس الـ 9 المعتمدة</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {featuredTests.map((tst) => (
+              <div
+                key={tst.id}
+                className={`p-6 rounded-3xl border ${tst.bg} ${tst.border} flex flex-col justify-between space-y-4 shadow-2xs hover:shadow-md transition-all`}
+              >
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between text-[11px] font-bold">
+                    <span className={tst.tagColor}>{tst.category}</span>
+                    <span className="text-slate-400">{tst.time}</span>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                    {tst.title}
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+                    {tst.desc}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-500 font-medium">{tst.questions}</span>
+                  <Link
+                    href="/tests"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] hover:underline"
+                  >
+                    <span>ابدأ الاختبار</span>
+                    <ArrowLeft className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center pt-2">
+            <Link
+              href="/tests"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-white dark:bg-[#161F2B] border border-[#D6EEEA] dark:border-[#1F4A42] text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] hover:bg-slate-50 dark:hover:bg-[#1F2C3D] transition shadow-2xs"
+            >
+              <Brain className="w-4 h-4" />
+              <span>استكشف دليل الاختبارات النفسية التفاعلية كاملاً (9 مقاييس)</span>
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 8. مشروع أقومية القرآن والمقالات والمنتدى الثقافي (Articles Teaser) */}
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#FEF9EC]/40 dark:bg-[#2E2413]/20 border-b border-slate-200/70 dark:border-slate-800">
+        <div className="max-w-6xl mx-auto space-y-10">
+          
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-[#D97706] uppercase tracking-wider">التأصيل المعرفي والمنتدى</span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
+                مشروع أقومية القرآن والمنتدى الثقافي
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                رؤية تأصيلية تستلهم هدايات الوحي في بناء السواء النفسي والاستقرار الأسري مع إمكانية التفاعل والنقاش
               </p>
             </div>
             <Link 
               href="/articles" 
               className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D97706] hover:text-[#B45309] transition"
             >
-              <span>تصفح كافة المقالات</span>
+              <span>دخول المنتدى الثقافي وقراءة المقالات</span>
               <ArrowLeft className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -763,13 +876,16 @@ export default function HomePage() {
                   </p>
                 </div>
 
-                <Link
-                  href="/articles"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D97706] hover:text-[#B45309] transition pt-2"
-                >
-                  <span>اقرأ المقال كاملاً</span>
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                </Link>
+                <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
+                  <Link
+                    href="/articles"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D97706] hover:text-[#B45309] transition"
+                  >
+                    <span>قراءة المقال والمناقشة</span>
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                  </Link>
+                  <span className="text-[11px] text-slate-400">مناقشات تفاعلية</span>
+                </div>
               </div>
             ))}
           </div>
@@ -777,61 +893,37 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. الخبرة والمؤسسات التي أسسها د. جلال (Section 6) */}
-      <section className="py-16 sm:py-20 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto space-y-10 text-center">
-          
-          <div className="space-y-3">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-              الخبرة والمؤسسات التي أسسها
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-              بصمات مؤسسية ومشاريع قائمة تُترجم الرؤية الاستشارية إلى أثر واقعي مستمر
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-2 shadow-2xs text-right">
-              <span className="text-[10px] font-bold text-[#4E7E76] uppercase">مؤسس ومدير</span>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100">مركز إنسان للتدريب والاستشارات</h3>
-              <p className="text-[11px] text-slate-500 font-normal">جمهورية مصر العربية — تدريب وإرشاد أسري ونفسي.</p>
+      {/* 9. آراء وتجارب المستفيدين (Testimonials Section - Moved towards bottom as requested) */}
+      <section className="py-4">
+        <TestimonialsSection 
+          title="تجارب وآراء المستفيدين" 
+          subtitle="أصداء حقيقية من جلسات الاستشارة والبرامج التفاعلية (مع الالتزام الصارم بالسرية والخصوصية التامة)"
+          limit={6}
+        />
+        
+        {/* Post-Session Feedback Invitation */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-12 text-center">
+          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#121A2C] border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
+            <div className="flex items-center gap-3 text-right">
+              <div className="w-9 h-9 rounded-xl bg-[#EDF7F5] dark:bg-[#112924] text-[#4E7E76] flex items-center justify-center shrink-0">
+                <MessageSquareHeart className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white">هل تلقيت جلسة أو شاركت في برنامج مؤخراً؟</h4>
+                <p className="text-[11px] text-slate-500">رأيك وتجربتك تسهم في تطوير جودة الرعاية ومساعدة الآخرين.</p>
+              </div>
             </div>
-
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-2 shadow-2xs text-right">
-              <span className="text-[10px] font-bold text-[#154F9C] uppercase">مؤسس ورئيس</span>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100">منصة رِفق للاستشارات</h3>
-              <p className="text-[11px] text-slate-500 font-normal">المملكة الأردنية الهاشمية — إرشاد أسري وتربوي.</p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-2 shadow-2xs text-right">
-              <span className="text-[10px] font-bold text-[#CC4E46] uppercase">مؤسس</span>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100">مركز مفهوم للبحوث والدراسات</h3>
-              <p className="text-[11px] text-slate-500 font-normal">أبحاث السلوك والأسرة وتأصيل العلوم النفسية.</p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-2 shadow-2xs text-right">
-              <span className="text-[10px] font-bold text-[#7C3AED] uppercase">مؤسس شريك</span>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100">منصة وصلة للاستشارات الأسرية</h3>
-              <p className="text-[11px] text-slate-500 font-normal">مبادرة رقمية لدعم التواصل الزواجي الآمن.</p>
-            </div>
-
-          </div>
-
-          <div className="pt-2">
             <Link
-              href="/about"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4E7E76] hover:text-[#3D655E] transition"
+              href="/feedback"
+              className="px-5 py-2 rounded-full bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs font-bold transition shrink-0"
             >
-              <span>تعرف على السيرة المهنية والمؤهلات المعتمدة لدكتور جلال</span>
-              <ArrowLeft className="w-3.5 h-3.5" />
+              شاركنا تقييمك للجلسة ←
             </Link>
           </div>
-
         </div>
       </section>
 
-      {/* 8. الأسئلة الشائعة (FAQ Accordion) - Arab Therapy Style */}
+      {/* 10. الأسئلة الشائعة (FAQ Accordion) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#EDF5FD]/40 dark:bg-[#122238]/20 border-y border-slate-200/70 dark:border-slate-800">
         <div className="max-w-4xl mx-auto space-y-10">
           
@@ -854,7 +946,7 @@ export default function HomePage() {
                 >
                   <button
                     onClick={() => setOpenFaq(isOpen ? null : idx)}
-                    className="w-full p-5 sm:p-6 text-right flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100"
+                    className="w-full p-5 sm:p-6 text-right flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 cursor-pointer"
                   >
                     <span>{faq.q}</span>
                     <ChevronDown className={`w-5 h-5 text-[#4E7E76] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
@@ -872,7 +964,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. Final CTA - Arab Therapy Style (Section 7) */}
+      {/* 11. Final CTA */}
       <section className="py-16 sm:py-24 px-4 sm:px-6 text-center relative overflow-hidden bg-gradient-to-b from-white via-[#EDF7F5]/40 to-white dark:from-[#0D1117] dark:via-[#112924]/30 dark:to-[#0D1117]">
         <div className="max-w-3xl mx-auto space-y-6 relative z-10">
           
@@ -980,7 +1072,7 @@ export default function HomePage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white font-bold rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50 shadow-md shadow-[#CC4E46]/20"
+                  className="w-full py-3.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white font-bold rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50 shadow-md shadow-[#CC4E46]/20 cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                   <span>{isSubmitting ? 'جاري الإرسال...' : 'تأكيد تسجيل الاهتمام'}</span>

@@ -310,7 +310,7 @@ export default function ServicesPage() {
               width="100%"
               height="680"
               frameBorder="0"
-              title="جدول حجز الجلسات - د. جلال أحمد"
+              title="جدول حجز الجلسات - جلال أحمد"
               className="w-full rounded-2xl"
             />
           </div>

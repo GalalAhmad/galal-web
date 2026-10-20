@@ -358,7 +358,7 @@ export default function RifqPremaritalPage() {
               </div>
               <div>
                 <div className="text-xs font-bold text-slate-900 dark:text-white">إشراف استشاري</div>
-                <div className="text-[11px] text-slate-500">د. جلال أحمد</div>
+                <div className="text-[11px] text-slate-500">جلال أحمد</div>
               </div>
             </div>
 
@@ -666,13 +666,13 @@ export default function RifqPremaritalPage() {
           <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#121A2C] border border-slate-100 dark:border-slate-800 shadow-xs flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-right">
             
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-[#154F9C] to-[#168962] text-white flex items-center justify-center font-extrabold text-2xl shrink-0 shadow-md">
-              د. جلال
+              جلال أحمد
             </div>
 
             <div className="space-y-3">
               <span className="text-xs font-bold text-[#154F9C] uppercase tracking-wider block">مدرب الرحلة</span>
               <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-                د. جلال أحمد
+                جلال أحمد
               </h3>
               <p className="text-xs sm:text-sm text-[#168962] font-semibold">
                 استشاري تربوي ونفسي ومعالج أسري

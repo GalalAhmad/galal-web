@@ -26,6 +26,8 @@ import {
   Home
 } from 'lucide-react';
 
+import siteSettings from '@/data/siteSettings.json';
+
 export default function RifqMithaqPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [applicantName, setApplicantName] = useState('');
@@ -652,9 +654,16 @@ export default function RifqMithaqPage() {
 
           {/* Registration Box */}
           <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200 dark:border-slate-800 shadow-md text-right space-y-5">
-            <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 text-center">
-              سجل اهتمامك الآن في الدفعة القادمة
-            </h3>
+            <div className="space-y-2 text-center">
+              <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">
+                سجل اهتمامك الآن في الدفعة القادمة
+              </h3>
+              {/* تاريخ الدفعة القادمة المستمد من ملف الإعدادات القابل للتعديل */}
+              <div className="inline-flex items-center justify-center gap-2 py-1.5 px-4 rounded-full bg-[#154F9C]/10 text-[#154F9C] dark:text-[#60A5FA] text-xs font-bold border border-[#154F9C]/20">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>الدفعة القادمة: {siteSettings.mithaqNextBatch || 'نوفمبر 2026'}</span>
+              </div>
+            </div>
 
             {submitSuccess ? (
               <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold text-center">

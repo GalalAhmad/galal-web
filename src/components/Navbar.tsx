@@ -18,6 +18,7 @@ export default function Navbar() {
     { href: '/aqwameyat-quran', label: 'أقومية القرآن' },
     { href: '/tests', label: 'اختبارات نفسية' },
     { href: '/articles', label: 'مقالات' },
+    { href: '/videos', label: 'مرئيات' },
     { href: '/about', label: 'من نحن' },
   ];
 

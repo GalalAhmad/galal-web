@@ -22,12 +22,22 @@ import {
   AlertCircle,
   Plus,
   RefreshCw,
-  BellRing
+  BellRing,
+  Lock,
+  LogOut,
+  Video,
+  Play
 } from 'lucide-react';
 import { articlesData as initialArticles } from '@/data/articles';
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<'inquiries' | 'feedback' | 'pricing' | 'tracks' | 'articles' | 'settings'>('inquiries');
+  // Authentication Protection State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [authLoading, setAuthLoading] = useState<boolean>(true);
+  const [inputPassword, setInputPassword] = useState<string>('');
+  const [authError, setAuthError] = useState<string>('');
+
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'feedback' | 'pricing' | 'tracks' | 'videos' | 'articles' | 'settings'>('inquiries');
   
   // Institutional Inquiries
   const [inquiries, setInquiries] = useState<any[]>([]);
@@ -36,6 +46,18 @@ export default function AdminDashboardPage() {
   // Client Feedback
   const [feedbackList, setFeedbackList] = useState<any[]>([]);
   const [loadingFeedback, setLoadingFeedback] = useState(true);
+
+  // Videos List
+  const [videosList, setVideosList] = useState<any[]>([]);
+  const [loadingVideos, setLoadingVideos] = useState(true);
+  const [newVideo, setNewVideo] = useState({
+    title: '',
+    youtubeUrl: '',
+    category: 'quran',
+    categoryLabel: 'مشروع أقومية القرآن',
+    duration: '10:00',
+    desc: ''
+  });
 
   // WhatsApp Review Message Generator
   const [clientNameForWhatsapp, setClientNameForWhatsapp] = useState('');
@@ -56,6 +78,7 @@ export default function AdminDashboardPage() {
     parentingFee: 'تبدأ من 250 ر.س',
     emergencyFee: '500 ر.س',
     institutionalFee: 'حسب نطاق العمل',
+    mithaqNextBatch: 'نوفمبر 2026',
   });
   const [savingSettings, setSavingSettings] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
@@ -78,7 +101,40 @@ export default function AdminDashboardPage() {
     content: ''
   });
 
-  // Fetch inquiries and feedback
+  // Check Authentication on load
+  useEffect(() => {
+    try {
+      const auth = localStorage.getItem('galal_admin_session');
+      if (auth === 'active') {
+        setIsAuthenticated(true);
+      }
+    } catch (e) {}
+    setAuthLoading(false);
+  }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    // Primary admin password
+    const validPasswords = ['galal@admin2026', 'galalahmad2026', 'galal2026', 'admin@galal'];
+    if (validPasswords.includes(inputPassword.trim())) {
+      setIsAuthenticated(true);
+      try {
+        localStorage.setItem('galal_admin_session', 'active');
+      } catch (e) {}
+    } else {
+      setAuthError('كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى.');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    try {
+      localStorage.removeItem('galal_admin_session');
+    } catch (e) {}
+  };
+
+  // Fetch inquiries, feedback, settings, and videos
   const fetchData = async () => {
     try {
       const inqRes = await fetch('/api/inquiries');
@@ -98,17 +154,26 @@ export default function AdminDashboardPage() {
       if (setData.settings) {
         setSettings((prev: any) => ({ ...prev, ...setData.settings }));
       }
+
+      const vidRes = await fetch('/api/admin/videos');
+      const vidData = await vidRes.json();
+      if (vidData.videos) {
+        setVideosList(vidData.videos);
+      }
     } catch (err) {
       console.error('Error fetching admin data:', err);
     } finally {
       setLoadingInquiries(false);
       setLoadingFeedback(false);
+      setLoadingVideos(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (isAuthenticated) {
+      fetchData();
+    }
+  }, [isAuthenticated]);
 
   // Update Inquiry Status
   const handleInquiryStatus = async (id: string, newStatus: string) => {
@@ -223,6 +288,54 @@ export default function AdminDashboardPage() {
     setTimeout(() => setSaveSuccessMsg(''), 3000);
   };
 
+  // Add Video Handler
+  const handleAddVideo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newVideo.title || !newVideo.youtubeUrl) return;
+
+    try {
+      const res = await fetch('/api/admin/videos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newVideo),
+      });
+      const data = await res.json();
+      if (data.videos) {
+        setVideosList(data.videos);
+        setNewVideo({
+          title: '',
+          youtubeUrl: '',
+          category: 'quran',
+          categoryLabel: 'مشروع أقومية القرآن',
+          duration: '10:00',
+          desc: ''
+        });
+        setSaveSuccessMsg('تمت إضافة الفيديو بنجاح إلى قسم المرئيات');
+        setTimeout(() => setSaveSuccessMsg(''), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Delete Video Handler
+  const handleDeleteVideo = async (id: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا الفيديو من قسم المرئيات؟')) return;
+    try {
+      const res = await fetch('/api/admin/videos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id }),
+      });
+      const data = await res.json();
+      if (data.videos) {
+        setVideosList(data.videos);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Generated WhatsApp feedback link text
   const generatedFeedbackMsg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${clientNameForWhatsapp || ''}، سعدنا جداً بلقائك وتقديم الجلسة الاستشارية (${serviceForWhatsapp}) مع المستشار جلال أحمد. رأيك وتجربتك تهمنا وتسهم في تطوير خدماتنا، نسعد بمشاركتك تقييمك الموجز عبر الرابط الآمن:%0Ahttps://galalahmad.com/feedback`;
 
@@ -235,6 +348,75 @@ export default function AdminDashboardPage() {
 
   const newInquiriesCount = inquiries.filter(i => i.status === 'new').length;
   const pendingFeedbackCount = feedbackList.filter(f => !f.isPublished).length;
+
+  // 1. Loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#0A0F18] flex items-center justify-center text-slate-400">
+        <RefreshCw className="w-6 h-6 animate-spin text-[#154F9C]" />
+      </div>
+    );
+  }
+
+  // 2. Authentication Gate (Protecting Admin Panel strictly for Galal Ahmad)
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#0A0F18] text-slate-100 flex items-center justify-center p-4 selection:bg-[#154F9C] selection:text-white" dir="rtl">
+        <div className="w-full max-w-md p-8 rounded-3xl bg-[#0E1524] border border-slate-800 shadow-2xl space-y-6 text-right">
+          <div className="text-center space-y-3">
+            <img src="/assets/logo-white.png" alt="جلال أحمد" className="h-10 w-auto mx-auto logo-clean" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs font-bold text-slate-400">
+              <Lock className="w-3.5 h-3.5 text-amber-400" />
+              <span>منطقة تحكم محمية ومشفرة</span>
+            </div>
+            <h1 className="text-xl font-black text-white">
+              لوحة إدارة المستشار جلال أحمد
+            </h1>
+            <p className="text-xs text-slate-400">
+              أدخل كلمة المرور الخاصة بك لتسجيل الدخول والتحكم في الموقع
+            </p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                كلمة المرور السرية:
+              </label>
+              <input
+                type="password"
+                required
+                autoFocus
+                value={inputPassword}
+                onChange={(e) => setInputPassword(e.target.value)}
+                placeholder="••••••••••••"
+                className="w-full p-3.5 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#154F9C] text-center font-mono"
+              />
+            </div>
+
+            {authError && (
+              <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs text-center font-bold">
+                {authError}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="w-full py-3.5 px-4 rounded-2xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs sm:text-sm font-bold transition shadow-md shadow-[#154F9C]/20 cursor-pointer flex items-center justify-center gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              <span>دخول إلى لوحة التحكم</span>
+            </button>
+          </form>
+
+          <div className="text-center pt-2">
+            <Link href="/" className="text-xs text-slate-500 hover:text-slate-300 transition">
+              ← العودة إلى الموقع الرئيسي
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0A0F18] text-slate-100 flex flex-col font-sans" dir="rtl">
@@ -275,6 +457,15 @@ export default function AdminDashboardPage() {
             <span>معاينة الموقع</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </Link>
+
+          <button
+            onClick={handleLogout}
+            title="تسجيل الخروج من لوحة التحكم"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 transition font-bold cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>خروج</span>
+          </button>
         </div>
       </header>
 
@@ -335,7 +526,22 @@ export default function AdminDashboardPage() {
             }`}
           >
             <Compass className="w-4 h-4" />
-            <span>المسارات والبرامج التدريبية</span>
+            <span>المسارات والدفعات</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('videos')}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition text-right cursor-pointer ${
+              activeTab === 'videos' ? 'bg-[#154F9C] text-white shadow-md' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Video className="w-4 h-4 text-rose-400" />
+              <span>المرئيات والفيديوهات</span>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+              {videosList.length}
+            </span>
           </button>
 
           <button
@@ -793,6 +999,35 @@ export default function AdminDashboardPage() {
                       </Link>
                     </div>
                   </div>
+
+                  {/* الدفعة القادمة لبرنامج ميثاق */}
+                  <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2 mt-3 text-right">
+                    <label className="block text-xs font-bold text-slate-200">
+                      📅 موعد الدفعة القادمة لبرنامج ميثاق (يظهر تلقائياً في صفحة ميثاق):
+                    </label>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={settings.mithaqNextBatch || ''}
+                        onChange={(e) => setSettings({ ...settings, mithaqNextBatch: e.target.value })}
+                        placeholder="مثال: نوفمبر 2026 أو 15 ديسمبر 2026"
+                        className="flex-1 p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveSettings}
+                        disabled={savingSettings}
+                        className="px-5 py-2.5 rounded-xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs font-bold transition shrink-0 cursor-pointer"
+                      >
+                        {savingSettings ? 'جارٍ الحفظ...' : 'حفظ موعد الدفعة'}
+                      </button>
+                    </div>
+                    {saveSuccessMsg && (
+                      <span className="text-[11px] text-emerald-400 block font-bold">
+                        {saveSuccessMsg}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {/* Institutions Track */}
@@ -837,7 +1072,157 @@ export default function AdminDashboardPage() {
             </div>
           )}
 
-          {/* TAB 5: ARTICLES & CULTURAL FORUM */}
+          {/* TAB 5: VIDEOS & VISUALS */}
+          {activeTab === 'videos' && (
+            <div className="space-y-6">
+              
+              {/* Add New Video Form */}
+              <div className="p-6 rounded-3xl bg-[#0E1524] border border-slate-800 space-y-4">
+                <div className="border-b border-slate-800 pb-2.5">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Video className="w-4 h-4 text-rose-500" />
+                    <span>إضافة فيديو جديد إلى قسم المرئيات</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    أدخل رابط يوتيوب وسيقوم النظام باستخراج المعرف والصورة المصغرة وعرضه تلقائياً في صفحة المرئيات
+                  </p>
+                </div>
+
+                <form onSubmit={handleAddVideo} className="space-y-3.5 text-right">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-300 mb-1">عنوان الفيديو *</label>
+                      <input
+                        type="text"
+                        required
+                        value={newVideo.title}
+                        onChange={(e) => setNewVideo({ ...newVideo, title: e.target.value })}
+                        placeholder="عنوان جذاب للمقطع..."
+                        className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-300 mb-1">رابط يوتيوب الكامل أو المختصر *</label>
+                      <input
+                        type="url"
+                        required
+                        value={newVideo.youtubeUrl}
+                        onChange={(e) => setNewVideo({ ...newVideo, youtubeUrl: e.target.value })}
+                        placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..."
+                        dir="ltr"
+                        className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white text-right"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-300 mb-1">التصنيف</label>
+                      <select
+                        value={newVideo.category}
+                        onChange={(e) => {
+                          const catMap: Record<string, string> = {
+                            quran: 'مشروع أقومية القرآن',
+                            family: 'العلاقات والأسرة',
+                            parenting: 'التربية والوالدية',
+                            psychology: 'بصائر نفسية'
+                          };
+                          setNewVideo({
+                            ...newVideo,
+                            category: e.target.value,
+                            categoryLabel: catMap[e.target.value] || 'مرئيات عامة'
+                          });
+                        }}
+                        className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                      >
+                        <option value="quran">مشروع أقومية القرآن</option>
+                        <option value="family">العلاقات والأسرة</option>
+                        <option value="parenting">التربية والوالدية</option>
+                        <option value="psychology">بصائر نفسية</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-300 mb-1">المدة التقديرية (مثال: 12:45)</label>
+                      <input
+                        type="text"
+                        value={newVideo.duration}
+                        onChange={(e) => setNewVideo({ ...newVideo, duration: e.target.value })}
+                        placeholder="10:00"
+                        className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-300 mb-1">وصف موجز للمقطع</label>
+                    <textarea
+                      rows={2}
+                      value={newVideo.desc}
+                      onChange={(e) => setNewVideo({ ...newVideo, desc: e.target.value })}
+                      placeholder="ملخص لما يتعلمه المشاهد من هذا المقطع..."
+                      className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#CC4E46] to-[#B33D35] hover:from-[#B33D35] hover:to-[#99261E] text-white text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>إضافة الفيديو للموقع</span>
+                  </button>
+                </form>
+              </div>
+
+              {/* Videos List */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-xs text-slate-400">
+                  <span>الفيديوهات المنشورة حالياً ({videosList.length})</span>
+                  <Link href="/videos" target="_blank" className="text-[#60A5FA] hover:underline flex items-center gap-1">
+                    <span>معاينة صفحة المرئيات</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {videosList.map((v) => (
+                    <div
+                      key={v.id}
+                      className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-start justify-between gap-3 text-right"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-24 aspect-video rounded-lg bg-black overflow-hidden shrink-0 relative">
+                          <img
+                            src={`https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`}
+                            alt={v.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-[#D97706]">
+                            {v.categoryLabel}
+                          </span>
+                          <h4 className="text-xs font-bold text-white line-clamp-1">{v.title}</h4>
+                          <span className="text-[10px] text-slate-500 block">{v.duration} • {v.publishDate}</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleDeleteVideo(v.id)}
+                        title="حذف الفيديو"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition shrink-0 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB 6: ARTICLES & CULTURAL FORUM */}
           {activeTab === 'articles' && (
             <div className="space-y-6">
               

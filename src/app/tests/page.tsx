@@ -17,13 +17,15 @@ import {
   Brain,
   Sparkles,
   ChevronRight,
-  Zap
+  Zap,
+  AlertCircle
 } from 'lucide-react';
 import { allTestsData, TestItem } from '@/data/testsData';
 
 export default function PsychologicalTestsPage() {
   const [activeCategory, setActiveCategory] = useState<string>('الكل');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [visibleCount, setVisibleCount] = useState<number>(12);
   
   // Interactive Modal State
   const [activeTest, setActiveTest] = useState<TestItem | null>(null);
@@ -32,6 +34,35 @@ export default function PsychologicalTestsPage() {
   const [showResult, setShowResult] = useState<boolean>(false);
 
   const categories = ['الكل', 'الصحة النفسية', 'الشخصية', 'العلاقات والأسرة'];
+
+  // Global/Standard Psychological Assessment Badges dictionary
+  const toolBadges: Record<string, string> = {
+    depression: 'PHQ-9',
+    anxiety: 'GAD-7',
+    burnout: 'MBI',
+    adhd: 'ASRS-v1.1',
+    'marital-harmony': 'DAS',
+    'toxic-relationship': 'DAS',
+    ptsd: 'PCL-5',
+    ocd: 'Y-BOCS',
+    bipolar: 'MDQ',
+    'social-anxiety': 'LSAS',
+    'eating-disorders': 'EAT-26',
+    schizophrenia: 'BPRS',
+    'children-behavior': 'CBCL',
+    'emotional-intelligence': 'TEIQue',
+    'postpartum-depression': 'EPDS',
+    'imposter-syndrome': 'CIPS',
+    anger: 'STAXI',
+    'childhood-trauma': 'ACE',
+    'introvert-extrovert': 'Big Five',
+    npd: 'NPI',
+    bpd: 'MSI-BPD',
+    'job-satisfaction': 'JSS',
+    'work-life-balance': 'WLB',
+  };
+
+  const sensitiveTestIds = ['depression', 'bipolar', 'schizophrenia', 'ptsd'];
 
   const filteredTests = useMemo(() => {
     return allTestsData.filter((t) => {
@@ -207,18 +238,25 @@ export default function PsychologicalTestsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredTests.map((test) => (
+            {filteredTests.slice(0, visibleCount).map((test) => (
               <div
                 key={test.id}
                 style={{ backgroundColor: test.color }}
                 className="relative p-6 rounded-3xl border border-black/5 dark:border-white/10 flex flex-col justify-between shadow-2xs hover:shadow-md transition-all duration-300 hover:-translate-y-1 text-right text-slate-900 group"
               >
                 <div className="space-y-3">
-                  {/* Top Bar: Icon & Category */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white/70 dark:bg-black/30 text-slate-800 dark:text-slate-200 border border-black/5">
-                      {test.category}
-                    </span>
+                  {/* Top Bar: Category & International Tool Badge */}
+                  <div className="flex items-center justify-between flex-wrap gap-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white/80 dark:bg-black/30 text-slate-800 dark:text-slate-200 border border-black/5">
+                        {test.category}
+                      </span>
+                      {toolBadges[test.id] && (
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xs">
+                          {toolBadges[test.id]}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
                       <Clock className="w-3 h-3 text-slate-600 dark:text-slate-400" />
                       <span>{test.duration}</span>
@@ -228,7 +266,9 @@ export default function PsychologicalTestsPage() {
                   {/* Title & Description */}
                   <div className="space-y-1.5">
                     <h3 className="text-base font-extrabold text-slate-900 leading-snug">
-                      {test.title}
+                      <Link href={`/tests/${test.id}`} className="hover:underline">
+                        {test.title}
+                      </Link>
                     </h3>
                     <p className="text-xs text-slate-700/90 leading-relaxed font-normal line-clamp-3">
                       {test.desc}
@@ -236,23 +276,43 @@ export default function PsychologicalTestsPage() {
                   </div>
                 </div>
 
-                {/* Bottom CTA Button */}
+                {/* Bottom CTA Buttons */}
                 <div className="pt-5 flex items-center justify-between border-t border-black/5 dark:border-white/5 mt-4">
-                  <span className="text-[11px] text-slate-600 font-medium">
-                    {test.questionsCount}
-                  </span>
+                  <Link
+                    href={`/tests/${test.id}`}
+                    className="text-[11px] text-slate-700 hover:text-slate-950 font-bold underline"
+                    title="صفحة المقياس المستقلة"
+                  >
+                    صفحة مستقلة
+                  </Link>
                   
                   <button
                     onClick={() => handleStartTest(test)}
                     className="px-4 py-2 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer group-hover:scale-105"
                   >
-                    <span>ابدأ الاختبار</span>
+                    <span>ابدأ الاختبار الآن</span>
                     <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-0" />
                   </button>
                 </div>
               </div>
             ))}
           </div>
+
+          {/* زر عرض المزيد من الاختبارات */}
+          {filteredTests.length > visibleCount && (
+            <div className="text-center pt-8 space-y-2">
+              <button
+                onClick={() => setVisibleCount(prev => prev + 12)}
+                className="px-8 py-3.5 rounded-full bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs sm:text-sm font-bold transition shadow-md shadow-[#154F9C]/20 hover:scale-105 active:scale-95 cursor-pointer inline-flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>عرض المزيد من الاختبارات (+12 مقياساً)</span>
+              </button>
+              <div className="text-[11px] text-slate-500 font-semibold">
+                معروض حالياً {Math.min(visibleCount, filteredTests.length)} من أصل {filteredTests.length} مقياساً
+              </div>
+            </div>
+          )}
 
           {filteredTests.length === 0 && (
             <div className="text-center py-16 p-8 rounded-3xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 space-y-3">
@@ -340,6 +400,12 @@ export default function PsychologicalTestsPage() {
                   ))}
                 </div>
 
+                {/* تنبيه استرشادي معاد صياغته */}
+                <div className="pt-2 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-normal flex items-start gap-1.5">
+                  <ShieldAlert className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                  <span>تنبيه استرشادي: نتائج هذه المقاييس مخصصة للتوعية الذاتية، ولا تُعد تشخيصاً طبياً أو عيادياً بديلاً عن استشارة الطبيب أو الأخصائي النفسي المؤهل.</span>
+                </div>
+
               </div>
             ) : (
               /* Results View */
@@ -359,6 +425,22 @@ export default function PsychologicalTestsPage() {
                   </p>
                 </div>
 
+                {/* صندوق طوارئ للاختبارات الحساسة */}
+                {sensitiveTestIds.includes(activeTest.id) && (
+                  <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-200 text-xs text-right space-y-1.5">
+                    <div className="flex items-center gap-1.5 font-black text-rose-700 dark:text-rose-300">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>تنبيه سلامة عاجل</span>
+                    </div>
+                    <p className="leading-relaxed">
+                      إذا كنت تفكر في إيذاء نفسك أو كنت في خطر، تواصل فوراً مع أقرب مركز طوارئ أو اتصل بأرقام الطوارئ في بلدك.
+                    </p>
+                    <Link href="/policies" className="block text-[11px] font-bold underline hover:text-rose-800">
+                      راجع إرشادات الطوارئ في صفحة السياسات ←
+                    </Link>
+                  </div>
+                )}
+
                 {/* Clinical Recommendation Box */}
                 <div className="p-4 rounded-2xl bg-[#FEF9EC] dark:bg-[#2A2312] border border-[#FDF0CD] dark:border-[#4D3A1B] text-right space-y-1.5">
                   <span className="text-xs font-bold text-[#D97706] block">
@@ -367,6 +449,11 @@ export default function PsychologicalTestsPage() {
                   <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                     {resultInterpretation.rec}
                   </p>
+                </div>
+
+                {/* تنبيه استرشادي فوق أزرار الإجراءات مباشرة */}
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium text-center">
+                  * تنبيه استرشادي: نتائج هذه المقاييس للتوعية الذاتية، ولا تُعد تشخيصاً طبياً بديلاً عن استشارة الطبيب أو الأخصائي النفسي.
                 </div>
 
                 {/* Action Buttons */}

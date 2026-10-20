@@ -808,7 +808,7 @@ export default function HomePage() {
 
           <div className="text-center pt-2">
             <Link
-              href="/aqwameyat-quran"
+              href="/aqwamiyya"
               className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#4E7E76] hover:bg-[#3D655E] text-white text-xs font-bold rounded-full transition shadow-md shadow-[#4E7E76]/25 hover:scale-[1.02]"
             >
               <span>استكشف وثيقة وتفاصيل مشروع أقومية القرآن كاملة</span>

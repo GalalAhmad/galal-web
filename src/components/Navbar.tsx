@@ -18,8 +18,8 @@ export default function Navbar() {
     { href: '/aqwameyat-quran', label: 'أقومية القرآن' },
     { href: '/tests', label: 'اختبارات نفسية' },
     { href: '/articles', label: 'مقالات' },
-    { href: '/videos', label: 'مرئيات' },
-    { href: '/about', label: 'من نحن' },
+    { href: '/videos', label: 'مرئيات', badge: 'قريباً' },
+    { href: '/about', label: 'من أنا' },
   ];
 
   return (
@@ -43,13 +43,18 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`transition-all py-1 relative ${
+                className={`transition-all py-1 relative inline-flex items-center gap-1.5 ${
                   isActive
                     ? 'text-[#4E7E76] dark:text-[#5E988E] font-black'
                     : 'hover:text-[#4E7E76] dark:hover:text-[#5E988E]'
                 }`}
               >
-                {link.label}
+                <span>{link.label}</span>
+                {link.badge && (
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20 leading-none">
+                    {link.badge}
+                  </span>
+                )}
                 {isActive && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4E7E76] dark:bg-[#5E988E] rounded-full" />
                 )}
@@ -104,9 +109,14 @@ export default function Navbar() {
               key={link.href}
               href={link.href} 
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-2.5 border-b border-slate-50 dark:border-slate-800/60 hover:text-[#4E7E76] dark:hover:text-[#5E988E]"
+              className="flex items-center justify-between py-2.5 border-b border-slate-50 dark:border-slate-800/60 hover:text-[#4E7E76] dark:hover:text-[#5E988E]"
             >
-              {link.label}
+              <span>{link.label}</span>
+              {link.badge && (
+                <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  {link.badge}
+                </span>
+              )}
             </Link>
           ))}
           <div className="pt-2">

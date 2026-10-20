@@ -84,7 +84,7 @@ export default function Footer() {
               <li><Link href="/articles" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مقالات</Link></li>
               <li><Link href="/videos" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مرئيات</Link></li>
               <li><Link href="/feedback" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تقييم جلسات</Link></li>
-              <li><Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">من نحن</Link></li>
+              <li><Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">من أنا</Link></li>
             </ul>
           </div>
 

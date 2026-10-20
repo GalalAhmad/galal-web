@@ -263,15 +263,9 @@ export default function HomePage() {
 
         <div className="max-w-4xl mx-auto text-center space-y-6 relative z-10">
           
-          {/* Trust Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EDF7F5] dark:bg-[#112924] border border-[#D6EEEA] dark:border-[#1F4A42] text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>مساحة استشارية متخصصة • أونلاين 100% عبر Google Meet وبسرية تامة</span>
-          </div>
-
           {/* Galal Ahmad Prominent Name & Professional Titles */}
           <div className="space-y-4">
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.3] max-w-3xl mx-auto">
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.2] max-w-4xl mx-auto">
               جـلال أحـمد
             </h1>
             <p className="text-sm sm:text-base md:text-lg font-bold text-[#4E7E76] dark:text-[#5E988E] max-w-3xl mx-auto leading-relaxed">
@@ -332,33 +326,33 @@ export default function HomePage() {
             {/* Box 1: استشارات متخصصة */}
             <Link
               href="/services"
-              className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3 sm:gap-4 text-right group"
+              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
             >
-              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] flex items-center justify-center p-2 border border-[#D6EEEA] dark:border-[#1F4A42] group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] flex items-center justify-center p-2 border border-[#D6EEEA] dark:border-[#1F4A42] group-hover:scale-105 transition-transform">
                 <img src="/assets/template-icons/award-1.svg" alt="استشارات متخصصة" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <div className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#4E7E76] transition-colors truncate">
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#4E7E76] transition-colors whitespace-normal leading-snug">
                   استشارات متخصصة
                 </div>
-                <div className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">فردية، زوجية، وتربوية</div>
+                <div className="text-[11px] sm:text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">فردية، زوجية، وتربوية</div>
                 <div className="text-[11px] text-slate-500 hidden sm:block">جلسات أونلاين بسرية تامة</div>
               </div>
             </Link>
 
-            {/* Box 2: مسارات بناء وتمكين */}
+            {/* Box 2: بناء وتمكين */}
             <Link
               href="/courses"
-              className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3 sm:gap-4 text-right group"
+              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
             >
-              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] flex items-center justify-center p-2 border border-[#D6E6F8] dark:border-[#1E3A5F] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/award-3.svg" alt="مسارات بناء وتمكين" className="w-full h-full object-contain" />
+              <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] flex items-center justify-center p-2 border border-[#D6E6F8] dark:border-[#1E3A5F] group-hover:scale-105 transition-transform">
+                <img src="/assets/template-icons/award-3.svg" alt="بناء وتمكين" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <div className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#154F9C] transition-colors truncate">
-                  مسارات بناء وتمكين
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#154F9C] transition-colors whitespace-normal leading-snug">
+                  بناء وتمكين
                 </div>
-                <div className="text-xs font-bold text-[#154F9C] dark:text-[#60A5FA]">الأسرة، الشباب، والمؤسسات</div>
+                <div className="text-[11px] sm:text-xs font-bold text-[#154F9C] dark:text-[#60A5FA]">الأسرة، الشباب، والمؤسسات</div>
                 <div className="text-[11px] text-slate-500 hidden sm:block">برامج تأهيلية وتطبيقية</div>
               </div>
             </Link>
@@ -366,16 +360,16 @@ export default function HomePage() {
             {/* Box 3: مقاييس واختبارات */}
             <Link
               href="/tests"
-              className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3 sm:gap-4 text-right group"
+              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
             >
-              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FEF9EC] dark:bg-[#2E2413] flex items-center justify-center p-2 border border-[#FDF0CD] dark:border-[#4D3A1B] group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FEF9EC] dark:bg-[#2E2413] flex items-center justify-center p-2 border border-[#FDF0CD] dark:border-[#4D3A1B] group-hover:scale-105 transition-transform">
                 <img src="/assets/template-icons/award-2.svg" alt="مقاييس واختبارات" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <div className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#D97706] transition-colors truncate">
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#D97706] transition-colors whitespace-normal leading-snug">
                   مقاييس واختبارات
                 </div>
-                <div className="text-xs font-bold text-[#D97706] dark:text-[#F59E0B]">+40 مقياساً نفسياً</div>
+                <div className="text-[11px] sm:text-xs font-bold text-[#D97706] dark:text-[#F59E0B]">+40 مقياساً نفسياً</div>
                 <div className="text-[11px] text-slate-500 hidden sm:block">تقييمات علمية دقيقة وموثوقة</div>
               </div>
             </Link>
@@ -383,16 +377,16 @@ export default function HomePage() {
             {/* Box 4: معرفة ووعي */}
             <Link
               href="/articles"
-              className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-3 sm:gap-4 text-right group"
+              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
             >
-              <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FDF1EE] dark:bg-[#251816] flex items-center justify-center p-2 border border-[#F8DDD9] dark:border-[#42221E] group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FDF1EE] dark:bg-[#251816] flex items-center justify-center p-2 border border-[#F8DDD9] dark:border-[#42221E] group-hover:scale-105 transition-transform">
                 <img src="/assets/template-icons/time.svg" alt="معرفة ووعي" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0">
-                <div className="text-sm sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#CC4E46] transition-colors truncate">
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#CC4E46] transition-colors whitespace-normal leading-snug">
                   معرفة ووعي
                 </div>
-                <div className="text-xs font-bold text-[#CC4E46] dark:text-[#F87171]">رؤى ومقالات فكرية</div>
+                <div className="text-[11px] sm:text-xs font-bold text-[#CC4E46] dark:text-[#F87171]">رؤى ومقالات فكرية</div>
                 <div className="text-[11px] text-slate-500 hidden sm:block">أقومية القرآن والنفس والتربية</div>
               </div>
             </Link>

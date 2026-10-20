@@ -26,9 +26,21 @@ export default function VideosPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
+  const [videosEnabled, setVideosEnabled] = useState(false);
+  const [loadingSettings, setLoadingSettings] = useState(true);
 
-  // Fetch updated videos from API
+  // Fetch updated videos & settings from API
   useEffect(() => {
+    fetch('/api/admin/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data.settings && typeof data.settings.videosEnabled === 'boolean') {
+          setVideosEnabled(data.settings.videosEnabled);
+        }
+      })
+      .catch(err => console.error('Error fetching settings:', err))
+      .finally(() => setLoadingSettings(false));
+
     fetch('/api/admin/videos')
       .then(res => res.json())
       .then(data => {
@@ -67,7 +79,7 @@ export default function VideosPage() {
           
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#FEF2F2] dark:bg-[#2A1515] border border-[#FECACA] dark:border-[#521B1B] text-xs font-bold text-rose-700 dark:text-rose-400">
             <Tv className="w-3.5 h-3.5 text-rose-600" />
-            <span>المكتبة المرئية الشاملة • مقاطع ومحاضرات متخصصة</span>
+            <span>{!videosEnabled ? 'قريباً • المكتبة المرئية المتخصصة' : 'المكتبة المرئية الشاملة • مقاطع ومحاضرات متخصصة'}</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -78,53 +90,126 @@ export default function VideosPage() {
             حلقات ولقاءات مرئية يقدمها جلال أحمد لتفكيك السلوك الإنساني، تعزيز الحوار الزواجي، والتأصيل التربوي المستلهم من هدايات الوحي.
           </p>
 
-          {/* Search & Categories Bar */}
-          <div className="pt-4 max-w-xl mx-auto space-y-4">
-            
-            {/* Search Input */}
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث في المرئيات (مثال: أقومية القرآن، العناد، الزواج، القلق...)"
-                className="w-full py-3.5 pr-11 pl-4 rounded-2xl bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#CC4E46] text-right"
-              />
-              <Search className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2" />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-white"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
+          {/* Search & Categories Bar (Only active when videos are published live) */}
+          {videosEnabled && (
+            <div className="pt-4 max-w-xl mx-auto space-y-4">
+              
+              {/* Search Input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="ابحث في المرئيات (مثال: أقومية القرآن، العناد، الزواج، القلق...)"
+                  className="w-full py-3.5 pr-11 pl-4 rounded-2xl bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#CC4E46] text-right"
+                />
+                <Search className="w-4 h-4 text-slate-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
 
-            {/* Category Filter Tabs */}
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer ${
-                    selectedCategory === cat.id
-                      ? 'bg-gradient-to-r from-[#CC4E46] to-[#B33D35] text-white shadow-xs'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
+              {/* Category Filter Tabs */}
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer ${
+                      selectedCategory === cat.id
+                        ? 'bg-gradient-to-r from-[#CC4E46] to-[#B33D35] text-white shadow-xs'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
 
-          </div>
+            </div>
+          )}
 
         </div>
       </section>
 
-      {/* Videos YouTube-Style Grid */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 flex-1">
+      {/* When Coming Soon Mode is Active */}
+      {!videosEnabled ? (
+        <section className="py-16 sm:py-24 px-4 sm:px-6 flex-1 flex items-center justify-center">
+          <div className="max-w-2xl mx-auto text-center space-y-8">
+            
+            <div className="w-20 h-20 rounded-3xl bg-[#FEF2F2] dark:bg-[#2A1515] border border-[#FECACA] dark:border-[#521B1B] flex items-center justify-center mx-auto shadow-sm text-rose-600">
+              <Tv className="w-10 h-10" />
+            </div>
+
+            <div className="space-y-3">
+              <span className="px-3.5 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold border border-amber-500/20 inline-block">
+                قيد التجهيز والتسجيل
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">
+                المكتبة المرئية ستنطلق قريباً
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed max-w-lg mx-auto font-medium">
+                يعمل جلال أحمد وفريق الإنتاج حالياً على تصوير وتسجيل سلسلة مرئية متكاملة في تأصيل الوعي النفسي والتربية وبناء الأسرة. ستُتاح جميع الحلقات هنا للمشاهدة فور اكتمالها.
+              </p>
+            </div>
+
+            {/* البدائل المتاحة حالياً */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 text-right">
+              <Link
+                href="/articles"
+                className="p-5 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 hover:border-[#CC4E46] transition group shadow-2xs"
+              >
+                <div className="text-xs font-bold text-[#CC4E46] mb-1">معرفة ووعي</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-[#CC4E46] transition">
+                  تصفح المقالات الفكرية
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1">رؤى وأطروحات حول السواء وأقومية القرآن</p>
+              </Link>
+
+              <Link
+                href="/tests"
+                className="p-5 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 hover:border-[#4E7E76] transition group shadow-2xs"
+              >
+                <div className="text-xs font-bold text-[#4E7E76] mb-1">تقييم ذاتي</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-[#4E7E76] transition">
+                  خض الاختبارات النفسية
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1">+40 مقياساً علمياً دقيقاً ومجانياً</p>
+              </Link>
+
+              <Link
+                href="/services#book"
+                className="p-5 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 hover:border-[#154F9C] transition group shadow-2xs"
+              >
+                <div className="text-xs font-bold text-[#154F9C] mb-1">جلسات خاصة</div>
+                <div className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-[#154F9C] transition">
+                  احجز استشارة أونلاين
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1">لقاءات خاصة بسرية وأمان تام</p>
+              </Link>
+            </div>
+
+            <div className="pt-4">
+              <a
+                href="https://wa.me/201014876666?text=السلام%20عليكم،%20أود%20إشعاري%20عند%20إطلاق%20المكتبة%20المرئية"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-[#4E7E76] transition"
+              >
+                <span>هل تود إشعارك فور إطلاق الحلقات؟ تواصل معنا عبر واتساب ←</span>
+              </a>
+            </div>
+
+          </div>
+        </section>
+      ) : (
+        /* Videos YouTube-Style Grid */
+        <section className="py-12 sm:py-16 px-4 sm:px-6 flex-1">
         <div className="max-w-6xl mx-auto space-y-8">
           
           <div className="flex items-center justify-between text-xs text-slate-500 font-semibold px-1">
@@ -253,6 +338,7 @@ export default function VideosPage() {
 
         </div>
       </section>
+      )}
 
       {/* Video Modal Player */}
       {activeVideo && (

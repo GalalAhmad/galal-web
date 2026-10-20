@@ -34,6 +34,8 @@ import { siteConfig } from '@/data/siteConfig';
 import CrisisModal from '@/components/CrisisModal';
 import ConfidentialityModal from '@/components/ConfidentialityModal';
 import DismissibleSafetyBar from '@/components/DismissibleSafetyBar';
+import NewsletterLeadMagnet from '@/components/NewsletterLeadMagnet';
+import BooksAndInstitutionsStrip from '@/components/BooksAndInstitutionsStrip';
 
 export default function HomePage() {
   const [crisisModalOpen, setCrisisModalOpen] = useState(false);
@@ -260,7 +262,7 @@ export default function HomePage() {
     },
     {
       q: 'ما هي سياسة الإلغاء أو إعادة الجدولة؟',
-      a: 'نلتزم بمرونة كاملة تقديراً لظروفك؛ يمكنك إعادة جدولة الموعد أو إلغاؤه واسترداد رسومك مجاناً بالكامل حتى 48 ساعة قبل الموعد المحدد.',
+      a: 'نلتزم بمرونة كاملة تقديراً لظروفك؛ يمكنك إعادة جدولة الموعد أو إلغاؤه واسترداد رسومك مجاناً بالكامل عند إشعارنا قبل 24 ساعة على الأقل من موعد الجلسة.',
     },
     {
       q: 'ما حدود السرية المهنية؟',
@@ -382,7 +384,7 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76]" />
-              <span>إلغاء مجاني حتى 48 ساعة</span>
+              <span>إلغاء مجاني حتى 24 ساعة</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76]" />
@@ -466,6 +468,43 @@ export default function HomePage() {
               </div>
             </Link>
 
+          </div>
+        </div>
+      </section>
+
+      {/* 2.5 من أنا (Short human connection block - max 3 lines) */}
+      <section className="py-6 px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-right">
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 shadow-sm">
+              <img
+                src="/assets/dr-galal-speaking.jpg"
+                alt="جلال أحمد"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="space-y-2 flex-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
+                  من أنا
+                </h3>
+                <span className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">
+                  {siteConfig.officialTitle}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+                أرافق الأفراد والأزواج منذ أكثر من عقد في تفكيك التحديات النفسية وبناء استقرار العلاقات، منطلقاً من إطار علمي إكلينيكي رصين يتكامل مع المرجعية القيمية للإنسان. غايتي أن تجد في الجلسة مساحة آمنة تفهم ألمك وتمنحك خطة عملية واضحة تناسب واقعك.
+              </p>
+              <div className="pt-1">
+                <Link
+                  href="/about"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] hover:underline"
+                >
+                  <span>اقرأ المزيد عن المسيرة والخبرات في صفحة «من أنا»</span>
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -977,6 +1016,9 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Books and Institutions Strip (Auto-hides if empty) */}
+      <BooksAndInstitutionsStrip />
+
       {/* 10. أسئلة شائعة (FAQ Accordion) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#EDF5FD]/40 dark:bg-[#122238]/20 border-y border-slate-200/70 dark:border-slate-800">
         <div className="max-w-4xl mx-auto space-y-10">
@@ -1014,7 +1056,29 @@ export default function HomePage() {
                   </button>
                   {isOpen && (
                     <div className="px-5 pb-5 sm:px-6 sm:pb-6 text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800/60 pt-4 font-normal">
-                      {faq.a}
+                      <p>{faq.a}</p>
+                      {faq.q.includes('الطارئة') && (
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setCrisisModalOpen(true)}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-red-600 dark:text-red-400 underline hover:no-underline cursor-pointer"
+                          >
+                            <span>عرض خطوط المساعدة وأرقام الطوارئ في بلدك ←</span>
+                          </button>
+                        </div>
+                      )}
+                      {faq.q.includes('السرية') && (
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setConfidentialityModalOpen(true)}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] underline hover:no-underline cursor-pointer"
+                          >
+                            <span>قراءة تفاصيل وثيقة وحدود السرية المهنية ←</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1022,6 +1086,13 @@ export default function HomePage() {
             })}
           </div>
 
+        </div>
+      </section>
+
+      {/* Free Lead Magnet Section */}
+      <section className="py-12 px-4 sm:px-6 bg-white dark:bg-[#0D1117]">
+        <div className="max-w-4xl mx-auto">
+          <NewsletterLeadMagnet source="homepage_bottom" />
         </div>
       </section>
 

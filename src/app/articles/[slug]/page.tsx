@@ -8,6 +8,7 @@ import {
   initialArticles, 
   ArticleItem 
 } from '@/data/articles';
+import NewsletterLeadMagnet from '@/components/NewsletterLeadMagnet';
 import { 
   Clock, 
   Calendar, 
@@ -226,6 +227,9 @@ export default function SingleArticlePage({ params }: Props) {
               <span>مشاركة المقال عبر واتساب</span>
             </a>
           </div>
+
+          {/* Lead Magnet Opt-in */}
+          <NewsletterLeadMagnet source={`article_${article.id}`} className="my-8" />
 
           {/* Comments Section */}
           <section className="space-y-6 text-right">

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AdviceBoxSection from '@/components/AdviceBoxSection';
+import { siteConfig } from '@/data/siteConfig';
 import { 
   ShieldCheck, 
   Award, 
@@ -81,8 +82,17 @@ export default function AboutPage() {
                   <span className="block text-[#4E7E76] dark:text-[#5E988E]">والوعي بداية كل اتزان»</span>
                 </h1>
                 <p className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 leading-relaxed">
-                  جـلال أحـمد — باحث ومستشار في الصحة النفسية والإرشاد الأسري والتربوي، ومطور برامج بناء الإنسان وتأهيل القيادات التعليمية.
+                  جـلال أحـمد ({siteConfig.officialTitle}) — باحث ومستشار في الصحة النفسية والإرشاد الأسري والتربوي، ومطور برامج بناء الإنسان وتأهيل القيادات التعليمية.
                 </p>
+              </div>
+
+              {/* مجالات ومسميات الاختصاص الخمسة */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">اختصاصي نفسي</span>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">استشاري تربوي</span>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">إرشاد أسري</span>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">إرشاد زواجي</span>
+                <span className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700">مستشار تعليمي</span>
               </div>
 
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
@@ -94,9 +104,9 @@ export default function AboutPage() {
                 <div className="inline-flex items-center gap-2.5 p-3.5 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 text-xs shadow-2xs">
                   <ShieldCheck className="w-5 h-5 text-[#4E7E76] shrink-0" />
                   <div>
-                    <strong className="text-slate-900 dark:text-slate-100 font-bold">تصنيف الهيئة السعودية للتخصصات الصحية</strong>
+                    <strong className="text-slate-900 dark:text-slate-100 font-bold">الهيئة السعودية للتخصصات الصحية</strong>
                     <span className="block text-[11px] text-slate-500 mt-0.5 font-normal">
-                      أخصائي مساعد علم نفس | علاج وتأهيل (2025)
+                      {siteConfig.scfhsClassification} | ترخيص: {siteConfig.licenseNumber}
                     </span>
                   </div>
                 </div>
@@ -175,7 +185,7 @@ export default function AboutPage() {
                   تصنيف مهني رسمي — الهيئة السعودية للتخصصات الصحية (SCFHS)
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-                  مصنف بدرجة «أخصائي مساعد علم نفس | علاج وتأهيل» برقم تسجيل معتمد، لممارسة وتقديم الجلسات والدعم النفسي وفق المعايير الطبية والمهنية المعتمدة.
+                  مصنف رسمياً بدرجة «{siteConfig.scfhsClassification}» بترخيص رقم {siteConfig.licenseNumber}، لممارسة وتقديم الجلسات والدعم النفسي والاستشاري وفق المعايير المهنية والأخلاقية المعتمدة.
                 </p>
               </div>
             </div>

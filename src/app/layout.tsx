@@ -1,31 +1,16 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { siteConfig } from '@/data/siteConfig';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.galalahmad.com'),
-  title: 'جلال أحمد | استشارات نفسية وزوجية وتربوية أونلاين',
-  description: 'احجز جلستك الاستشارية أونلاين مع جلال أحمد. استشارات نفسية فردية، إرشاد أسري وزواجي، وتربية بالرفق في بيئة آمنة وسرية تامة عبر Google Meet لجميع دول العالم.',
-  keywords: [
-    'جلال أحمد',
-    'Galal Ahmad',
-    'استشارات نفسية أونلاين',
-    'استشارات زوجية',
-    'إرشاد أسري',
-    'تربية واعية',
-    'رحلة رفق',
-    'برنامج ميثاق',
-    'أخصائي مساعد علم نفس',
-    'الهيئة السعودية للتخصصات الصحية',
-    'مركز إنسان',
-    'منصة وصلة',
-    'مركز مفهوم',
-    'مشروع أقومية القرآن'
-  ],
+  title: 'جلال أحمد | إرشاد أسري وزواجي وتربوي بالرفق',
+  description: `احجز جلستك الاستشارية أونلاين مع المستشار جلال أحمد (${siteConfig.officialTitle} — ${siteConfig.scfhsClassification}). استشارات نفسية فردية، إرشاد أسري وزواجي، وتربية بالرفق نلتزم فيها بالسرية المهنية عبر Google Meet.`,
   authors: [{ name: 'جلال أحمد', url: 'https://www.galalahmad.com' }],
   openGraph: {
-    title: 'جلال أحمد | استشارات نفسية وزوجية وتربوية أونلاين',
-    description: 'احجز جلستك الاستشارية أونلاين مع جلال أحمد. استشارات نفسية فردية، إرشاد أسري وزواجي، وتربية بالرفق في بيئة آمنة وسرية تامة عبر Google Meet.',
+    title: 'جلال أحمد | إرشاد أسري وزواجي وتربوي بالرفق',
+    description: `استشارات نفسية وزوجية وتربوية أونلاين نلتزم فيها بالسرية المهنية مع المستشار جلال أحمد (${siteConfig.officialTitle}).`,
     url: 'https://www.galalahmad.com',
     siteName: 'جلال أحمد',
     images: [
@@ -36,36 +21,39 @@ export const metadata: Metadata = {
         alt: 'جلال أحمد — استشارات وبناء الإنسان والأسرة',
       },
     ],
-    locale: 'ar_EG',
+    locale: 'ar_SA',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'جلال أحمد | استشارات نفسية وزوجية وتربوية أونلاين',
-    description: 'استشارات نفسية وزوجية وتربوية أونلاين في بيئة آمنة وسرية تامة مع المستشار جلال أحمد.',
+    title: 'جلال أحمد | إرشاد أسري وزواجي وتربوي بالرفق',
+    description: `استشارات نفسية وزوجية وتربوية أونلاين نلتزم فيها بالسرية المهنية مع المستشار جلال أحمد (${siteConfig.officialTitle}).`,
     images: ['/assets/dr-galal-speaking.jpg'],
   },
 };
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'ProfessionalService',
+  '@type': 'Person',
   name: 'جلال أحمد | Galal Ahmad',
-  url: 'https://galalahmad.com',
-  logo: 'https://galalahmad.com/assets/logo.png',
-  image: 'https://galalahmad.com/assets/dr-galal-speaking.jpg',
-  description: 'استشارات نفسية وتربوية، إرشاد زواجي، تأهيل المقبلين على الزواج، وتطوير المدارس والمؤسسات التعليمية.',
-  telephone: '+201014876666',
-  email: 'info@galalahmad.com',
-  address: {
-    '@type': 'PostalAddress',
-    addressLocality: 'القاهرة',
-    addressCountry: 'EG'
+  jobTitle: siteConfig.officialTitle,
+  url: 'https://www.galalahmad.com',
+  image: 'https://www.galalahmad.com/assets/dr-galal-speaking.jpg',
+  description: 'إرشاد أسري وزواجي وتربوي بالرفق، وتأهيل المقبلين على الزواج، وتطوير المؤسسات التعليمية.',
+  telephone: siteConfig.phone,
+  email: siteConfig.email,
+  sameAs: siteConfig.socialLinks.map((s) => s.url),
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: 'خدمات الاستشارات والبرامج',
+    itemListElement: [
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'استشارات نفسية فردية' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'استشارات زوجية وأسرية' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'إرشاد والدي وتربوي' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'علاج وتأهيل المراهقين' } },
+      { '@type': 'Offer', itemOffered: { '@type': 'Service', name: 'تطوير المعلمين والمؤسسات التعليمية' } },
+    ],
   },
-  sameAs: [
-    'https://linkedin.com/in/galal3hmad/',
-    'https://www.google.com/search?kgmid=/g/11p_0131cq'
-  ]
 };
 
 import FloatingWhatsApp from '@/components/FloatingWhatsApp';

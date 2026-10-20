@@ -25,6 +25,8 @@ import {
 } from '@/components/Vectors';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import { servicesPricing } from '@/data/pricing';
+import CrisisModal from '@/components/CrisisModal';
+import ConfidentialityModal from '@/components/ConfidentialityModal';
 
 interface ServiceItem {
   id: string;
@@ -43,6 +45,8 @@ interface ServiceItem {
 
 export default function ServicesPage() {
   const [bookingMode, setBookingMode] = useState<'standard' | 'urgent'>('standard');
+  const [isCrisisOpen, setIsCrisisOpen] = useState(false);
+  const [isConfidentialityOpen, setIsConfidentialityOpen] = useState(false);
 
   const services: ServiceItem[] = [
     {
@@ -56,7 +60,7 @@ export default function ServicesPage() {
         'استراتيجيات عملية لإدارة نوبات التوتر والقلق اليومي',
         'بناء الصلابة النفسية ورفع تقدير الذات'
       ],
-      format: 'لقاء فيديو خاص ومشفر عبر Google Meet (أونلاين 100%)',
+      format: 'لقاء فيديو خاص وآمن عبر Google Meet',
       bg: 'bg-[#FDF1EE] dark:bg-[#251816]/70',
       border: 'border-[#F8DDD9] dark:border-[#42221E]',
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#CC4E46]',
@@ -74,7 +78,7 @@ export default function ServicesPage() {
         'بناء جسور الحوار البناء والتعبير عن الاحتياجات بأمان',
         'وضع حلول واقعية متفق عليها تحمي استقرار البيت'
       ],
-      format: 'لقاء فيديو مشفر عبر Google Meet (حضور مشترك بموافقة الطرفين أو فردي)',
+      format: 'لقاء فيديو خاص وآمن عبر Google Meet (حضور مشترك بموافقة الطرفين أو فردي)',
       bg: 'bg-[#EDF5FD] dark:bg-[#122238]/70',
       border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#154F9C]',
@@ -145,7 +149,7 @@ export default function ServicesPage() {
       <section className="pt-12 pb-10 sm:pt-16 sm:pb-12 px-4 sm:px-6 text-center max-w-4xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EDF7F5] dark:bg-[#112924] border border-[#D6EEEA] dark:border-[#1F4A42] text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>استشارات فردية وأسرية وتربوية • أونلاين 100%</span>
+          <span>استشارات فردية وأسرية وتربوية أونلاين</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
@@ -153,15 +157,19 @@ export default function ServicesPage() {
         </h1>
         
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto font-medium">
-          اختر المسار الملائم لاحتياجك، واحجز موعدك مباشرة عبر جدول المواعيد بخصوصية تامة وسرية مطلقة.
+          اختر المسار الملائم لاحتياجك، واحجز موعدك مباشرة عبر جدول المواعيد بخصوصية والتزام تام بالسرية المهنية.
         </p>
 
         {/* 48h cancellation & reassurance */}
         <div className="flex flex-wrap items-center justify-center gap-6 pt-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-1.5">
+          <button 
+            type="button" 
+            onClick={() => setIsConfidentialityOpen(true)}
+            className="flex items-center gap-1.5 hover:text-[#4E7E76] transition cursor-pointer"
+          >
             <ShieldCheck className="w-4 h-4 text-[#4E7E76]" />
-            <span>سرية وخصوصية تامة 100%</span>
-          </div>
+            <span>نلتزم بالسرية المهنية (ما حدود السرية؟)</span>
+          </button>
           <div className="flex items-center gap-1.5">
             <Clock className="w-4 h-4 text-[#CC4E46]" />
             <span>إلغاء وإعادة جدولة مجانية حتى 48 ساعة</span>
@@ -253,7 +261,7 @@ export default function ServicesPage() {
       {/* Emergency 24h WhatsApp Booking Banner (Arab Therapy Instant Session pattern) */}
       <section className="py-8 px-4 sm:px-6 max-w-6xl mx-auto w-full">
         <div className="p-6 sm:p-8 rounded-3xl bg-[#F4EFFC] dark:bg-[#241738]/80 border border-[#E5D9F8] dark:border-[#3D2561] flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-          <div className="space-y-2 text-right">
+          <div className="space-y-3 text-right">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-black/30 text-[#7C3AED] text-xs font-bold">
                 <Zap className="w-3.5 h-3.5" />
@@ -269,6 +277,20 @@ export default function ServicesPage() {
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl font-normal leading-relaxed">
               إذا كنت بحاجة إلى استماع وتوجيه عاجل خلال 24 ساعة دون انتظار المواعيد المجدولة، يمكنك طلب الحجز الطارئ مباشرة عبر واتساب المخصص (تسعير مستقل للاستجابة الفورية).
             </p>
+            
+            {/* Safety & Crisis Notice */}
+            <div className="p-3 rounded-2xl bg-white/80 dark:bg-black/40 border border-[#E5D9F8] dark:border-[#3D2561] text-xs text-slate-700 dark:text-slate-300 space-y-1.5">
+              <p className="font-semibold text-rose-700 dark:text-rose-400">
+                ⚠️ هذه الخدمة لتنسيق موعد عاجل وليست خدمة إنقاذ. إذا كنت أو كان شخص قريب منك في خطر مباشر، تواصل فوراً مع الطوارئ في بلدك.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsCrisisOpen(true)}
+                className="text-[11px] font-bold text-[#7C3AED] dark:text-[#A78BFA] underline hover:opacity-80 block"
+              >
+                عرض أرقام خطوط الطوارئ والدعم النفسي المعتمدة ⭠
+              </button>
+            </div>
           </div>
 
           <a
@@ -320,8 +342,14 @@ export default function ServicesPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 text-center">
           <div className="p-4 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] border border-[#D6EEEA] dark:border-[#1F4A42] space-y-1">
             <ShieldCheck className="w-5 h-5 mx-auto text-[#4E7E76]" />
-            <h4 className="text-xs font-black text-slate-900 dark:text-slate-100">سرية وأمان تام</h4>
-            <p className="text-[11px] text-slate-500 font-normal">مشفرة بالكامل وفق المعايير المهنية</p>
+            <h4 className="text-xs font-black text-slate-900 dark:text-slate-100">نلتزم بالسرية المهنية</h4>
+            <button
+              type="button"
+              onClick={() => setIsConfidentialityOpen(true)}
+              className="text-[11px] text-[#4E7E76] dark:text-[#5E988E] underline font-bold hover:opacity-80"
+            >
+              ما حدود السرية؟
+            </button>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#FDF1EE] dark:bg-[#251816] border border-[#F8DDD9] dark:border-[#42221E] space-y-1">
@@ -332,7 +360,7 @@ export default function ServicesPage() {
 
           <div className="p-4 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] border border-[#D6E6F8] dark:border-[#1E3A5F] space-y-1">
             <Video className="w-5 h-5 mx-auto text-[#154F9C]" />
-            <h4 className="text-xs font-black text-slate-900 dark:text-slate-100">أونلاين 100%</h4>
+            <h4 className="text-xs font-black text-slate-900 dark:text-slate-100">أونلاين بأمان</h4>
             <p className="text-[11px] text-slate-500 font-normal">Google Meet من أي مكان بالعالم</p>
           </div>
         </div>
@@ -340,6 +368,9 @@ export default function ServicesPage() {
       </section>
 
       <Footer />
+
+      <CrisisModal isOpen={isCrisisOpen} onClose={() => setIsCrisisOpen(false)} />
+      <ConfidentialityModal isOpen={isConfidentialityOpen} onClose={() => setIsConfidentialityOpen(false)} />
     </main>
   );
 }

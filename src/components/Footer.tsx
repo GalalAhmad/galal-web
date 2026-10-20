@@ -1,13 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Mail, Phone, Video, Shield, Clock, Linkedin } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { siteConfig } from '@/data/siteConfig';
+import CrisisModal from '@/components/CrisisModal';
+import ConfidentialityModal from '@/components/ConfidentialityModal';
 
 export default function Footer() {
   const { theme } = useTheme();
+  const [isCrisisOpen, setIsCrisisOpen] = useState(false);
+  const [isConfidentialityOpen, setIsConfidentialityOpen] = useState(false);
 
   return (
     <footer className="bg-slate-50 dark:bg-[#090D11] border-t border-slate-200/70 dark:border-slate-800 py-16 px-4 sm:px-6 text-right transition-colors">
@@ -132,7 +136,23 @@ export default function Footer() {
         <div className="p-4 rounded-2xl bg-white dark:bg-[#12171E] border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 leading-relaxed flex items-start gap-3 shadow-xs">
           <Shield className="w-4 h-4 text-[#4E7E76] shrink-0 mt-0.5" />
           <p>
-            <strong>تنويه مهني وأخلاقي:</strong> الجلسات والاستشارات المقدمة عبر هذا الموقع مخصصة للدعم النفسي، والإرشاد الأسري والتربوي، وتخضع لأعلى معايير السرية المهنية. هذه الخدمات ليست بديلاً عن التدخل الطبي النفسي الطارئ. في حالات الخطر المباشر يرجى التوجه فوراً لأقرب مشفى أو مركز طوارئ طبي معتمد في بلدك.
+            <strong>تنويه مهني وأخلاقي:</strong> الجلسات والاستشارات المقدمة عبر هذا الموقع مخصصة للدعم النفسي، والإرشاد الأسري والتربوي، <strong>ونلتزم بالسرية المهنية</strong> وفق أخلاقيات المهنة المعتمدة (
+            <button
+              type="button"
+              onClick={() => setIsConfidentialityOpen(true)}
+              className="text-[#4E7E76] dark:text-[#5E988E] underline font-bold mx-1 hover:opacity-80"
+            >
+              ما حدود السرية؟
+            </button>
+            ). هذه الخدمات ليست بديلاً عن التدخل الطبي النفسي الطارئ. في حالات الخطر المباشر يرجى التوجه فوراً لأقرب مشفى أو مركز طوارئ طبي معتمد في بلدك (
+            <button
+              type="button"
+              onClick={() => setIsCrisisOpen(true)}
+              className="text-rose-600 dark:text-rose-400 underline font-bold mx-1 hover:opacity-80"
+            >
+              عرض أرقام الطوارئ والدعم المباشر
+            </button>
+            ).
           </p>
         </div>
 
@@ -147,6 +167,9 @@ export default function Footer() {
         </div>
 
       </div>
+
+      <CrisisModal isOpen={isCrisisOpen} onClose={() => setIsCrisisOpen(false)} />
+      <ConfidentialityModal isOpen={isConfidentialityOpen} onClose={() => setIsConfidentialityOpen(false)} />
     </footer>
   );
 }

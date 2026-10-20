@@ -30,10 +30,22 @@ import {
 } from 'lucide-react';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import { servicesPricing } from '@/data/pricing';
+import { siteConfig } from '@/data/siteConfig';
+import CrisisModal from '@/components/CrisisModal';
+import ConfidentialityModal from '@/components/ConfidentialityModal';
+import DismissibleSafetyBar from '@/components/DismissibleSafetyBar';
 
 export default function HomePage() {
-  // FAQ open states
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [crisisModalOpen, setCrisisModalOpen] = useState(false);
+  const [confidentialityModalOpen, setConfidentialityModalOpen] = useState(false);
+  // FAQ open states (First two questions open by default including cancellation policy)
+  const [openFaqs, setOpenFaqs] = useState<number[]>([0, 1]);
+
+  const toggleFaq = (idx: number) => {
+    setOpenFaqs((prev) =>
+      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx]
+    );
+  };
 
   const services = [
     {
@@ -92,13 +104,13 @@ export default function HomePage() {
 
   const trustPillars = [
     {
-      title: 'سرية وأمان تام 100%',
-      desc: 'بياناتك ومحادثاتك مشفرة ومحمية بأعلى المعايير الأخلاقية والمهنية. مساحتك آمنة وخاصة تماماً.',
+      title: 'نلتزم بالسرية المهنية',
+      desc: 'نحمي بياناتك بإجراءات أمنية مناسبة، ونلتزم بأخلاقيات المهنة المعتمدة، وجلسات الفيديو تتم عبر Google Meet.',
       image: '/assets/arabtherapy/why-01.svg',
     },
     {
       title: 'إرشاد معتمد وموثوق',
-      desc: 'مصنف من الهيئة السعودية للتخصصات الصحية (2025) مع أكثر من 18 عاماً من الخبرة الاستشارية والميدانية.',
+      desc: `تصنيف ${siteConfig.scfhsClassification} مع أكثر من 18 عاماً من الخبرة الاستشارية والميدانية.`,
       image: '/assets/arabtherapy/why-02.svg',
     },
     {
@@ -129,7 +141,7 @@ export default function HomePage() {
     {
       number: '3',
       title: 'التقِ في مساحة آمنة',
-      desc: 'استلم رابط اللقاء المباشر على Google Meet والتقِ بخصوصية وسرية تامة.',
+      desc: 'استلم رابط اللقاء المباشر على Google Meet والتقِ بأمان وسرية مهنية.',
       icon: '/assets/arabtherapy/quality.svg',
     },
   ];
@@ -137,9 +149,9 @@ export default function HomePage() {
   const featuredTests = [
     {
       id: 'gad7',
-      title: 'مقياس القلق العام',
+      title: 'مقياس القلق العام (GAD-7)',
       category: 'القلق والتوتر',
-      desc: 'أداة طبية عالمية معتمدة لقياس أعراض القلق والتوتر النفسي خلال الأسبوعين الماضيين.',
+      desc: 'مقياس مستخدم عالمياً للفحص المبدئي لأعراض القلق والتوتر النفسي خلال الأسبوعين الماضيين.',
       time: '4 دقائق',
       questions: '7 أسئلة',
       bg: 'bg-[#FFCCCD]/60 dark:bg-[#3D1A1E]/60',
@@ -149,9 +161,9 @@ export default function HomePage() {
     },
     {
       id: 'phq9',
-      title: 'مقياس تقييم الاكتئاب',
+      title: 'مقياس تقييم الاكتئاب (PHQ-9)',
       category: 'المزاج والاكتئاب',
-      desc: 'المقياس الإكلينيكي المعتمد لتقييم حدة تقلبات المزاج ومؤشرات الاكتئاب اليومية.',
+      desc: 'مقياس مستخدم عالمياً للفحص المبدئي لتقييم حدة تقلبات المزاج ومؤشرات الاكتئاب اليومية.',
       time: '6 دقائق',
       questions: '9 أسئلة',
       bg: 'bg-[#A1D0F7]/40 dark:bg-[#122238]/60',
@@ -218,19 +230,31 @@ export default function HomePage() {
   const faqs = [
     {
       q: 'كيف تتم الجلسات الاستشارية؟ وهل تتطلب الحضور شخصياً؟',
-      a: 'جميع الجلسات تتم أونلاين 100% وبسرية تامة عبر منصة Google Meet. يمكنك الانضمام من هاتفك أو حاسوبك من أي مكان في العالم براحة واطمئنان تام.',
+      a: 'جميع الجلسات تتم أونلاين عبر لقاء خاص على منصة Google Meet نلتزم فيه بالسرية المهنية، ويمكنك الانضمام من هاتفك أو حاسوبك من أي مكان في العالم براحة واطمئنان.',
     },
     {
       q: 'ما هي سياسة الإلغاء أو إعادة الجدولة؟',
       a: 'نلتزم بمرونة كاملة تقديراً لظروفك؛ يمكنك إعادة جدولة الموعد أو إلغاؤه واسترداد رسومك مجاناً بالكامل حتى 48 ساعة قبل الموعد المحدد.',
     },
     {
+      q: 'ما حدود السرية المهنية؟',
+      a: 'نلتزم بالسرية المهنية الصارمة وفق أخلاقيات المهنة المعتمدة، ولا يتم تسجيل الجلسات أو مشاركة بياناتك. الاستثناءات الوحيدة نظاماً وأخلاقياً تقتصر على وجود خطر وشيك ومباشر على الحياة (إيذاء النفس أو الغير) أو إيذاء القُصّر أو بموجب أمر قضائي ملزم.',
+    },
+    {
+      q: 'هل الجلسات تناسب المراهقين، ومن يحضر؟',
+      a: 'نعم، نقدم استشارات متخصصة للمراهقين واليافعين بمشاركة وإشراف الوالدين في الجلسة الاستكشافية الأولى لوضع أهداف واضحة، مع توفير مساحة استماع آمنة ومستقلة للمراهق تكسب ثقته.',
+    },
+    {
+      q: 'هل الجلسة الطارئة مناسبة للأزمات وحالات الخطر المباشر؟',
+      a: 'الجلسة الطارئة (خلال 24 ساعة) مخصصة لتنسيق موعد استشاري عاجل للضغوط والقرارات الملحة، وليست خدمة إسعاف أو إنقاذ للحالات الحرجة. في حالات الخطر المباشر أو الأفكار الانتحارية الحادة، يجب التواصل فوراً مع أرقام الطوارئ والدعم النفسي في بلدك أو التوجه لأقرب مستشفى.',
+    },
+    {
       q: 'ما الفرق بين الجلسة العادية والحجز الطارئ (خلال 24 ساعة)؟',
       a: 'الجلسة العادية تُحجز وفق المواعيد المتاحة على التقويم. أما الحجز الطارئ فهو مسار مخصص للظروف الضاغطة والملحة التي لا تحتمل الانتظار، ويتم تنسيق موعدها مباشرة عبر واتساب خلال 24 ساعة.',
     },
     {
-      q: 'هل بياناتي وتفاصيل الجلسة محمية بالسرية التامة؟',
-      a: 'نعم، بكل تأكيد. تخضع جميع الجلسات لأعلى معايير السرية المهنية والأخلاقية المعتمدة طبياً ونفسياً، ولا يتم تسجيل الجلسات أو مشاركة أي تفاصيل مع أي طرف ثالث تحت أي ظرف.',
+      q: 'هل بياناتي وتفاصيل الجلسة محمية بالسرية؟',
+      a: 'نعم، بكل تأكيد. نلتزم بأعلى معايير السرية المهنية والأخلاقية، وتُحفظ بيانات التواصل بإجراءات أمنية مناسبة، وجلسات الفيديو تتم عبر Google Meet دون تسجيل.',
     },
   ];
 
@@ -254,28 +278,46 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
+      {/* Top Dismissible Safety Bar */}
+      <DismissibleSafetyBar onOpenCrisisModal={() => setCrisisModalOpen(true)} />
       <Navbar />
 
       {/* 1. Hero Section */}
-      <section className="relative pt-12 pb-14 sm:pt-20 sm:pb-20 px-4 sm:px-6 overflow-hidden">
+      <section className="relative pt-10 pb-14 sm:pt-16 sm:pb-20 px-4 sm:px-6 overflow-hidden">
         {/* Soft background aura */}
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#4E7E76]/10 via-[#CC4E46]/5 to-transparent blur-[120px] rounded-full pointer-events-none" />
 
         <div className="max-w-4xl mx-auto text-center space-y-6 relative z-10">
           
-          {/* Galal Ahmad Prominent Name & Professional Titles */}
-          <div className="space-y-4">
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.2] max-w-4xl mx-auto">
-              جـلال أحـمد
+          {/* Professional Photo Slot & Verified Credentials Line */}
+          <div className="flex flex-col items-center gap-3 pt-1">
+            <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-[#4E7E76] via-[#D6EEEA] to-[#CC4E46] shadow-md">
+              <img 
+                src="/assets/dr-galal-speaking.jpg" 
+                alt="المستشار جلال أحمد"
+                loading="eager"
+                fetchPriority="high"
+                className="w-full h-full object-cover rounded-full"
+              />
+            </div>
+            <div className="text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white/90 dark:bg-[#161F2B]/90 px-4 py-1.5 rounded-full border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+              <span>خبرة {siteConfig.experienceYears} • {siteConfig.scfhsClassification} • ترخيص: {siteConfig.licenseNumber}</span>
+            </div>
+          </div>
+
+          {/* Single Clear Headline & Subline */}
+          <div className="space-y-3">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-[1.25] max-w-4xl mx-auto">
+              إرشاد أسري وزواجي وتربوي بالرفق
             </h1>
-            <p className="text-sm sm:text-base md:text-lg font-bold text-[#4E7E76] dark:text-[#5E988E] max-w-3xl mx-auto leading-relaxed">
-              اختصاصي نفسي | استشاري تربوي | إرشاد أسري | إرشاد زواجي | مستشار تعليمي
+            <p className="text-base sm:text-lg md:text-xl font-bold text-[#4E7E76] dark:text-[#5E988E] max-w-2xl mx-auto leading-relaxed">
+              مع جلال أحمد ({siteConfig.officialTitle}) — {siteConfig.experienceYears} من الخبرة
             </p>
           </div>
 
           {/* Foundational Quote */}
           <div className="pt-1">
-            <p className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 rounded-2xl py-2.5 px-6 inline-block shadow-2xs">
+            <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 rounded-2xl py-2 px-5 inline-block shadow-2xs">
               «وَمَنْ يَصِفُ لَكَ الطَّرِيقَ.. لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ»
             </p>
           </div>
@@ -303,7 +345,14 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-6 pt-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76]" />
-              <span>سرية وخصوصية تامة 100%</span>
+              <span>نلتزم بالسرية المهنية وفق أخلاقيات المهنة</span>
+              <button
+                type="button"
+                onClick={() => setConfidentialityModalOpen(true)}
+                className="text-[11px] font-bold text-[#4E7E76] dark:text-[#5E988E] underline hover:no-underline mr-1 cursor-pointer"
+              >
+                (ما حدود السرية؟)
+              </button>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76]" />
@@ -336,7 +385,7 @@ export default function HomePage() {
                   استشارات متخصصة
                 </div>
                 <div className="text-[11px] sm:text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">فردية، زوجية، وتربوية</div>
-                <div className="text-[11px] text-slate-500 hidden sm:block">جلسات أونلاين بسرية تامة</div>
+                <div className="text-[11px] text-slate-500 hidden sm:block">جلسات أونلاين بسرية مهنية</div>
               </div>
             </Link>
 
@@ -485,7 +534,7 @@ export default function HomePage() {
               لماذا تبدأ رحلتك الاستشارية معنا؟
             </h2>
             <p className="text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-              معايير مهنية عالية تضمن لك الراحة والخصوصية والنتائج الواقعية الملموسة
+              معايير مهنية عالية تضمن لك الراحة والخصوصية والدعم العملي الذي يناسب حالتك
             </p>
           </div>
 
@@ -680,7 +729,7 @@ export default function HomePage() {
                 اختبارات نفسية
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                اختبارات مقننة ومجانية 100% تساعدك على قياس مستوى القلق، الاكتئاب، الضغوط، والرضى الزواجي بدقة وسرية
+                اختبارات مقننة ومجانية 100% تساعدك على قياس مستوى القلق، الاكتئاب، الضغوط، والرضى الزواجي بسرية
               </p>
             </div>
             <Link 
@@ -917,14 +966,21 @@ export default function HomePage() {
 
           <div className="space-y-3">
             {faqs.map((faq, idx) => {
-              const isOpen = openFaq === idx;
+              const isOpen = openFaqs.includes(idx);
               return (
                 <div
                   key={idx}
                   className="bg-white dark:bg-[#161F2B] rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden transition-all shadow-2xs"
                 >
                   <button
-                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    onClick={() => toggleFaq(idx)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleFaq(idx);
+                      }
+                    }}
+                    aria-expanded={isOpen}
                     className="w-full p-5 sm:p-6 text-right flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-slate-900 dark:text-slate-100 cursor-pointer"
                   >
                     <span>{faq.q}</span>
@@ -981,6 +1037,10 @@ export default function HomePage() {
 
         </div>
       </section>
+
+      {/* Safety & Crisis Modals */}
+      <CrisisModal isOpen={crisisModalOpen} onClose={() => setCrisisModalOpen(false)} />
+      <ConfidentialityModal isOpen={confidentialityModalOpen} onClose={() => setConfidentialityModalOpen(false)} />
 
       <Footer />
     </main>

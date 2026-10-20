@@ -19,7 +19,7 @@ export default function BookingClean() {
             اختر وقتك وابدأ رحلتك
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-400 text-slate-600 leading-relaxed">
-            جلسات أونلاين عبر لقاءات فيديو مشفرة على Google Meet. اختر بين الجدول الاعتيادي أو طلب أولوية طارئة خلال 24 ساعة.
+            جلسات أونلاين عبر لقاءات فيديو خاصة على Google Meet. اختر بين الجدول الاعتيادي أو طلب أولوية طارئة خلال 24 ساعة.
           </p>
         </div>
 
@@ -68,7 +68,7 @@ export default function BookingClean() {
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-blue-400" />
-                <span>سرية مهنية وأمان 100%</span>
+                <span>نلتزم بالسرية المهنية</span>
               </div>
             </div>
 
@@ -114,12 +114,16 @@ export default function BookingClean() {
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>جلسة خاصة عبر اتصال فيديو مشفر (Google Meet).</span>
+                <span>جلسة خاصة وآمنة عبر اتصال فيديو (Google Meet).</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
                 <span>تخضع لتسعير خاص ومستقل يتناسب مع سرعة الاستجابة الاستثنائية.</span>
               </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-rose-950/30 border border-rose-800/40 text-xs text-rose-300">
+              ⚠️ هذه الخدمة لتنسيق موعد عاجل وليست خدمة إنقاذ. إذا كنت أو كان شخص قريب منك في خطر مباشر، تواصل فوراً مع الطوارئ في بلدك.
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">

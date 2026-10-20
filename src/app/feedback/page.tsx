@@ -23,7 +23,7 @@ export default function FeedbackPage() {
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [location, setLocation] = useState('');
   const [feedback, setFeedback] = useState('');
-  const [allowPublish, setAllowPublish] = useState(true);
+  const [allowPublish, setAllowPublish] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -256,19 +256,19 @@ export default function FeedbackPage() {
                   </div>
                 </div>
 
-                {/* 5. Consent to publish */}
-                <div className="p-3.5 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924]/50 border border-[#D6EEEA] dark:border-[#1F4A42] flex items-start gap-3">
+                {/* 5. Explicit consent to publish */}
+                <div className="p-4 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924]/50 border border-[#D6EEEA] dark:border-[#1F4A42] flex items-start gap-3">
                   <input
                     type="checkbox"
                     id="consent"
                     checked={allowPublish}
                     onChange={(e) => setAllowPublish(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 text-[#154F9C] rounded border-slate-300 focus:ring-[#154F9C]"
+                    className="mt-1 w-4 h-4 text-[#154F9C] rounded border-slate-300 focus:ring-[#154F9C] cursor-pointer"
                   />
                   <label htmlFor="consent" className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed cursor-pointer select-none">
-                    <span className="font-bold text-slate-900 dark:text-white">أوافق على نشر رأيي في تجارب المستفيدين</span>
-                    <span className="block text-[11px] text-slate-500 mt-0.5">
-                      سيُنشر رأيك مع الحفاظ على خصوصيتك واسمك الرمزي فقط دون الكشف عن أي بيانات شخصية.
+                    <span className="font-bold text-slate-900 dark:text-white block">موافقة صريحة على نشر الاقتباس (اختياري)</span>
+                    <span className="block text-[11px] text-slate-600 dark:text-slate-400 mt-1">
+                      أوافق صراحةً وبملء إرادتي على نشر اقتباس مجهل الهوية من هذا الرأي ضمن قسم التجارب والآراء في الموقع، مع استخدام الأحرف الأولى فقط وبدون أي تفاصيل شخصية أو معرفات خاصة.
                     </span>
                   </label>
                 </div>
@@ -276,7 +276,7 @@ export default function FeedbackPage() {
                 {/* Privacy Guarantee Note */}
                 <div className="flex items-center gap-2 text-xs text-slate-500">
                   <ShieldCheck className="w-4 h-4 text-[#168962]" />
-                  <span>خصوصيتك وسريتك مصونة 100% وفق ميثاق الشرف المهني للاستشارات.</span>
+                  <span>نلتزم بالسرية المهنية وفق أخلاقيات وميثاق الشرف المهني للاستشارات.</span>
                 </div>
 
                 {/* Submit Button */}

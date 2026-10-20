@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     description: 'برامج عملية متخصصة لبناء بيوت تقوم على السكن والمودة والرحمة والشراكة الواعية.',
     url: 'https://www.galalahmad.com/courses/family',
     siteName: 'جلال أحمد',
-    locale: 'ar_EG',
+    locale: 'ar_SA',
     type: 'website',
   },
   alternates: {

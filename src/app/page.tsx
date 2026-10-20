@@ -143,7 +143,7 @@ export default function HomePage() {
     },
     {
       title: 'مرونة كاملة في المواعيد',
-      desc: 'نقدّر ظروفك؛ إمكانية إلغاء أو إعادة جدولة جلستك مجاناً وبكل سهولة حتى 48 ساعة قبل الموعد.',
+      desc: 'نقدّر ظروفك؛ إمكانية إلغاء أو إعادة جدولة جلستك مجاناً وبكل سهولة حتى 24 ساعة قبل الموعد.',
       image: '/assets/arabtherapy/why-03.svg',
     },
     {
@@ -325,6 +325,8 @@ export default function HomePage() {
                 alt="المستشار جلال أحمد"
                 loading="eager"
                 fetchPriority="high"
+                width={128}
+                height={128}
                 className="w-full h-full object-cover rounded-full"
               />
             </div>
@@ -377,7 +379,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setConfidentialityModalOpen(true)}
-                className="text-[11px] font-bold text-[#4E7E76] dark:text-[#5E988E] underline hover:no-underline mr-1 cursor-pointer"
+                className="text-[11px] font-bold text-[#2D5650] dark:text-[#5E988E] underline hover:no-underline mr-1 cursor-pointer"
               >
                 (ما حدود السرية؟)
               </button>
@@ -480,14 +482,17 @@ export default function HomePage() {
               <img
                 src="/assets/dr-galal-speaking.jpg"
                 alt="جلال أحمد"
+                width={96}
+                height={96}
+                loading="lazy"
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="space-y-2 flex-1">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
+                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100">
                   من أنا
-                </h3>
+                </h2>
                 <span className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">
                   {siteConfig.officialTitle}
                 </span>
@@ -613,6 +618,8 @@ export default function HomePage() {
                   <img 
                     src={pillar.image} 
                     alt={pillar.title} 
+                    width={112}
+                    height={112}
                     loading="lazy"
                     className="h-28 w-auto max-w-full object-contain" 
                   />
@@ -655,7 +662,7 @@ export default function HomePage() {
                   <div className="w-12 h-12 rounded-2xl bg-[#CC4E46]/10 text-[#CC4E46] flex items-center justify-center text-xl font-black">
                     {st.number}
                   </div>
-                  <img src={st.icon} alt={st.title} className="w-10 h-10 object-contain opacity-80" />
+                  <img src={st.icon} alt={st.title} width={40} height={40} className="w-10 h-10 object-contain opacity-80" />
                 </div>
                 <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">
                   {st.title}
@@ -957,9 +964,9 @@ export default function HomePage() {
                 className={`p-6 sm:p-7 rounded-3xl border ${art.bg} ${art.border} flex flex-col justify-between space-y-5 shadow-2xs hover:shadow-md transition-all`}
               >
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-[#D97706]">
-                    <span>{art.category}</span>
-                    <span className="text-slate-500 font-normal">{art.readTime}</span>
+                  <div className="flex items-center justify-between text-[11px] font-bold">
+                    <span className="text-[#854d0e] dark:text-[#fde047]">{art.category}</span>
+                    <span className="text-slate-600 dark:text-slate-400 font-normal">{art.readTime}</span>
                   </div>
                   <h3 className="text-base font-black text-slate-900 dark:text-slate-100 leading-snug">
                     {art.title}
@@ -972,7 +979,7 @@ export default function HomePage() {
                 <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
                   <Link
                     href="/articles"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D97706] hover:text-[#B45309] transition"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#854d0e] hover:text-[#78350f] dark:text-[#fbbf24] transition"
                   >
                     <span>قراءة المقال والمناقشة</span>
                     <ArrowLeft className="w-3.5 h-3.5" />

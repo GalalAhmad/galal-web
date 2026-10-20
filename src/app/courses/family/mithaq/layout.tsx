@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     description: 'برنامج عملي من 8 محطات للمتزوجين؛ البيوت لا تُبنى بحفلات الزفاف وحدها، بل بالوعي والمهارات والرفق.',
     url: 'https://www.galalahmad.com/courses/family/mithaq',
     siteName: 'جلال أحمد',
-    locale: 'ar_EG',
+    locale: 'ar_SA',
     type: 'website',
   },
   alternates: {

@@ -26,11 +26,13 @@ export default function Footer() {
               <img 
                 src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'} 
                 alt="جلال أحمد" 
+                width={140}
+                height={36}
                 className="h-9 w-auto object-contain logo-clean" 
               />
               <div>
                 <span className="text-xl font-black text-slate-900 dark:text-slate-100">جـلال أحـمد</span>
-                <p className="text-xs text-[#4E7E76] dark:text-[#5E988E] font-bold">استشارات وبناء الإنسان والأسرة</p>
+                <p className="text-xs text-[#2D5650] dark:text-[#5E988E] font-bold">استشارات وبناء الإنسان والأسرة</p>
               </div>
             </div>
             
@@ -38,9 +40,9 @@ export default function Footer() {
               «ومَنْ يَصِفُ لَكَ الطَّرِيقَ.. لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ» — مساحة استشارية وتربوية متخصصة تجمع بين عمق التأصيل النفسي والخبرة الميدانية، لمساعدتك على استعادة الاتزان وبناء علاقات سوية ومستقرة.
             </p>
 
-            <div className="flex items-center gap-2 pt-1 text-xs text-[#4E7E76] dark:text-[#5E988E] font-semibold">
+            <div className="flex items-center gap-2 pt-1 text-xs text-[#2D5650] dark:text-[#5E988E] font-semibold">
               <Clock className="w-4 h-4 shrink-0 text-[#CC4E46]" />
-              <span>مرونة المواعيد: إعادة الجدولة والإلغاء متاح مجاناً حتى 48 ساعة قبل الموعد.</span>
+              <span>مرونة المواعيد: إعادة الجدولة والإلغاء متاح مجاناً حتى 24 ساعة قبل الموعد.</span>
             </div>
 
             {/* Social Media Links Icons (Configurable via src/data/siteConfig.ts) */}
@@ -76,9 +78,9 @@ export default function Footer() {
 
           {/* روابط أقسام الموقع بدون ال التعريف */}
           <div className="md:col-span-3 space-y-3">
-            <h4 className="text-xs font-black text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">
+            <h3 className="text-xs font-black text-[#2D5650] dark:text-[#5E988E] uppercase tracking-wider">
               أقسام الموقع
-            </h4>
+            </h3>
             <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-2.5 font-semibold">
               <li><Link href="/" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">رئيسية</Link></li>
               <li><Link href="/services" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">استشارات</Link></li>
@@ -96,9 +98,9 @@ export default function Footer() {
 
           {/* التواصل والتنسيق الرسمي */}
           <div className="md:col-span-4 space-y-3">
-            <h4 className="text-xs font-black text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">
+            <h3 className="text-xs font-black text-[#2D5650] dark:text-[#5E988E] uppercase tracking-wider">
               التواصل والتنسيق المباشر
-            </h4>
+            </h3>
             <div className="space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-[#4E7E76] shrink-0" />

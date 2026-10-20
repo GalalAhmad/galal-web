@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     description: 'برامج تمكين الشباب واليافعين لبناء الوعي بالذات، والصلابة النفسية، وإدارة المسؤولية والتكليف.',
     url: 'https://www.galalahmad.com/courses/youth',
     siteName: 'جلال أحمد',
-    locale: 'ar_EG',
+    locale: 'ar_SA',
     type: 'website',
   },
   alternates: {

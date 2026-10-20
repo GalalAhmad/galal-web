@@ -33,6 +33,8 @@ export default function Navbar() {
           <img 
             src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
             alt="شعار جلال أحمد" 
+            width={160}
+            height={48}
             className="h-11 sm:h-12 w-auto object-contain logo-clean transition-transform group-hover:scale-105"
           />
         </Link>

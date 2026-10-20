@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     description: 'استشارات وتدريب للمدارس والمؤسسات التربوية لتأهيل المعلمين والمشرفين وبناء البيئة التربوية المتكاملة.',
     url: 'https://www.galalahmad.com/courses/institutions',
     siteName: 'جلال أحمد',
-    locale: 'ar_EG',
+    locale: 'ar_SA',
     type: 'website',
   },
   alternates: {

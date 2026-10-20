@@ -20,6 +20,28 @@ import {
 } from 'lucide-react';
 
 export default function AboutPage() {
+  const aboutJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'AboutPage',
+    mainEntity: {
+      '@type': 'Person',
+      name: 'جلال أحمد',
+      alternateName: 'Galal Ahmad',
+      jobTitle: siteConfig.officialTitle,
+      description: 'باحث ومستشار في الصحة النفسية والإرشاد الأسري والتربوي، ومطور برامج بناء الإنسان وتأهيل القيادات التعليمية.',
+      url: 'https://www.galalahmad.com/about',
+      image: 'https://www.galalahmad.com/assets/dr-galal-portrait.webp',
+      sameAs: siteConfig.socialLinks.map((s) => s.url),
+      knowsAbout: [
+        'الإرشاد النفسي والأسري',
+        'الإرشاد الزواجي وتأهيل المقبلين على الزواج',
+        'التربية بالرفق والتعامل مع المراهقين',
+        'تطوير القيادات والمؤسسات التعليمية',
+        'مشروع أقومية القرآن'
+      ]
+    }
+  };
+
   const initiatives = [
     {
       name: 'منصة رِفق',
@@ -61,6 +83,10 @@ export default function AboutPage() {
 
   return (
     <main className="min-h-screen flex flex-col bg-[#FAFCFA] dark:bg-[#0D1117] text-slate-900 dark:text-slate-100 transition-colors">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutJsonLd) }}
+      />
       <Navbar />
 
       {/* Hero Header with Portrait Photo (Sole Authorized Location for Personal Portrait) */}

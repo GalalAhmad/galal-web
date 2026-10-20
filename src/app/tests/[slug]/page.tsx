@@ -64,12 +64,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${test.title}${toolName} | مقاييس واختبارات جلال أحمد`,
     description: test.desc,
-    keywords: [test.title, test.category, 'اختبار نفسي', 'مقياس فحص مبدئي', 'جلال أحمد'],
     openGraph: {
       title: `${test.title}${toolName} | مقاييس واختبارات جلال أحمد`,
       description: test.desc,
       url: `https://galalahmad.com/tests/${test.id}`,
       type: 'website',
+      locale: 'ar_SA',
     },
     twitter: {
       card: 'summary_large_image',

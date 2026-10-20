@@ -329,7 +329,7 @@ export default function HomePage() {
               className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] flex items-center justify-center p-2 border border-[#D6EEEA] dark:border-[#1F4A42] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/award-1.svg" alt="استشارات متخصصة" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/award-1.svg" alt="" aria-hidden="true" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0">
                 <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#4E7E76] transition-colors whitespace-normal leading-snug">
@@ -346,7 +346,7 @@ export default function HomePage() {
               className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] flex items-center justify-center p-2 border border-[#D6E6F8] dark:border-[#1E3A5F] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/award-3.svg" alt="بناء وتمكين" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/award-3.svg" alt="" aria-hidden="true" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0">
                 <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#154F9C] transition-colors whitespace-normal leading-snug">
@@ -363,7 +363,7 @@ export default function HomePage() {
               className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FEF9EC] dark:bg-[#2E2413] flex items-center justify-center p-2 border border-[#FDF0CD] dark:border-[#4D3A1B] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/award-2.svg" alt="مقاييس واختبارات" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/award-2.svg" alt="" aria-hidden="true" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0">
                 <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#D97706] transition-colors whitespace-normal leading-snug">
@@ -380,7 +380,7 @@ export default function HomePage() {
               className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FDF1EE] dark:bg-[#251816] flex items-center justify-center p-2 border border-[#F8DDD9] dark:border-[#42221E] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/time.svg" alt="معرفة ووعي" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/time.svg" alt="" aria-hidden="true" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0">
                 <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#CC4E46] transition-colors whitespace-normal leading-snug">
@@ -601,9 +601,9 @@ export default function HomePage() {
                   <Heart className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1 gap-2">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition">مسار الأسرة</h3>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold">نشط</span>
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold shrink-0">نشط</span>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     برامج رحلة رِفق التفاعلية: برنامج ميثاق (للمتزوجين) وبرنامج وعي (للمقبلين على الزواج) شاملة كراسات التطبيق والمواثيق.
@@ -625,9 +625,9 @@ export default function HomePage() {
                   <Building2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1 gap-2">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition">مسار المؤسسات التعليمية</h3>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-bold">طلب مباشر</span>
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-bold shrink-0">طلب مباشر</span>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     تأهيل الكوادر الإدارية والتعليمية، بناء البيئات المدرسية الآمنة، وتصميم الحقائب التدريبية المتخصصة.
@@ -649,9 +649,9 @@ export default function HomePage() {
                   <Compass className="w-6 h-6" />
                 </div>
                 <div>
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1 gap-2">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition">مسار الشباب - المكلفين</h3>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 font-bold">قيد الإعداد</span>
+                    <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 font-bold shrink-0">قيد الإعداد</span>
                   </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     برامج تعزيز الهوية، بناء الصلابة النفسية، وسؤال المعنى وتحديات مرحلة التكليف لليافعين والشباب.
@@ -802,7 +802,7 @@ export default function HomePage() {
 
           <div className="text-center pt-2">
             <Link
-              href="/aqwamiyya"
+              href="/aqwameyat-quran"
               className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#4E7E76] hover:bg-[#3D655E] text-white text-xs font-bold rounded-full transition shadow-md shadow-[#4E7E76]/25 hover:scale-[1.02]"
             >
               <span>استكشف وثيقة وتفاصيل مشروع أقومية القرآن كاملة</span>

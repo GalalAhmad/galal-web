@@ -21,6 +21,11 @@ const nextConfig = {
         permanent: true,
       },
       {
+        source: '/aqwamiyya',
+        destination: '/aqwameyat-quran',
+        permanent: true,
+      },
+      {
         source: '/:path*',
         has: [
           {

@@ -82,7 +82,9 @@ export default function Footer() {
               <li><Link href="/aqwameyat-quran" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مشروع أقومية القرآن</Link></li>
               <li><Link href="/tests" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">اختبارات نفسية</Link></li>
               <li><Link href="/articles" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مقالات</Link></li>
-              <li><Link href="/videos" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مرئيات</Link></li>
+              {siteConfig.showVideos && (
+                <li><Link href="/videos" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مرئيات</Link></li>
+              )}
               <li><Link href="/feedback" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تقييم جلسات</Link></li>
               <li><Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">من أنا</Link></li>
             </ul>
@@ -141,8 +143,6 @@ export default function Footer() {
           </div>
           <div className="flex gap-4 text-slate-500 font-semibold">
             <Link href="/policies" className="hover:underline">السياسات والخصوصية</Link>
-            <span>•</span>
-            <Link href="/admin" className="hover:underline text-slate-400">لوحة الإدارة</Link>
           </div>
         </div>
 

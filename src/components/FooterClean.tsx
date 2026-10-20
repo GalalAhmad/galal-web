@@ -106,8 +106,6 @@ export default function FooterClean() {
           </div>
           <div className="flex gap-4 text-slate-400">
             <Link href="/policies" className="hover:underline">الخصوصية والسياسات</Link>
-            <span>•</span>
-            <Link href="/admin" className="hover:underline text-slate-500">بوابة الإدارة</Link>
           </div>
         </div>
 

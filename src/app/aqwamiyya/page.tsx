@@ -1,5 +1,5 @@
-import AqwameyatQuranPage from '@/app/aqwameyat-quran/page';
+import { redirect } from 'next/navigation';
 
-export default function AqwamiyyaPage() {
-  return <AqwameyatQuranPage />;
+export default function AqwamiyyaRedirectPage() {
+  redirect('/aqwameyat-quran');
 }

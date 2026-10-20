@@ -5,22 +5,24 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Calendar, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { siteConfig } from '@/data/siteConfig';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
 
-  const navLinks = [
+  const allNavLinks = [
     { href: '/', label: 'رئيسية' },
     { href: '/services', label: 'استشارات' },
     { href: '/courses', label: 'بناء وتمكين' },
     { href: '/aqwameyat-quran', label: 'أقومية القرآن' },
     { href: '/tests', label: 'اختبارات نفسية' },
     { href: '/articles', label: 'مقالات' },
-    { href: '/videos', label: 'مرئيات', badge: 'قريباً' },
+    ...(siteConfig.showVideos ? [{ href: '/videos', label: 'مرئيات', badge: 'قريباً' }] : []),
     { href: '/about', label: 'من أنا' },
   ];
+  const navLinks = allNavLinks;
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 transition-colors shadow-xs">

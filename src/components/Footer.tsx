@@ -70,19 +70,19 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* روابط أقسام الموقع الخمسة */}
+          {/* روابط أقسام الموقع بدون ال التعريف */}
           <div className="md:col-span-3 space-y-3">
             <h4 className="text-xs font-black text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">
               أقسام الموقع
             </h4>
             <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-2.5 font-semibold">
-              <li><Link href="/" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">الرئيسية</Link></li>
-              <li><Link href="/services" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">الجلسات والاستشارات</Link></li>
-              <li><Link href="/courses" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مسارات بناء وتمكين</Link></li>
-              <li><Link href="/tests" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">الاختبارات النفسية</Link></li>
-              <li><Link href="/articles" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">المقالات والمنتدى</Link></li>
-              <li><Link href="/feedback" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تقييم الجلسات والاستشارات</Link></li>
-              <li><Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">عن جلال أحمد</Link></li>
+              <li><Link href="/" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">رئيسية</Link></li>
+              <li><Link href="/services" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">استشارات</Link></li>
+              <li><Link href="/courses" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">بناء وتمكين</Link></li>
+              <li><Link href="/tests" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">اختبارات نفسية</Link></li>
+              <li><Link href="/articles" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مقالات</Link></li>
+              <li><Link href="/feedback" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تقييم جلسات</Link></li>
+              <li><Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">من نحن</Link></li>
             </ul>
           </div>
 

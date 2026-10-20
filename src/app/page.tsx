@@ -18,57 +18,27 @@ import {
   GraduationCap, 
   CheckCircle2, 
   ChevronDown, 
-  X, 
   Phone, 
   Send, 
   Compass, 
   Heart,
-  Activity,
-  FileCheck2,
   Brain,
   MessageSquareHeart,
-  MessageSquare
+  Zap,
+  Award,
+  Layers
 } from 'lucide-react';
 import TestimonialsSection from '@/components/TestimonialsSection';
-import { servicesPricing, coursesPricing } from '@/data/pricing';
+import { servicesPricing } from '@/data/pricing';
 
 export default function HomePage() {
-  // Course Interest Modal State
-  const [modalCourse, setModalCourse] = useState<string | null>(null);
-  const [applicantName, setApplicantName] = useState('');
-  const [applicantPhone, setApplicantPhone] = useState('');
-  const [applicantEmail, setApplicantEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-
   // FAQ open states
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-
-  const handleInterestSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const message = `طلب تسجيل اهتمام في برنامج: ${modalCourse}%0Aالاسم: ${applicantName}%0Aالهاتف: ${applicantPhone}%0Aالبريد: ${applicantEmail}`;
-    const whatsappUrl = `https://wa.me/201014876666?text=${message}`;
-
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitSuccess(true);
-      window.open(whatsappUrl, '_blank');
-      setTimeout(() => {
-        setSubmitSuccess(false);
-        setModalCourse(null);
-        setApplicantName('');
-        setApplicantPhone('');
-        setApplicantEmail('');
-      }, 2500);
-    }, 400);
-  };
 
   const services = [
     {
       id: 'psychological',
-      title: 'الاستشارات النفسية الفردية',
+      title: 'استشارات نفسية فردية',
       tag: 'جلسة خاصة • 50 دقيقة',
       desc: 'مساحة استماع آمنة لتفكيك القلق والضغوط اليومية، فهم المشاعر العميقة، واستعادة الاتزان والصلابة الذاتية.',
       bg: 'bg-[#FDF1EE] dark:bg-[#251816]/70',
@@ -81,9 +51,9 @@ export default function HomePage() {
     },
     {
       id: 'marital',
-      title: 'الاستشارات الزوجية والأسرية',
-      tag: 'جلسة ثنائية أو فردية',
-      desc: 'معالجة الخلافات المتكررة وفك الانسداد الحواري، وإعادة بناء جسور الأمان والمودة والتفاهم بين الشريكين.',
+      title: 'استشارات زوجية وأسرية',
+      tag: 'جلسة ثنائية أو فردية • 60-75 دقيقة',
+      desc: 'معالجة الخلافات المتكررة وفك الانسداد الحواري، وإعادة بناء جسور الأمان والمودة والتفاهم المشترك بين الشريكين.',
       bg: 'bg-[#EDF5FD] dark:bg-[#122238]/70',
       border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#154F9C]',
@@ -94,22 +64,23 @@ export default function HomePage() {
     },
     {
       id: 'emergency',
-      title: 'الحجز الطارئ والعاجل (24 ساعة)',
+      title: 'حجز طارئ وعاجل (24 ساعة)',
       tag: '⚡ استجابة عاجلة للظروف الضاغطة',
-      desc: 'مسار مباشر لمن يمر بظرف نفسي أو أسري ضاغط ويحتاج لجلسة توجيه سريعة خلال 24 ساعة دون انتظار جدول المواعيد.',
-      bg: 'bg-[#F4EFFC] dark:bg-[#241738]/70',
-      border: 'border-[#E5D9F8] dark:border-[#3D2561]',
-      tagBg: 'bg-white/80 dark:bg-black/30 text-[#7C3AED]',
-      btnBg: 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white',
+      desc: 'مسار مباشر لمن يمر بظرف نفسي أو أسري ضاغط ويحتاج لجلسة توجيه استثنائية وسريعة خلال 24 ساعة دون انتظار جدول المواعيد.',
+      bg: 'bg-[#FEF2F2] dark:bg-[#2A1515]/70',
+      border: 'border-[#FECACA] dark:border-[#521B1B]',
+      tagBg: 'bg-white/90 dark:bg-black/40 text-rose-700 dark:text-rose-300 font-black',
+      btnBg: 'bg-gradient-to-r from-[#CC4E46] to-[#B33D35] hover:from-[#B33D35] hover:to-[#99261E] text-white shadow-md shadow-[#CC4E46]/25',
       image: '/assets/arabtherapy/instant-session.svg',
       btnText: 'احجز الجلسة الطارئة عبر واتساب ⚡',
       href: 'https://wa.me/201014876666?text=%D8%B7%D9%84%D8%A8%20%D8%AD%D8%AC%D8%B6%20%D8%B7%D8%A7%D8%B1%D8%A6%20%D8%AE%D9%84%D8%A7%D9%84%2024%20%D8%B3%D8%A7%D8%B9%D8%A9',
       isExternal: true,
+      highlightBadge: true
     },
     {
       id: 'parenting',
-      title: 'الاستشارات التربوية والوالدية',
-      tag: 'إرشاد الوالدين والمربين',
+      title: 'إرشاد تربوي ووالدي',
+      tag: 'إرشاد الوالدين والمربين • 50 دقيقة',
       desc: 'فهم الدوافع النفسية خلف سلوك الأبناء واليافعين، وتطوير أساليب تربوية تجمع بين الرفق والحزم دون صراخ.',
       bg: 'bg-[#EDF7F5] dark:bg-[#112924]/70',
       border: 'border-[#D6EEEA] dark:border-[#1F4A42]',
@@ -129,7 +100,7 @@ export default function HomePage() {
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#D97706]',
       btnBg: 'bg-[#D97706] hover:bg-[#B45309] text-white',
       image: '/assets/arabtherapy/why-02.svg',
-      btnText: 'اكتشف تفاصيل البرامج',
+      btnText: 'اكتشف برامج بناء وتمكين',
       href: '/courses',
     },
   ];
@@ -178,79 +149,52 @@ export default function HomePage() {
     },
   ];
 
-  const featuredCourses = [
-    {
-      id: 'rifq-mithaq',
-      title: 'رحلة رِفق | ميثاق — للمتزوجين',
-      category: 'مسار الأسرة • للمتزوجين',
-      status: 'متاح للتسجيل',
-      desc: 'برنامج لبناء شراكة زوجية أكثر وعيًا واستقرارًا وتجديد المودة وإدارة الخلافات بحكمة ومسؤولية مشتركة.',
-      duration: '8 محطات تدريبية عملية',
-      bg: 'bg-[#EDF5FD] dark:bg-[#122238]',
-      border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
-      image: '/assets/illustrations/course-mithaq.svg',
-      link: '/courses/family/mithaq'
-    },
-    {
-      id: 'rifq-premarital',
-      title: 'رحلة رِفق | للمقبلين على الزواج',
-      category: 'مسار الأسرة • إعداد زواجي',
-      status: 'متاح للتسجيل',
-      desc: 'برنامج الإعداد الواعي للزواج وبناء شراكة قائمة على المودة والرحمة واكتشاف الذات وحسن الاختيار.',
-      duration: '8 محطات تدريبية وتطبيقات',
-      bg: 'bg-[#F2FBF7] dark:bg-[#0D261E]',
-      border: 'border-[#D2F3E3] dark:border-[#164635]',
-      image: '/assets/illustrations/course-rifq.svg',
-      link: '/courses/family/premarital'
-    },
-  ];
-
   const featuredTests = [
     {
       id: 'gad7',
-      title: 'مقياس القلق العام (GAD-7)',
+      title: 'مقياس القلق العام',
       category: 'القلق والتوتر',
       desc: 'أداة طبية عالمية معتمدة لقياس أعراض القلق والتوتر النفسي خلال الأسبوعين الماضيين.',
-      time: '3 دقائق',
+      time: '4 دقائق',
       questions: '7 أسئلة',
-      bg: 'bg-[#EDF7F5] dark:bg-[#112924]',
-      border: 'border-[#D6EEEA] dark:border-[#1F4A42]',
-      tagColor: 'text-[#4E7E76] dark:text-[#5E988E]',
+      bg: 'bg-[#FFCCCD]/60 dark:bg-[#3D1A1E]/60',
+      border: 'border-[#F8B4B6] dark:border-[#5C2329]',
+      tagColor: 'text-[#CC4E46] dark:text-[#F87171]',
       href: '/tests'
     },
     {
       id: 'phq9',
-      title: 'مقياس تقييم المزاج والاكتئاب (PHQ-9)',
+      title: 'مقياس تقييم الاكتئاب',
       category: 'المزاج والاكتئاب',
       desc: 'المقياس الإكلينيكي المعتمد لتقييم حدة تقلبات المزاج ومؤشرات الاكتئاب اليومية.',
-      time: '4 دقائق',
+      time: '6 دقائق',
       questions: '9 أسئلة',
-      bg: 'bg-[#FDF1EE] dark:bg-[#251816]',
-      border: 'border-[#F8DDD9] dark:border-[#42221E]',
-      tagColor: 'text-[#CC4E46] dark:text-[#F87171]',
+      bg: 'bg-[#A1D0F7]/40 dark:bg-[#122238]/60',
+      border: 'border-[#A1D0F7]/70 dark:border-[#1E3A5F]',
+      tagColor: 'text-[#154F9C] dark:text-[#60A5FA]',
       href: '/tests'
     },
     {
       id: 'marital-harmony',
       title: 'مقياس الرضا والتوافق الزواجي',
-      category: 'العلاقات والزواج',
+      category: 'العلاقات والأسرة',
       desc: 'تقييم جودة التواصل، الأمان العاطفي، وإدارة الخلافات الزوجية بين الشريكين.',
       time: '5 دقائق',
       questions: '10 أسئلة',
-      bg: 'bg-[#EDF5FD] dark:bg-[#122238]',
-      border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
+      bg: 'bg-[#D5E3F6]/50 dark:bg-[#15233B]/60',
+      border: 'border-[#B8D1F3] dark:border-[#21375C]',
       tagColor: 'text-[#154F9C] dark:text-[#60A5FA]',
       href: '/tests'
     },
     {
       id: 'burnout',
-      title: 'مقياس الإجهاد والاحتراق النفسي',
+      title: 'مقياس الاحتراق الوظيفي',
       category: 'الضغوط والعمل',
       desc: 'فحص مؤشرات الاستنزاف النفسي والإنهاك العصبي الناتج عن ضغوط العمل والمسؤوليات.',
-      time: '3 دقائق',
+      time: '6 دقائق',
       questions: '8 أسئلة',
-      bg: 'bg-[#F4EFFC] dark:bg-[#241738]',
-      border: 'border-[#E5D9F8] dark:border-[#3D2561]',
+      bg: 'bg-[#BBA1F7]/30 dark:bg-[#251838]/60',
+      border: 'border-[#CBB5FA] dark:border-[#3D2561]',
       tagColor: 'text-[#7C3AED] dark:text-[#A78BFA]',
       href: '/tests'
     }
@@ -278,7 +222,7 @@ export default function HomePage() {
     {
       id: 'marital-communication-bridges',
       title: 'جسور التواصل الزواجي: من ردود الفعل العفوية إلى الإصغاء الواعي',
-      category: 'العلاقات والأسرة',
+      category: 'علاقات وأسرة',
       desc: 'قواعد عملية للانتقال من الصدام والدفاع عن النفس إلى التلاقي الآمن وفهم الاحتياج غير المنطوق.',
       readTime: '5 دقائق قراءة',
       bg: 'bg-[#EDF5FD] dark:bg-[#122238]',
@@ -327,8 +271,8 @@ export default function HomePage() {
       />
       <Navbar />
 
-      {/* 1. Hero Section - Arab Therapy Style */}
-      <section className="relative pt-12 pb-16 sm:pt-20 sm:pb-24 px-4 sm:px-6 overflow-hidden">
+      {/* 1. Hero Section */}
+      <section className="relative pt-12 pb-14 sm:pt-20 sm:pb-20 px-4 sm:px-6 overflow-hidden">
         {/* Soft background aura */}
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#4E7E76]/10 via-[#CC4E46]/5 to-transparent blur-[120px] rounded-full pointer-events-none" />
 
@@ -346,20 +290,25 @@ export default function HomePage() {
             <span className="block text-[#4E7E76] dark:text-[#5E988E] mt-2">بخطوة واعية وأمان مطلق</span>
           </h1>
 
+          {/* Galal Ahmad Prominent Name & Professional Titles (Directly from LinkedIn Profile) */}
+          <div className="pt-2 pb-1 space-y-2.5">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              جـلال أحـمد
+            </h2>
+            <p className="text-xs sm:text-sm font-bold text-[#4E7E76] dark:text-[#5E988E] max-w-3xl mx-auto leading-relaxed">
+              مستشار التدريب وبناء الإنسان • استشارات وحلول تربوية • علم النفس التربوي • التدريب والتطوير المهني • مؤسس مبادرات رِفق وإنسان ومفهوم
+            </p>
+          </div>
+
           {/* Foundational Quote */}
           <div className="pt-1">
-            <p className="text-base sm:text-lg font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 rounded-2xl py-3 px-6 inline-block shadow-2xs">
+            <p className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 rounded-2xl py-2.5 px-6 inline-block shadow-2xs">
               «وَمَنْ يَصِفُ لَكَ الطَّرِيقَ.. لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ»
             </p>
           </div>
 
-          {/* Subtitle */}
-          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto pt-1 font-medium">
-            إرشاد نفسي، أسري، وتربوي يقدمه <strong className="text-slate-900 dark:text-slate-100 font-bold">جـلال أحـمد</strong> لمساندتك على تفكيك التحديات، واستعادة الاتزان الداخلي، وبناء علاقات سوية ومستقرة.
-          </p>
-
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
             <Link
               href="/services#book"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-sm font-bold rounded-full transition-all shadow-md shadow-[#CC4E46]/20 hover:scale-[1.02]"
@@ -373,7 +322,7 @@ export default function HomePage() {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white dark:bg-[#161F2B] hover:bg-slate-50 dark:hover:bg-[#1F2C3D] text-[#4E7E76] dark:text-[#5E988E] border border-[#D6EEEA] dark:border-[#1F4A42] text-sm font-bold rounded-full transition shadow-2xs"
             >
               <BookOpen className="w-4 h-4" />
-              <span>مسارات بناء وتمكين</span>
+              <span>بناء وتمكين</span>
             </Link>
           </div>
 
@@ -449,18 +398,18 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. Arab Therapy Pastel Consultation Cards (Services Teaser) */}
-      <section className="py-12 px-4 sm:px-6 border-y border-slate-200/70 dark:border-slate-800 bg-white/50 dark:bg-black/10">
+      {/* 3. استشارات (Consultation Cards - Harmonized & Polished) */}
+      <section className="py-14 px-4 sm:px-6 border-y border-slate-200/70 dark:border-slate-800 bg-white/50 dark:bg-black/10">
         <div className="max-w-6xl mx-auto space-y-8">
           
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-2">
-              <span className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">الجلسات والاستشارات</span>
+              <span className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">استشارات نوعية متخصصة</span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-                اختر نوع الجلسة المناسب لاحتياجك
+                استشارات
               </h2>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                مسارات استشارية متخصصة ومصممة لتمنحك الوضوح والدعم العملي المباشر
+                مسارات استشارية مصممة لتمنحك الوضوح والدعم العملي في بيئة آمنة وسرية
               </p>
             </div>
             <Link 
@@ -472,7 +421,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((srv) => (
               <div
                 key={srv.id}
@@ -480,16 +429,16 @@ export default function HomePage() {
               >
                 <div className="space-y-4">
                   {/* Top Tag & Illustration */}
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start justify-between gap-3">
                     <span className={`text-[11px] font-bold px-3 py-1 rounded-full ${srv.tagBg} border border-black/5 shadow-2xs`}>
                       {srv.tag}
                     </span>
-                    <div className="shrink-0 -mt-2 -mr-2">
+                    <div className="shrink-0 -mt-2 -mr-1">
                       <img 
                         src={srv.image} 
                         alt={srv.title} 
                         loading="lazy"
-                        className="w-24 h-24 sm:w-28 sm:h-28 object-contain" 
+                        className="w-20 h-20 sm:w-24 sm:h-24 object-contain" 
                       />
                     </div>
                   </div>
@@ -506,7 +455,7 @@ export default function HomePage() {
                 </div>
 
                 {/* CTA Button & Pricing */}
-                <div className="pt-6 space-y-2">
+                <div className="pt-6 space-y-2.5">
                   {srv.isExternal ? (
                     <a
                       href={srv.href}
@@ -528,7 +477,7 @@ export default function HomePage() {
                   )}
 
                   {servicesPricing[srv.id] && (
-                    <div className="text-center pt-1">
+                    <div className="text-center pt-0.5">
                       <span className="inline-block text-[11px] font-bold text-slate-600 dark:text-slate-300">
                         {servicesPricing[srv.id].priceDisplay}
                       </span>
@@ -632,15 +581,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 6. مسارات بناء وتمكين (Pathways Teaser) */}
+      {/* 6. بناء وتمكين (Focusing strictly on the 3 Tracks Overview) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto space-y-8">
           
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-2">
-              <span className="text-xs font-bold text-[#154F9C] uppercase tracking-wider">مسارات بناء وتمكين</span>
+              <span className="text-xs font-bold text-[#154F9C] uppercase tracking-wider">برامج وتأهيل متدرج</span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-                مسارات بناء وتمكين والبرامج المعتمدة
+                بناء وتمكين
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                 برامج وتأهيل يجمع بين الهدي القرآني والنبوي، وعلم النفس الأسري، والتمارين والتطبيقات العملية
@@ -650,122 +599,92 @@ export default function HomePage() {
               href="/courses" 
               className="inline-flex items-center gap-1.5 text-xs font-bold text-[#154F9C] hover:text-[#103D7A] transition"
             >
-              <span>دليل المسارات الثلاثة كاملاً</span>
+              <span>دليل بناء وتمكين كاملاً</span>
               <ArrowLeft className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* 3 Tracks Preview Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          {/* 3 Tracks Preview Bar (Mithaq and Premarital details are inside family track) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            
             <Link
               href="/courses/family"
-              className="p-4 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-950/20 hover:border-emerald-500 transition group flex items-center justify-between"
+              className="p-6 rounded-3xl border border-emerald-200/80 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-950/20 hover:border-emerald-500 hover:shadow-md transition group flex flex-col justify-between space-y-4"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-                  <Heart className="w-4 h-4" />
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Heart className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition">مسار الأسرة</h4>
-                  <p className="text-[11px] text-slate-500">برامج رحلة رِفق • نشط</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition">مسار الأسرة</h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold">نشط</span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    برامج رحلة رِفق التفاعلية: برنامج ميثاق (للمتزوجين) وبرنامج وعي (للمقبلين على الزواج) شاملة كراسات التطبيق والمواثيق.
+                  </p>
                 </div>
               </div>
-              <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 group-hover:-translate-x-0.5 transition" />
+              <div className="flex items-center justify-between text-xs font-bold text-emerald-700 dark:text-emerald-400 pt-2 border-t border-emerald-200/50 dark:border-emerald-800/40">
+                <span>استكشف برامج مسار الأسرة</span>
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition" />
+              </div>
             </Link>
 
             <Link
               href="/courses/institutions"
-              className="p-4 rounded-2xl border border-blue-200/80 dark:border-blue-800/40 bg-blue-50/50 dark:bg-blue-950/20 hover:border-blue-500 transition group flex items-center justify-between"
+              className="p-6 rounded-3xl border border-blue-200/80 dark:border-blue-800/40 bg-blue-50/50 dark:bg-blue-950/20 hover:border-blue-500 hover:shadow-md transition group flex flex-col justify-between space-y-4"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
-                  <Building2 className="w-4 h-4" />
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                  <Building2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition">مسار المؤسسات التعليمية</h4>
-                  <p className="text-[11px] text-slate-500">تأهيل الكوادر والبيئات</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition">مسار المؤسسات التعليمية</h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-bold">طلب مباشر</span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    تأهيل الكوادر الإدارية والتعليمية، بناء البيئات المدرسية الآمنة، وتصميم الحقائب التدريبية المتخصصة.
+                  </p>
                 </div>
               </div>
-              <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 group-hover:-translate-x-0.5 transition" />
+              <div className="flex items-center justify-between text-xs font-bold text-blue-700 dark:text-blue-400 pt-2 border-t border-blue-200/50 dark:border-blue-800/40">
+                <span>استكشف مسار المؤسسات</span>
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition" />
+              </div>
             </Link>
 
             <Link
               href="/courses/youth"
-              className="p-4 rounded-2xl border border-purple-200/80 dark:border-purple-800/40 bg-purple-50/50 dark:bg-purple-950/20 hover:border-purple-500 transition group flex items-center justify-between"
+              className="p-6 rounded-3xl border border-purple-200/80 dark:border-purple-800/40 bg-purple-50/50 dark:bg-purple-950/20 hover:border-purple-500 hover:shadow-md transition group flex flex-col justify-between space-y-4"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
-                  <Compass className="w-4 h-4" />
+              <div className="space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+                  <Compass className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition">مسار الشباب - المكلفين</h4>
-                  <p className="text-[11px] text-slate-500">الهوية والصلابة النفسية</p>
-                </div>
-              </div>
-              <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-purple-600 group-hover:-translate-x-0.5 transition" />
-            </Link>
-          </div>
-
-          {/* Active Programs Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-            {featuredCourses.map((crs) => (
-              <div 
-                key={crs.id}
-                className={`p-6 sm:p-7 rounded-3xl border ${crs.bg} ${crs.border} flex flex-col justify-between space-y-5 shadow-2xs hover:shadow-md transition-all`}
-              >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                      {crs.category}
-                    </span>
-                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                      {crs.status}
-                    </span>
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition">مسار الشباب - المكلفين</h3>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 font-bold">قيد الإعداد</span>
                   </div>
-
-                  <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 leading-snug">
-                    {crs.title}
-                  </h3>
-
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-                    {crs.desc}
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    برامج تعزيز الهوية، بناء الصلابة النفسية، وسؤال المعنى وتحديات مرحلة التكليف لليافعين والشباب.
                   </p>
-
-                  <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
-                    <div className="flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-[#154F9C]" />
-                      <span>{crs.duration}</span>
-                    </div>
-                    {coursesPricing[crs.id] && (
-                      <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] px-2 py-0.5 rounded-md bg-white/80 dark:bg-black/30 border border-black/5 dark:border-white/5">
-                        {coursesPricing[crs.id].priceDisplay}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 pt-2">
-                  <Link
-                    href={crs.link}
-                    className="flex-1 py-2.5 px-4 bg-[#154F9C] hover:bg-[#103D7A] text-white rounded-full text-xs font-bold transition text-center shadow-xs"
-                  >
-                    عرض التفاصيل الكاملة
-                  </Link>
-                  <button
-                    onClick={() => setModalCourse(crs.title)}
-                    className="py-2.5 px-4 bg-white dark:bg-black/40 hover:bg-slate-50 dark:hover:bg-black/60 text-[#154F9C] dark:text-[#60A5FA] border border-[#D6E6F8] dark:border-[#1E3A5F] rounded-full text-xs font-bold transition cursor-pointer"
-                  >
-                    طلب التسجيل
-                  </button>
                 </div>
               </div>
-            ))}
+              <div className="flex items-center justify-between text-xs font-bold text-purple-700 dark:text-purple-400 pt-2 border-t border-purple-200/50 dark:border-purple-800/40">
+                <span>استكشف مسار الشباب</span>
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition" />
+              </div>
+            </Link>
+
           </div>
 
         </div>
       </section>
 
-      {/* 7. الاختبارات والمقاييس النفسية (Psychological Tests Teaser - Arab Therapy Style) */}
+      {/* 7. اختبارات نفسية (Psychological Tests Teaser) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#EDF7F5]/40 dark:bg-[#112924]/20 border-y border-slate-200/70 dark:border-slate-800">
         <div className="max-w-6xl mx-auto space-y-10">
           
@@ -773,7 +692,7 @@ export default function HomePage() {
             <div className="space-y-2">
               <span className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">أدوات الفحص والتقييم الذاتي</span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-                الاختبارات والمقاييس النفسية المعتمدة
+                اختبارات نفسية
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                 اختبارات مقننة ومجانية 100% تساعدك على قياس مستوى القلق، الاكتئاب، الضغوط، والرضى الزواجي بدقة وسرية
@@ -783,7 +702,7 @@ export default function HomePage() {
               href="/tests" 
               className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4E7E76] hover:text-[#3D655E] transition"
             >
-              <span>تصفح كافة المقاييس الـ 9 المعتمدة</span>
+              <span>تصفح كافة المقاييس الـ 41 المعتمدة</span>
               <ArrowLeft className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -827,22 +746,22 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-white dark:bg-[#161F2B] border border-[#D6EEEA] dark:border-[#1F4A42] text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] hover:bg-slate-50 dark:hover:bg-[#1F2C3D] transition shadow-2xs"
             >
               <Brain className="w-4 h-4" />
-              <span>استكشف دليل الاختبارات النفسية التفاعلية كاملاً (9 مقاييس)</span>
+              <span>استكشف دليل الاختبارات النفسية التفاعلية كاملاً (41 اختباراً)</span>
             </Link>
           </div>
 
         </div>
       </section>
 
-      {/* 8. مشروع أقومية القرآن والمقالات والمنتدى الثقافي (Articles Teaser) */}
+      {/* 8. مقالات (Articles Teaser) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#FEF9EC]/40 dark:bg-[#2E2413]/20 border-b border-slate-200/70 dark:border-slate-800">
         <div className="max-w-6xl mx-auto space-y-10">
           
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-2">
-              <span className="text-xs font-bold text-[#D97706] uppercase tracking-wider">التأصيل المعرفي والمنتدى</span>
+              <span className="text-xs font-bold text-[#D97706] uppercase tracking-wider">التأصيل المعرفي وبصائر الوعي</span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-                مشروع أقومية القرآن والمنتدى الثقافي
+                مقالات
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                 رؤية تأصيلية تستلهم هدايات الوحي في بناء السواء النفسي والاستقرار الأسري مع إمكانية التفاعل والنقاش
@@ -852,7 +771,7 @@ export default function HomePage() {
               href="/articles" 
               className="inline-flex items-center gap-1.5 text-xs font-bold text-[#D97706] hover:text-[#B45309] transition"
             >
-              <span>دخول المنتدى الثقافي وقراءة المقالات</span>
+              <span>تصفح كافة المقالات</span>
               <ArrowLeft className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -893,10 +812,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. آراء وتجارب المستفيدين (Testimonials Section - Moved towards bottom as requested) */}
-      <section className="py-4">
+      {/* 9. آراء وتجارب (Testimonials Section) */}
+      <section className="py-6">
         <TestimonialsSection 
-          title="تجارب وآراء المستفيدين" 
+          title="آراء وتجارب" 
           subtitle="أصداء حقيقية من جلسات الاستشارة والبرامج التفاعلية (مع الالتزام الصارم بالسرية والخصوصية التامة)"
           limit={6}
         />
@@ -923,13 +842,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 10. الأسئلة الشائعة (FAQ Accordion) */}
+      {/* 10. أسئلة شائعة (FAQ Accordion) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#EDF5FD]/40 dark:bg-[#122238]/20 border-y border-slate-200/70 dark:border-slate-800">
         <div className="max-w-4xl mx-auto space-y-10">
           
           <div className="text-center space-y-3">
             <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-              الأسئلة الشائعة
+              أسئلة شائعة
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
               إجابات واضحة ومباشرة عن كل ما يخص حجز الجلسات والخصوصية
@@ -1002,87 +921,6 @@ export default function HomePage() {
 
         </div>
       </section>
-
-      {/* Registration Interest Modal */}
-      {modalCourse && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-[#161F2B] border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl relative text-right">
-            
-            <button 
-              onClick={() => setModalCourse(null)}
-              className="absolute top-5 left-5 p-2 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
-              aria-label="إغلاق"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="space-y-2">
-              <span className="text-[11px] font-bold text-[#4E7E76] uppercase">تسجيل اهتمام</span>
-              <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">{modalCourse}</h3>
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
-                سجل بياناتك وسيتم إرسال تفاصيل ومواعيد البرنامج عبر واتساب والبريد الرسمي.
-              </p>
-            </div>
-
-            {submitSuccess ? (
-              <div className="p-4 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] border border-[#D6EEEA] dark:border-[#1F4A42] text-xs font-bold text-[#4E7E76] text-center space-y-2">
-                <CheckCircle2 className="w-8 h-8 mx-auto text-[#4E7E76]" />
-                <p>تم استلام طلبك بنجاح! جاري توجيهك إلى واتساب لتأكيد الاستلام...</p>
-              </div>
-            ) : (
-              <form onSubmit={handleInterestSubmit} className="space-y-4 text-xs font-semibold">
-                <div className="space-y-1.5">
-                  <label className="text-slate-700 dark:text-slate-300">الاسم الكريم</label>
-                  <input
-                    type="text"
-                    required
-                    value={applicantName}
-                    onChange={(e) => setApplicantName(e.target.value)}
-                    placeholder="اكتب اسمك هنا"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#4E7E76]"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-slate-700 dark:text-slate-300">رقم الهاتف (واتساب مع مفتاح الدولة)</label>
-                  <input
-                    type="tel"
-                    required
-                    value={applicantPhone}
-                    onChange={(e) => setApplicantPhone(e.target.value)}
-                    placeholder="+966xxxxxxxxx أو +20xxxxxxxxxx"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#4E7E76]"
-                    dir="ltr"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-slate-700 dark:text-slate-300">البريد الإلكتروني</label>
-                  <input
-                    type="email"
-                    required
-                    value={applicantEmail}
-                    onChange={(e) => setApplicantEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-[#4E7E76]"
-                    dir="ltr"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full py-3.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white font-bold rounded-xl flex items-center justify-center gap-2 transition disabled:opacity-50 shadow-md shadow-[#CC4E46]/20 cursor-pointer"
-                >
-                  <Send className="w-4 h-4" />
-                  <span>{isSubmitting ? 'جاري الإرسال...' : 'تأكيد تسجيل الاهتمام'}</span>
-                </button>
-              </form>
-            )}
-
-          </div>
-        </div>
-      )}
 
       <Footer />
     </main>

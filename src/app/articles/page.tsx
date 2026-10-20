@@ -43,11 +43,11 @@ export default function ArticlesForumPage() {
   const [ratingSubmitted, setRatingSubmitted] = useState<boolean>(false);
 
   const categories = [
-    { id: 'all', label: 'جميع المقالات والنقاشات' },
+    { id: 'all', label: 'جميع مقالات' },
     { id: 'quran', label: 'مشروع أقومية القرآن' },
-    { id: 'marriage', label: 'العلاقات الزوجية والأسرة' },
-    { id: 'parenting', label: 'التربية والوالدية الواعية' },
-    { id: 'psychology', label: 'الصحة النفسية والاتزان' },
+    { id: 'marriage', label: 'علاقات زوجية وأسرة' },
+    { id: 'parenting', label: 'تربية ووالدية واعية' },
+    { id: 'psychology', label: 'صحة نفسية واتزان' },
   ];
 
   // Filtering
@@ -124,11 +124,11 @@ export default function ArticlesForumPage() {
       <section className="pt-12 pb-10 sm:pt-16 sm:pb-12 px-4 sm:px-6 text-center max-w-4xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#154F9C]/10 border border-[#154F9C]/20 text-xs font-bold text-[#154F9C]">
           <BookOpen className="w-3.5 h-3.5" />
-          <span>المنتدى الثقافي والفكري • مقالات وبصائر تفاعلية</span>
+          <span>مقالات وبصائر معرفية</span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-          المقالات ومساحات الوعي
+          مقالات
         </h1>
         
         <p className="text-xs sm:text-sm md:text-base text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">

@@ -71,7 +71,7 @@ export default function AboutPage() {
               
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EDF7F5] dark:bg-[#112924] border border-[#D6EEEA] dark:border-[#1F4A42] text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>المسيرة المهنية • الرؤية وبناء الإنسان</span>
+                <span>من نحن • الرؤية والمسيرة المهنية وبناء الإنسان</span>
               </div>
 
               <div className="space-y-4">

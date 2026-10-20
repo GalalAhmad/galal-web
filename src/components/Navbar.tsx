@@ -12,37 +12,29 @@ export default function Navbar() {
   const pathname = usePathname();
 
   const navLinks = [
-    { href: '/', label: 'الرئيسية' },
-    { href: '/services', label: 'الجلسات والاستشارات' },
-    { href: '/courses', label: 'مسارات بناء وتمكين' },
-    { href: '/tests', label: 'الاختبارات النفسية' },
-    { href: '/articles', label: 'المقالات والمنتدى' },
-    { href: '/about', label: 'عن جلال أحمد' },
+    { href: '/', label: 'رئيسية' },
+    { href: '/services', label: 'استشارات' },
+    { href: '/courses', label: 'بناء وتمكين' },
+    { href: '/tests', label: 'اختبارات نفسية' },
+    { href: '/articles', label: 'مقالات' },
+    { href: '/about', label: 'من نحن' },
   ];
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 transition-colors shadow-xs">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
         
-        {/* الشعار والهوية المعتمدة */}
-        <Link href="/" className="flex items-center gap-3 group">
+        {/* الشعار المعتمد بدون نص لتوسيع مساحة الهيدر */}
+        <Link href="/" className="flex items-center group shrink-0" title="جلال أحمد - الصفحة الرئيسية">
           <img 
             src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
             alt="شعار جلال أحمد" 
-            className="h-10 sm:h-11 w-auto object-contain logo-clean"
+            className="h-11 sm:h-12 w-auto object-contain logo-clean transition-transform group-hover:scale-105"
           />
-          <div className="flex flex-col text-right">
-            <span className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
-              جـلال أحـمد
-            </span>
-            <span className="text-[11px] text-[#4E7E76] dark:text-[#5E988E] font-bold leading-none mt-0.5">
-              استشارات وبناء الإنسان والأسرة
-            </span>
-          </div>
         </Link>
 
-        {/* روابط التنقل الخمسة الرئيسية على الحاسوب - ستايل عرب ثيرابي */}
-        <nav className="hidden lg:flex items-center gap-7 text-[13px] font-bold text-slate-600 dark:text-slate-300">
+        {/* روابط التنقل الرئيسية - بدون ال التعريف لتصميم عصري متزن */}
+        <nav className="hidden lg:flex items-center gap-6 sm:gap-7 text-[13px] font-bold text-slate-600 dark:text-slate-300">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (

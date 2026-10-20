@@ -14,7 +14,7 @@ export default function Navbar() {
   const navLinks = [
     { href: '/', label: 'الرئيسية' },
     { href: '/services', label: 'الجلسات والاستشارات' },
-    { href: '/courses', label: 'الكورسات والبرامج' },
+    { href: '/courses', label: 'مسارات بناء وتمكين' },
     { href: '/articles', label: 'المقالات والمحتوى' },
     { href: '/about', label: 'عن د. جلال' },
   ];

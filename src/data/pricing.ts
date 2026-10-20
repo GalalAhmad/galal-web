@@ -62,14 +62,24 @@ export const servicesPricing: Record<string, ServicePricing> = {
 };
 
 export const coursesPricing: Record<string, { priceDisplay: string; note: string; badgeStyle: string }> = {
+  'rifq-mithaq': {
+    priceDisplay: 'يُحدد عند فتح التسجيل',
+    note: '8 محطات تدريبية وتطبيقية شاملة كراسة المتدرب وميثاق الأسرة',
+    badgeStyle: 'bg-[#EDF5FD] dark:bg-[#122238] text-[#154F9C] dark:text-[#60A5FA] border-[#D6E6F8] dark:border-[#1E3A5F]',
+  },
+  'rifq-premarital': {
+    priceDisplay: 'يُحدد عند فتح التسجيل',
+    note: '8 محطات تدريبية لتأهيل المقبلين والمخطوبين شاملة كراسة المسافر',
+    badgeStyle: 'bg-[#EDF7F5] dark:bg-[#112924] text-[#4E7E76] dark:text-[#5E988E] border-[#D6EEEA] dark:border-[#1F4A42]',
+  },
   'rifq-journey': {
-    priceDisplay: '450 ر.س',
-    note: 'برنامج تدريبي متكامل (4 أسابيع) شامل كراسة التطبيق',
+    priceDisplay: 'يُحدد عند فتح التسجيل',
+    note: 'برنامج تدريبي متكامل شامل كراسة التطبيق',
     badgeStyle: 'bg-[#EDF7F5] dark:bg-[#112924] text-[#4E7E76] dark:text-[#5E988E] border-[#D6EEEA] dark:border-[#1F4A42]',
   },
   'mithaq-program': {
-    priceDisplay: '600 ر.س',
-    note: 'شامل 6 ورش عمل تفاعلية + مقاييس الجاهزية للطرفين',
+    priceDisplay: 'يُحدد عند فتح التسجيل',
+    note: '8 محطات تدريبية تفاعلية + كراسة المتدرب',
     badgeStyle: 'bg-[#EDF5FD] dark:bg-[#122238] text-[#154F9C] dark:text-[#60A5FA] border-[#D6E6F8] dark:border-[#1E3A5F]',
   },
   'masaha-workshop': {

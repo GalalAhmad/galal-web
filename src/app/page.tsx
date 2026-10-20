@@ -23,7 +23,9 @@ import {
   Phone,
   Send,
   Zap,
-  Award
+  Award,
+  Compass,
+  Heart
 } from 'lucide-react';
 import { 
   VectorIndividualTherapy, 
@@ -185,37 +187,28 @@ export default function HomePage() {
 
   const featuredCourses = [
     {
-      id: 'rifq-journey',
-      title: 'رحلة رِفق: الممارسات الوالدية الفعالة',
-      category: 'إرشاد والدي وتربوي',
+      id: 'rifq-mithaq',
+      title: 'رحلة رِفق | ميثاق — للمتزوجين',
+      category: 'مسار الأسرة • للمتزوجين',
       status: 'متاح للتسجيل',
-      desc: 'دليل منهجي تطبيقي للآباء والمربين لبناء علاقة سوية مع الأبناء بالرفق والحزم دون استنزاف.',
-      duration: '4 أسابيع تدريبية مركزة',
-      bg: 'bg-[#EDF7F5] dark:bg-[#112924]',
-      border: 'border-[#D6EEEA] dark:border-[#1F4A42]',
-      image: '/assets/illustrations/course-rifq.svg',
-    },
-    {
-      id: 'mithaq-program',
-      title: 'برنامج ميثاق: الإعداد الزواجي الشامل',
-      category: 'إرشاد أسري وزواجي',
-      status: 'متاح للتسجيل',
-      desc: 'تأهيل علمي وواقعي للمقبلين على الزواج لبناء شراكة قائمة على الوعي والمودة وإدارة التوقعات.',
-      duration: '6 ورش عمل تفاعلية',
+      desc: 'برنامج لبناء شراكة زوجية أكثر وعيًا واستقرارًا وتجديد المودة وإدارة الخلافات بحكمة ومسؤولية مشتركة.',
+      duration: '8 محطات تدريبية عملية',
       bg: 'bg-[#EDF5FD] dark:bg-[#122238]',
       border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
       image: '/assets/illustrations/course-mithaq.svg',
+      link: '/courses/family/mithaq'
     },
     {
-      id: 'masaha-workshop',
-      title: 'برنامج مساحة: الدعم النفسي وإدارة الضغوط',
-      category: 'تطوير ودعم نفسي',
-      status: 'قريباً',
-      desc: 'ورش عمل تفاعلية لتطوير الصلابة النفسية ومواجهة الاحتراق الحياتي والمهني واستعادة الهدوء.',
-      duration: 'الدفعة القادمة',
-      bg: 'bg-[#F4EFFC] dark:bg-[#241738]',
-      border: 'border-[#E5D9F8] dark:border-[#3D2561]',
-      image: '/assets/illustrations/course-masaha.svg',
+      id: 'rifq-premarital',
+      title: 'رحلة رِفق | للمقبلين على الزواج',
+      category: 'مسار الأسرة • إعداد زواجي',
+      status: 'متاح للتسجيل',
+      desc: 'برنامج الإعداد الواعي للزواج وبناء شراكة قائمة على المودة والرحمة واكتشاف الذات وحسن الاختيار.',
+      duration: '8 محطات تدريبية وتطبيقات',
+      bg: 'bg-[#F2FBF7] dark:bg-[#0D261E]',
+      border: 'border-[#D2F3E3] dark:border-[#164635]',
+      image: '/assets/illustrations/course-rifq.svg',
+      link: '/courses/family/premarital'
     },
   ];
 
@@ -336,7 +329,7 @@ export default function HomePage() {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-white dark:bg-[#161F2B] hover:bg-slate-50 dark:hover:bg-[#1F2C3D] text-[#4E7E76] dark:text-[#5E988E] border border-[#D6EEEA] dark:border-[#1F4A42] text-sm font-bold rounded-full transition shadow-2xs"
             >
               <BookOpen className="w-4 h-4" />
-              <span>اكتشف الكورسات والبرامج</span>
+              <span>مسارات بناء وتمكين</span>
             </Link>
           </div>
 
@@ -592,34 +585,86 @@ export default function HomePage() {
         limit={6}
       />
 
-      {/* 5. الكورسات والبرامج المتاحة (Section 4) */}
+      {/* 5. مسارات بناء وتمكين */}
       <section className="py-16 sm:py-20 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto space-y-10">
+        <div className="max-w-6xl mx-auto space-y-8">
           
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-2">
-              <span className="text-xs font-bold text-[#4E7E76] uppercase tracking-wider">برامج وتدريب</span>
+              <span className="text-xs font-bold text-[#154F9C] uppercase tracking-wider">مسارات بناء وتمكين</span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-                الكورسات والبرامج التدريبية المعتمدة
+                مسارات بناء وتمكين والبرامج المعتمدة
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                برامج مبنية على خبرة ميدانية وتأصيل منهجي لبناء الأسرة والوعي الذاتي
+                برامج وتأهيل يجمع بين الهدي القرآني والنبوي، وعلم النفس الأسري، والتمارين والتطبيقات العملية
               </p>
             </div>
             <Link 
               href="/courses" 
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#4E7E76] hover:text-[#3D655E] transition"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-[#154F9C] hover:text-[#103D7A] transition"
             >
-              <span>عرض دليل الكورسات كاملاً</span>
+              <span>دليل المسارات الثلاثة كاملاً</span>
               <ArrowLeft className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* 3 Tracks Preview Bar */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+            <Link
+              href="/courses/family"
+              className="p-4 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/40 bg-emerald-50/50 dark:bg-emerald-950/20 hover:border-emerald-500 transition group flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                  <Heart className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 transition">مسار الأسرة</h4>
+                  <p className="text-[11px] text-slate-500">برامج رحلة رِفق • نشط</p>
+                </div>
+              </div>
+              <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600 group-hover:-translate-x-0.5 transition" />
+            </Link>
+
+            <Link
+              href="/courses/institutions"
+              className="p-4 rounded-2xl border border-blue-200/80 dark:border-blue-800/40 bg-blue-50/50 dark:bg-blue-950/20 hover:border-blue-500 transition group flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition">مسار المؤسسات التعليمية</h4>
+                  <p className="text-[11px] text-slate-500">تأهيل الكوادر والبيئات</p>
+                </div>
+              </div>
+              <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 group-hover:-translate-x-0.5 transition" />
+            </Link>
+
+            <Link
+              href="/courses/youth"
+              className="p-4 rounded-2xl border border-purple-200/80 dark:border-purple-800/40 bg-purple-50/50 dark:bg-purple-950/20 hover:border-purple-500 transition group flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+                  <Compass className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition">مسار الشباب - المكلفين</h4>
+                  <p className="text-[11px] text-slate-500">الهوية والصلابة النفسية</p>
+                </div>
+              </div>
+              <ArrowLeft className="w-3.5 h-3.5 text-slate-400 group-hover:text-purple-600 group-hover:-translate-x-0.5 transition" />
+            </Link>
+          </div>
+
+          {/* Active Programs Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
             {featuredCourses.map((crs) => (
               <div 
                 key={crs.id}
-                className={`p-6 sm:p-7 rounded-3xl border ${crs.bg} ${crs.border} flex flex-col justify-between space-y-6 shadow-2xs hover:shadow-md transition-all`}
+                className={`p-6 sm:p-7 rounded-3xl border ${crs.bg} ${crs.border} flex flex-col justify-between space-y-5 shadow-2xs hover:shadow-md transition-all`}
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-2">
@@ -631,16 +676,6 @@ export default function HomePage() {
                     </span>
                   </div>
 
-                  {/* Course Illustration */}
-                  <div className="w-full h-36 flex items-center justify-center p-2 rounded-2xl bg-white/60 dark:bg-black/20">
-                    <img 
-                      src={crs.image} 
-                      alt={crs.title} 
-                      loading="lazy"
-                      className="h-32 w-auto object-contain" 
-                    />
-                  </div>
-
                   <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 leading-snug">
                     {crs.title}
                   </h3>
@@ -649,9 +684,9 @@ export default function HomePage() {
                     {crs.desc}
                   </p>
 
-                  <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-[#4E7E76]" />
+                  <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200/60 dark:border-slate-800/60">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-[#154F9C]" />
                       <span>{crs.duration}</span>
                     </div>
                     {coursesPricing[crs.id] && (
@@ -662,12 +697,20 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <button
-                  onClick={() => setModalCourse(crs.title)}
-                  className="w-full py-2.5 px-4 bg-white dark:bg-black/40 hover:bg-slate-50 dark:hover:bg-black/60 text-[#4E7E76] dark:text-[#5E988E] border border-[#D6EEEA] dark:border-[#1F4A42] rounded-full text-xs font-bold transition shadow-2xs"
-                >
-                  سجّل اهتمامك / اطلب التفاصيل
-                </button>
+                <div className="flex items-center gap-3 pt-2">
+                  <Link
+                    href={crs.link}
+                    className="flex-1 py-2.5 px-4 bg-[#154F9C] hover:bg-[#103D7A] text-white rounded-full text-xs font-bold transition text-center shadow-xs"
+                  >
+                    عرض التفاصيل الكاملة
+                  </Link>
+                  <button
+                    onClick={() => setModalCourse(crs.title)}
+                    className="py-2.5 px-4 bg-white dark:bg-black/40 hover:bg-slate-50 dark:hover:bg-black/60 text-[#154F9C] dark:text-[#60A5FA] border border-[#D6E6F8] dark:border-[#1E3A5F] rounded-full text-xs font-bold transition"
+                  >
+                    طلب التسجيل
+                  </button>
+                </div>
               </div>
             ))}
           </div>

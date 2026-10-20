@@ -11,6 +11,16 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: '/courses/rifq-mithaq',
+        destination: '/courses/family/mithaq',
+        permanent: true,
+      },
+      {
+        source: '/courses/rifq-premarital',
+        destination: '/courses/family/premarital',
+        permanent: true,
+      },
+      {
         source: '/:path*',
         has: [
           {

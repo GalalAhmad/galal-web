@@ -78,7 +78,7 @@ export default function Footer() {
             <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-2.5 font-semibold">
               <li><Link href="/" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">الرئيسية</Link></li>
               <li><Link href="/services" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">الجلسات والاستشارات</Link></li>
-              <li><Link href="/courses" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">الكورسات والبرامج</Link></li>
+              <li><Link href="/courses" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مسارات بناء وتمكين</Link></li>
               <li><Link href="/articles" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">المقالات والمحتوى</Link></li>
               <li><Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">عن د. جلال أحمد</Link></li>
             </ul>

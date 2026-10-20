@@ -59,6 +59,26 @@ export const servicesPricing: Record<string, ServicePricing> = {
     durationText: 'مشاريع مؤسسية',
     badgeStyle: 'bg-[#F4EFFC] dark:bg-[#241738] text-[#7C3AED] dark:text-[#A78BFA] border-[#E5D9F8] dark:border-[#3D2561]',
   },
+  adolescent: {
+    id: 'adolescent',
+    title: 'علاج وإرشاد المراهقين واليافعين',
+    priceDisplay: '{{PRICE_TODO}}',
+    priceSubtitle: 'جلسة استشارية وتطبيقية مع إشراك وتوجيه دوري للوالدين',
+    currency: 'SAR',
+    amount: undefined,
+    durationText: '50 دقيقة',
+    badgeStyle: 'bg-[#FEF9EC] dark:bg-[#2E2413] text-[#D97706] dark:text-[#F59E0B] border-[#FDF0CD] dark:border-[#4D3A1B]',
+  },
+  groupTherapy: {
+    id: 'groupTherapy',
+    title: 'المجموعات العلاجية والإرشادية (Group Therapy)',
+    priceDisplay: 'قريباً / قائمة انتظار',
+    priceSubtitle: 'مساحات تعافٍ جماعي آمنة ومغلقة بإشراف متخصص',
+    currency: 'SAR',
+    amount: undefined,
+    durationText: 'مجموعات دورية',
+    badgeStyle: 'bg-[#EDF5FD] dark:bg-[#122238] text-[#154F9C] dark:text-[#60A5FA] border-[#D6E6F8] dark:border-[#1E3A5F]',
+  },
 };
 
 export const coursesPricing: Record<string, { priceDisplay: string; note: string; badgeStyle: string }> = {

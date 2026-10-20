@@ -10,6 +10,7 @@ export default function BookingSection() {
     whatsapp: '',
     email: '',
     track: 'marital',
+    preferred_approach: 'islamic_framework',
     delivery_mode: 'online', // Strictly online via Google Meet
     preferred_time: 'any',
     notes: ''
@@ -163,7 +164,7 @@ export default function BookingSection() {
                   شكراً لثقتك. سيتواصل معك فريق التنسيق عبر الواتساب لإبلاغك بالمواعيد المناسبة خلال <strong>24 ساعة</strong>.
                 </p>
                 <button
-                  onClick={() => { setSuccess(false); setFormData({ full_name: '', whatsapp: '', email: '', track: 'marital', delivery_mode: 'online', preferred_time: 'any', notes: '' }); }}
+                  onClick={() => { setSuccess(false); setFormData({ full_name: '', whatsapp: '', email: '', track: 'marital', preferred_approach: 'islamic_framework', delivery_mode: 'online', preferred_time: 'any', notes: '' }); }}
                   className="px-5 py-2 bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold rounded-xl hover:bg-slate-700 transition"
                 >
                   إرسال طلب آخر
@@ -247,10 +248,25 @@ export default function BookingSection() {
                     <input
                       type="text"
                       disabled
-                      value="أونلاين عبر اتصال مرئي مشفر (Google Meet)"
+                      value="أونلاين عبر اتصال مرئي خاص وآمن (Google Meet)"
                       className="w-full px-4 py-2.5 rounded-xl bg-slate-800/30 dark:bg-slate-800/30 bg-slate-100 border border-slate-700/40 dark:border-slate-700/40 border-slate-200 text-emerald-400 font-bold outline-none text-xs"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-200 dark:text-slate-200 text-slate-700 mb-1">
+                    المنهجية المفضلة في الجلسة (اختياري)
+                  </label>
+                  <select
+                    value={formData.preferred_approach}
+                    onChange={(e) => setFormData({ ...formData, preferred_approach: e.target.value })}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-800/60 dark:bg-slate-800/60 bg-slate-50 border border-slate-700/60 dark:border-slate-700/60 border-slate-200 text-slate-100 dark:text-slate-100 text-slate-900 focus:ring-2 focus:ring-accent-500 outline-none text-xs"
+                  >
+                    <option value="islamic_framework" className="bg-[#151B23] text-white">إطار نفسي إكلينيكي مع استناد قيمي/إسلامي</option>
+                    <option value="general_psychology" className="bg-[#151B23] text-white">إطار علمي نفسي بحت (مبني على الأدلة دون إطار ديني)</option>
+                  </select>
+                  <p className="text-[11px] text-slate-400 mt-1">نحترم تفضيلك ونلبي حاجتك بالمنهج الذي ترتاح له.</p>
                 </div>
 
                 <div>

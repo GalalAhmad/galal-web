@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
@@ -13,7 +13,9 @@ import {
   CheckCircle2,
   Phone,
   Sparkles,
-  Info
+  Info,
+  Users,
+  Compass
 } from 'lucide-react';
 import { 
   VectorIndividualTherapy, 
@@ -27,6 +29,9 @@ import TestimonialsSection from '@/components/TestimonialsSection';
 import { servicesPricing } from '@/data/pricing';
 import CrisisModal from '@/components/CrisisModal';
 import ConfidentialityModal from '@/components/ConfidentialityModal';
+import CurrencySelector from '@/components/CurrencySelector';
+import GroupTherapyWaitlistModal from '@/components/GroupTherapyWaitlistModal';
+import { formatPriceInCurrency } from '@/data/currencies';
 
 interface ServiceItem {
   id: string;
@@ -34,6 +39,8 @@ interface ServiceItem {
   category: string;
   subtitle: string;
   targetAudience: string;
+  parentNote?: string;
+  howWeWork: string;
   inclusions: string[];
   format: string;
   bg: string;
@@ -41,24 +48,39 @@ interface ServiceItem {
   tagBg: string;
   btnBg: string;
   image: string;
+  isWaitlist?: boolean;
+  linkTo?: string;
 }
 
 export default function ServicesPage() {
   const [bookingMode, setBookingMode] = useState<'standard' | 'urgent'>('standard');
   const [isCrisisOpen, setIsCrisisOpen] = useState(false);
   const [isConfidentialityOpen, setIsConfidentialityOpen] = useState(false);
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
+  const [currentCurrency, setCurrentCurrency] = useState<string>('SAR');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('selected_currency');
+    if (saved) setCurrentCurrency(saved);
+  }, []);
+
+  const handleCurrencyChange = (code: string) => {
+    setCurrentCurrency(code);
+    localStorage.setItem('selected_currency', code);
+  };
 
   const services: ServiceItem[] = [
     {
       id: 'psychological',
       title: 'الاستشارات النفسية الفردية',
       category: 'جلسة خاصة • 50 دقيقة',
-      subtitle: 'مساحة استماع آمنة لفهم المشاعر العميقة، تفكيك نوبات القلق والضغوط، واستعادة الاتزان والصلابة الذاتية.',
-      targetAudience: 'للأفراد الذين يمرون بضغوط حياتية أو مهنية، قلق العلاقات، أو صدمات وتحديات نفسية متكررة.',
+      subtitle: 'مساحة استماع آمنة لفهم المشاعر العميقة، فهم القلق والتعامل معه، واستعادة الاتزان والقدرة على الصمود.',
+      targetAudience: 'للأفراد الذين يمرون بضغوط حياتية أو مهنية، قلق العلاقات، أو صدمات وتحديات متكررة.',
+      howWeWork: 'برؤية قيمية مستمدة من الوحي مع الاستفادة من علم النفس الحديث والأدوات المعرفية والسلوكية.',
       inclusions: [
-        'تفكيك الدوافع والرسائل الكامنة خلف المشاعر والسلوك',
+        'فهم الرسائل والدوافع الكامنة خلف المشاعر والسلوك',
         'استراتيجيات عملية لإدارة نوبات التوتر والقلق اليومي',
-        'بناء الصلابة النفسية ورفع تقدير الذات'
+        'بناء القدرة على الصمود ورفع تقدير الذات'
       ],
       format: 'لقاء فيديو خاص وآمن عبر Google Meet',
       bg: 'bg-[#FDF1EE] dark:bg-[#251816]/70',
@@ -71,8 +93,9 @@ export default function ServicesPage() {
       id: 'marital',
       title: 'الاستشارات الزوجية والأسرية',
       category: 'جلسة زوجية مشتركة أو فردية',
-      subtitle: 'مساندة متخصصة لتفكيك النزاعات المتكررة، تحسين لغة الحوار، وإعادة بناء الأمان والمودة بين الشريكين.',
-      targetAudience: 'للأزواج الذين يواجهون خلافات متكررة، صعوبات في التواصل، أو فتوراً في العلاقة.',
+      subtitle: 'مساندة متخصصة حين يتوقف الحوار بينكما، ولعلاج الخلافات المتكررة وإعادة بناء الأمان والمودة بين الشريكين.',
+      targetAudience: 'للأزواج الذين يواجهون صعوبات في التواصل، فتوراً في العلاقة، أو نزاعات مستمرة.',
+      howWeWork: 'برؤية قيمية مستمدة من الوحي مع الاستفادة من علم النفس الحديث وميثاق الشراكة الزوجية.',
       inclusions: [
         'تحليل ديناميكية الخلاف وفك شفرات سوء الفهم',
         'بناء جسور الحوار البناء والتعبير عن الاحتياجات بأمان',
@@ -86,11 +109,32 @@ export default function ServicesPage() {
       image: '/assets/arabtherapy/couple-animation.svg'
     },
     {
+      id: 'adolescent',
+      title: 'علاج وإرشاد المراهقين واليافعين',
+      category: 'جلسات خاصة لليافعين والمراهقين',
+      subtitle: 'مساندة دافئة لفهم تحولات سن المراهقة، استيعاب تقلبات المشاعر، وبناء شخصية متزنة وواعية.',
+      targetAudience: 'لليافعين والمراهقين الذين يواجهون ضغوط الدراسة، التردد، تقلبات الهوية، أو التوتر.',
+      parentNote: 'يتضمن هذا المسار جلسة استطلاعية وتواصلاً استشارياً دورياً مع الوالدين لتوفير بيئة داعمة في البيت.',
+      howWeWork: 'برؤية قيمية مستمدة من الوحي مع الاستفادة من علم النفس الحديث، مع احترام كامل لخصوصية المراهق.',
+      inclusions: [
+        'فهم طبيعة التغيرات النفسية والهرمونية وسلوك المراهق',
+        'أدوات عملية لبناء التقدير الذاتي وإدارة نوبات الغضب',
+        'توجيه مستمر للوالدين حول مهارات الإصغاء والاحتواء الهادئ'
+      ],
+      format: 'لقاء فيديو خاص عبر Google Meet (بموافقة الوالدين)',
+      bg: 'bg-[#FEF9EC] dark:bg-[#2E2413]/70',
+      border: 'border-[#FDF0CD] dark:border-[#4D3A1B]',
+      tagBg: 'bg-white/80 dark:bg-black/30 text-[#D97706]',
+      btnBg: 'bg-[#D97706] hover:bg-[#B45309] text-white',
+      image: '/assets/arabtherapy/boy-animation.svg'
+    },
+    {
       id: 'premarital',
       title: 'الإعداد للحياة الزوجية (ميثاق)',
       category: 'تأهيل المقبلين على الزواج',
       subtitle: 'برنامج استشاري وقائي لتأهيل البدايات، فهم سيكولوجية الشريك، وإدارة التوقعات بواقعية.',
       targetAudience: 'للمخطوبين والمقبلين على الزواج لبناء أسس متينة لبيت آمن ومستقر.',
+      howWeWork: 'برؤية قيمية مستمدة من الوحي مع الاستفادة من علم النفس الحديث وأسس الاختيار المتوازن.',
       inclusions: [
         'فهم الفروق النفسية وأساليب التعبير عن المشاعر',
         'مهارات إدارة الخلاف قبل وقوعه والتعامل مع التدخلات',
@@ -109,6 +153,7 @@ export default function ServicesPage() {
       category: 'إرشاد الوالدين والمربين',
       subtitle: 'فهم دوافع سلوك الأبناء واليافعين، وتطوير أساليب تربوية واعية قائمة على الرحمة والحزم دون صراخ.',
       targetAudience: 'للآباء والأمهات الذين يواجهون عناد الأبناء، صعوبات المراهقة، أو توتراً وعصبية والدية.',
+      howWeWork: 'برؤية قيمية مستمدة من الوحي مع الاستفادة من علم النفس الحديث ونظرية الارتباط التربوي.',
       inclusions: [
         'تفسير السلوك المشكل وفهم الاحتياج غير المشبع لدى الطفل',
         'استراتيجيات الحزم الهادئ وتقليل الانفعال المنزلي',
@@ -122,22 +167,44 @@ export default function ServicesPage() {
       image: '/assets/arabtherapy/boy-animation.svg'
     },
     {
+      id: 'groupTherapy',
+      title: 'المجموعات العلاجية والإرشادية (Group Therapy)',
+      category: 'قريباً • قائمة انتظار',
+      subtitle: 'مساحات تعافٍ وتشارك جماعية مغلقة تضم عدداً محدوداً من المشاركين لتبادل الخبرات وتجاوز التحديات.',
+      targetAudience: 'للأفراد الباحثين عن إسناد جماعي آمن وتبادل خبرات داعمة تحت إشراف وتيسير استشاري متخصص.',
+      howWeWork: 'برؤية قيمية مستمدة من الوحي مع الاستفادة من علم النفس الحديث في الإرشاد الجمعي والتعافي المشترك.',
+      inclusions: [
+        'لقاءات تفاعلية مغلقة تضم 6 إلى 8 مشاركين فقط',
+        'بيئة آمنة تخضع لقواعد سرية مشددة تحمي خصوصية الجميع',
+        'أدوات تكيف وتمارين وتطبيقات سلوكية أسبوعية موجهة'
+      ],
+      format: 'لقاءات دورية عبر Google Meet',
+      bg: 'bg-[#F4EFFC] dark:bg-[#241738]/70',
+      border: 'border-[#E5D9F8] dark:border-[#3D2561]',
+      tagBg: 'bg-white/80 dark:bg-black/30 text-[#7C3AED]',
+      btnBg: 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white',
+      image: '/assets/arabtherapy/instant-session.svg',
+      isWaitlist: true
+    },
+    {
       id: 'institutions',
-      title: 'التدريب والاستشارات للمؤسسات',
-      category: 'المدارس والمنظمات التعليمية',
+      title: 'تطوير المعلمين والمؤسسات التعليمية',
+      category: 'ورش وتأهيل مهني للكوادر',
       subtitle: 'تطوير القيادات المدرسية والمعلمين، وتصميم بروتوكولات التدخل السلوكي والرعاية النفسية للطلاب.',
       targetAudience: 'للمدارس الكبرى، المؤسسات التعليمية، والمراكز التي ترغب في رفع كفاءة كادرها التربوي.',
+      howWeWork: 'برؤية قيمية مستمدة من الوحي مع الاستفادة من علم النفس التربوي وأحدث استراتيجيات إدارة السلوك.',
       inclusions: [
         'حقائب تدريبية متخصصة للمعلمين والأخصائيين النفسيين',
         'بناء أدلة وسياسات التدخل التربوي وحماية المتعلمين',
         'استشارات مؤسسية وإشراف فني على الأقسام الإرشادية'
       ],
       format: 'برامج تفاعلية حضورية أو عبر المنصات الرقمية',
-      bg: 'bg-[#F4EFFC] dark:bg-[#241738]/70',
-      border: 'border-[#E5D9F8] dark:border-[#3D2561]',
-      tagBg: 'bg-white/80 dark:bg-black/30 text-[#7C3AED]',
-      btnBg: 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white',
-      image: '/assets/arabtherapy/instant-session.svg'
+      bg: 'bg-[#EDF7F5] dark:bg-[#112924]/70',
+      border: 'border-[#D6EEEA] dark:border-[#1F4A42]',
+      tagBg: 'bg-white/80 dark:bg-black/30 text-[#4E7E76]',
+      btnBg: 'bg-[#4E7E76] hover:bg-[#3D655E] text-white',
+      image: '/assets/arabtherapy/instant-session.svg',
+      linkTo: '/courses/institutions'
     }
   ];
 
@@ -181,8 +248,17 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* 5 Services Pastel Cards */}
+      {/* Multi-Currency Price Selector & Services Grid */}
       <section className="py-8 px-4 sm:px-6 max-w-6xl mx-auto space-y-6 w-full">
+        
+        {/* Currency Switcher */}
+        <div className="max-w-4xl mx-auto">
+          <CurrencySelector
+            currentCurrency={currentCurrency}
+            onCurrencyChange={handleCurrencyChange}
+          />
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((srv) => (
             <div 
@@ -204,36 +280,71 @@ export default function ServicesPage() {
                   </div>
                 </div>
 
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">
-                      {srv.title}
-                    </h3>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
-                      {srv.subtitle}
-                    </p>
-                  </div>
-
-                  {/* لمن تناسب */}
-                  <div className="p-3 rounded-2xl bg-white/70 dark:bg-black/25 text-[11px] space-y-1">
-                    <span className="font-bold text-slate-700 dark:text-slate-200">لمن تناسب:</span>
-                    <p className="text-slate-500 dark:text-slate-400 font-normal">{srv.targetAudience}</p>
-                  </div>
-
-                  {/* المحتويات */}
-                  <div className="space-y-2">
-                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">ما الذي تتضمنه:</span>
-                    <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400 font-normal">
-                      {srv.inclusions.map((inc, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76] shrink-0 mt-0.5" />
-                          <span>{inc}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-black text-slate-900 dark:text-slate-100">
+                    {srv.title}
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
+                    {srv.subtitle}
+                  </p>
                 </div>
 
+                {/* لمن تناسب */}
+                <div className="p-3 rounded-2xl bg-white/70 dark:bg-black/25 text-[11px] space-y-1">
+                  <span className="font-bold text-slate-700 dark:text-slate-200">لمن تناسب:</span>
+                  <p className="text-slate-500 dark:text-slate-400 font-normal">{srv.targetAudience}</p>
+                </div>
+
+                {/* ملاحظة إشراك الوالدين إذا كانت خاصة باليافعين */}
+                {srv.parentNote && (
+                  <div className="p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/60 text-[11px] text-amber-900 dark:text-amber-200 space-y-0.5">
+                    <span className="font-bold block">ملاحظة إشراك الوالدين:</span>
+                    <p className="font-normal leading-relaxed">{srv.parentNote}</p>
+                  </div>
+                )}
+
+                {/* كيف نعمل والرؤية القيمية */}
+                <div className="p-3 rounded-2xl bg-white/70 dark:bg-black/25 text-[11px] space-y-1">
+                  <span className="font-bold text-[#4E7E76] dark:text-[#5E988E] block">كيف نعمل:</span>
+                  <p className="text-slate-600 dark:text-slate-300 font-normal leading-relaxed">{srv.howWeWork}</p>
+                  <p className="text-[10px] text-slate-400 pt-0.5">
+                    * يمكنك تحديد النهج المفضل (إطار قيمي إسلامي أو نهج نفسي عام) عند الحجز.
+                  </p>
+                </div>
+
+                {/* المحتويات */}
                 <div className="space-y-2">
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">ما الذي تتضمنه:</span>
+                  <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400 font-normal">
+                    {srv.inclusions.map((inc, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76] shrink-0 mt-0.5" />
+                        <span>{inc}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {srv.isWaitlist ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsWaitlistOpen(true)}
+                    className={`w-full py-3 px-4 rounded-full text-xs font-bold flex items-center justify-center gap-2 ${srv.btnBg} transition-all shadow-sm cursor-pointer`}
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>سجّل في قائمة الانتظار</span>
+                  </button>
+                ) : srv.linkTo ? (
+                  <a
+                    href={srv.linkTo}
+                    className={`w-full py-3 px-4 rounded-full text-xs font-bold flex items-center justify-center gap-2 ${srv.btnBg} transition-all shadow-sm`}
+                  >
+                    <Compass className="w-3.5 h-3.5" />
+                    <span>استكشف تفاصيل التدريب المؤسسي</span>
+                  </a>
+                ) : (
                   <a
                     href="#book"
                     className={`w-full py-3 px-4 rounded-full text-xs font-bold flex items-center justify-center gap-2 ${srv.btnBg} transition-all shadow-sm`}
@@ -241,21 +352,26 @@ export default function ServicesPage() {
                     <Calendar className="w-3.5 h-3.5" />
                     <span>احجز موعد هذه الجلسة</span>
                   </a>
+                )}
 
-                  {servicesPricing[srv.id] && (
-                    <div className="text-center pt-1 space-y-0.5">
-                      <div className="text-xs font-black text-slate-800 dark:text-slate-200">
-                        {servicesPricing[srv.id].priceDisplay}
-                      </div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                        {servicesPricing[srv.id].priceSubtitle}
-                      </div>
+                {servicesPricing[srv.id] && (
+                  <div className="text-center pt-1 space-y-0.5">
+                    <div className="text-xs font-black text-slate-800 dark:text-slate-200">
+                      {srv.id === 'adolescent'
+                        ? '{{PRICE_TODO}}'
+                        : servicesPricing[srv.id].amount
+                          ? `تبدأ من ${formatPriceInCurrency(servicesPricing[srv.id].amount, currentCurrency)}`
+                          : servicesPricing[srv.id].priceDisplay}
                     </div>
-                  )}
-                </div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                      {servicesPricing[srv.id].priceSubtitle}
+                    </div>
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Emergency 24h WhatsApp Booking Banner (Arab Therapy Instant Session pattern) */}
@@ -371,6 +487,7 @@ export default function ServicesPage() {
 
       <CrisisModal isOpen={isCrisisOpen} onClose={() => setIsCrisisOpen(false)} />
       <ConfidentialityModal isOpen={isConfidentialityOpen} onClose={() => setIsConfidentialityOpen(false)} />
+      <GroupTherapyWaitlistModal isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)} />
     </main>
   );
 }

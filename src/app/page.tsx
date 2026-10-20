@@ -52,7 +52,7 @@ export default function HomePage() {
       id: 'psychological',
       title: 'استشارات نفسية فردية',
       tag: 'جلسة خاصة • 50 دقيقة',
-      desc: 'مساحة استماع آمنة لتفكيك القلق والضغوط اليومية، فهم المشاعر العميقة، واستعادة الاتزان والصلابة الذاتية.',
+      desc: 'مساحة استماع آمنة لفهم القلق والتعامل معه، فهم المشاعر العميقة، واستعادة الاتزان والقدرة على الصمود برؤية قيمية متزنة.',
       bg: 'bg-[#FDF1EE] dark:bg-[#251816]/70',
       border: 'border-[#F8DDD9] dark:border-[#42221E]',
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#CC4E46]',
@@ -65,7 +65,7 @@ export default function HomePage() {
       id: 'marital',
       title: 'استشارات زوجية وأسرية',
       tag: 'جلسة ثنائية أو فردية • 60-75 دقيقة',
-      desc: 'معالجة الخلافات المتكررة وفك الانسداد الحواري، وإعادة بناء جسور الأمان والمودة والتفاهم المشترك بين الشريكين.',
+      desc: 'معالجة الخلافات وحين يتوقف الحوار بينكما، وإعادة بناء جسور الأمان والمودة والتفاهم المشترك برؤية مستمدة من الوحي.',
       bg: 'bg-[#EDF5FD] dark:bg-[#122238]/70',
       border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#154F9C]',
@@ -75,10 +75,23 @@ export default function HomePage() {
       href: '/services#book',
     },
     {
+      id: 'adolescent',
+      title: 'علاج وإرشاد المراهقين',
+      tag: 'لليافعين • بمشاركة الوالدين',
+      desc: 'مساندة دافئة لاستيعاب تحولات سن المراهقة وبناء الثقة، مع جلسات توجيه دورية للوالدين لتوفير بيئة أسرية محتضنة.',
+      bg: 'bg-[#FEF9EC] dark:bg-[#2E2413]/70',
+      border: 'border-[#FDF0CD] dark:border-[#4D3A1B]',
+      tagBg: 'bg-white/80 dark:bg-black/30 text-[#D97706]',
+      btnBg: 'bg-[#D97706] hover:bg-[#B45309] text-white',
+      image: '/assets/arabtherapy/boy-animation.svg',
+      btnText: 'احجز استشارة للمراهق',
+      href: '/services#book',
+    },
+    {
       id: 'parenting',
       title: 'إرشاد تربوي ووالدي',
       tag: 'إرشاد الوالدين والمربين • 50 دقيقة',
-      desc: 'فهم الدوافع النفسية خلف سلوك الأبناء واليافعين، وتطوير أساليب تربوية تجمع بين الرفق والحزم دون صراخ.',
+      desc: 'فهم الرسائل خلف سلوك الأبناء، وتطوير مهارات تربوية تجمع بين الرفق والحزم لتعزيز الهدوء والتفاهم في البيت.',
       bg: 'bg-[#EDF7F5] dark:bg-[#112924]/70',
       border: 'border-[#D6EEEA] dark:border-[#1F4A42]',
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#4E7E76]',
@@ -88,17 +101,30 @@ export default function HomePage() {
       href: '/services#book',
     },
     {
-      id: 'premarital-inst',
-      title: 'تأهيل المقبلين واستشارات المؤسسات',
-      tag: 'تأهيل البدايات وتطوير المدارس',
-      desc: 'برامج وقائية للمقبلين على الزواج لبناء شراكة واعية، واستشارات متخصصة لتطوير بيئات التعلم ورعاية المتعلمين.',
-      bg: 'bg-[#FEF9EC] dark:bg-[#2E2413]/70',
-      border: 'border-[#FDF0CD] dark:border-[#4D3A1B]',
-      tagBg: 'bg-white/80 dark:bg-black/30 text-[#D97706]',
-      btnBg: 'bg-[#D97706] hover:bg-[#B45309] text-white',
-      image: '/assets/arabtherapy/why-02.svg',
-      btnText: 'اكتشف برامج بناء وتمكين',
-      href: '/courses',
+      id: 'groupTherapy',
+      title: 'المجموعات الإرشادية',
+      tag: 'قريباً • قائمة انتظار',
+      desc: 'مساحات تعافٍ وتشارك جماعية مغلقة وميسرة لتبادل الخبرات وتجاوز التحديات في بيئة تسودها الألفة والسرية المطلقة.',
+      bg: 'bg-[#F4EFFC] dark:bg-[#241738]/70',
+      border: 'border-[#E5D9F8] dark:border-[#3D2561]',
+      tagBg: 'bg-white/80 dark:bg-black/30 text-[#7C3AED]',
+      btnBg: 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white',
+      image: '/assets/arabtherapy/instant-session.svg',
+      btnText: 'سجّل في قائمة الانتظار',
+      href: '/services',
+    },
+    {
+      id: 'institutions',
+      title: 'تطوير المعلمين والمؤسسات',
+      tag: 'للمدارس والمنظمات التعليمية',
+      desc: 'ورش عمل وتأهيل مهني للكوادر التربوية وتصميم أدلة التدخل السلوكي ورعاية المتعلمين وفق أحدث الاستراتيجيات.',
+      bg: 'bg-[#EDF5FD] dark:bg-[#122238]/70',
+      border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
+      tagBg: 'bg-white/80 dark:bg-black/30 text-[#154F9C]',
+      btnBg: 'bg-[#154F9C] hover:bg-[#103D7A] text-white',
+      image: '/assets/arabtherapy/instant-session.svg',
+      btnText: 'استكشف التدريب المؤسسي',
+      href: '/courses/institutions',
     },
   ];
 
@@ -467,7 +493,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {services.map((srv) => (
               <div
                 key={srv.id}
@@ -741,7 +767,7 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {featuredTests.map((tst) => (
               <div
                 key={tst.id}
@@ -807,7 +833,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div className="p-6 rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs hover:shadow-md transition">
               <div className="w-10 h-10 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] text-[#4E7E76] flex items-center justify-center font-black">
                 <BookOpen className="w-5 h-5" />

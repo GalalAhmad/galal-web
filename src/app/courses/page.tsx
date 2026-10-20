@@ -18,6 +18,7 @@ import {
   Phone,
   GraduationCap
 } from 'lucide-react';
+import { coursesPricing } from '@/data/pricing';
 
 interface Course {
   id: string;
@@ -212,6 +213,7 @@ export default function CoursesPage() {
                   <img 
                     src={course.image} 
                     alt={course.title} 
+                    loading="lazy"
                     className="h-36 w-auto object-contain" 
                   />
                 </div>
@@ -250,8 +252,8 @@ export default function CoursesPage() {
 
               </div>
 
-              {/* Action Button */}
-              <div className="pt-4 border-t border-black/5 dark:border-white/5">
+              {/* Action Button & Pricing */}
+              <div className="pt-4 border-t border-black/5 dark:border-white/5 space-y-3">
                 <button
                   onClick={() => setSelectedCourse(course)}
                   className="w-full py-3 px-5 bg-white dark:bg-black/40 hover:bg-slate-50 dark:hover:bg-black/60 text-[#CC4E46] border border-[#CC4E46]/30 rounded-full text-xs font-bold transition flex items-center justify-center gap-2 shadow-2xs hover:shadow-xs"
@@ -259,6 +261,17 @@ export default function CoursesPage() {
                   <span>سجل اهتمامك / اطلب تفاصيل البرنامج</span>
                   <ArrowLeft className="w-3.5 h-3.5" />
                 </button>
+
+                {coursesPricing[course.id] && (
+                  <div className="text-center pt-0.5 space-y-0.5">
+                    <span className="inline-block text-xs font-black text-slate-800 dark:text-slate-200">
+                      رسوم البرنامج: {coursesPricing[course.id].priceDisplay}
+                    </span>
+                    <span className="block text-[10px] text-slate-500 dark:text-slate-400">
+                      {coursesPricing[course.id].note}
+                    </span>
+                  </div>
+                )}
               </div>
 
             </div>

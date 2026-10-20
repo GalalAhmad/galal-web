@@ -128,8 +128,11 @@ export default function AboutPage() {
             <div className="lg:col-span-5 order-1 lg:order-2 flex justify-center">
               <div className="relative w-64 sm:w-80 aspect-square rounded-3xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 dark:bg-slate-900">
                 <img
-                  src="/assets/dr-galal-portrait.jpg"
-                  alt="جلال أحمد — مستشار الصحة النفسية والتربوية"
+                  src="/assets/dr-galal-portrait.webp"
+                  alt="جلال أحمد — مستشار الصحة النفسية والتربوية، مصنف من الهيئة السعودية للتخصصات الصحية ومؤسس منصتي رفق ووصلة"
+                  loading="lazy"
+                  width={700}
+                  height={1000}
                   className="w-full h-full object-cover object-top"
                 />
               </div>

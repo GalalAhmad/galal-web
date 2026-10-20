@@ -33,6 +33,9 @@ import {
   VectorEmergencyTherapy,
   VectorInstitutionalTherapy
 } from '@/components/Vectors';
+import TestimonialsSection from '@/components/TestimonialsSection';
+import SelfAssessmentLeadMagnet from '@/components/SelfAssessmentLeadMagnet';
+import { servicesPricing, coursesPricing } from '@/data/pricing';
 
 export default function HomePage() {
   // Course Interest Modal State
@@ -265,8 +268,26 @@ export default function HomePage() {
     },
   ];
 
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.a,
+      },
+    })),
+  };
+
   return (
     <main className="min-h-screen flex flex-col bg-[#FAFCFA] dark:bg-[#0D1117] text-slate-900 dark:text-slate-100 transition-colors">
+      {/* Google FAQ Schema Markup (JSON-LD) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <Navbar />
 
       {/* 1. Hero Section - Arab Therapy Style */}
@@ -420,6 +441,7 @@ export default function HomePage() {
                       <img 
                         src={srv.image} 
                         alt={srv.title} 
+                        loading="lazy"
                         className="w-24 h-24 sm:w-28 sm:h-28 object-contain" 
                       />
                     </div>
@@ -436,8 +458,8 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* CTA Button */}
-                <div className="pt-6">
+                {/* CTA Button & Pricing */}
+                <div className="pt-6 space-y-2">
                   {srv.isExternal ? (
                     <a
                       href={srv.href}
@@ -456,6 +478,14 @@ export default function HomePage() {
                       <span>{srv.btnText}</span>
                       <ArrowLeft className="w-3.5 h-3.5" />
                     </Link>
+                  )}
+
+                  {servicesPricing[srv.id] && (
+                    <div className="text-center pt-1">
+                      <span className="inline-block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                        {servicesPricing[srv.id].priceDisplay}
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>
@@ -488,6 +518,7 @@ export default function HomePage() {
                   <img 
                     src={pillar.image} 
                     alt={pillar.title} 
+                    loading="lazy"
                     className="h-28 w-auto max-w-full object-contain" 
                   />
                 </div>
@@ -554,6 +585,13 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* 4. آراء وتجارب المستفيدين (Testimonials Section) */}
+      <TestimonialsSection 
+        title="تجارب وآراء المستفيدين" 
+        subtitle="أصداء حقيقية من جلسات الاستشارة والبرامج التفاعلية (مع الالتزام الصارم بالسرية والخصوصية التامة)"
+        limit={6}
+      />
+
       {/* 5. الكورسات والبرامج المتاحة (Section 4) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto space-y-10">
@@ -598,6 +636,7 @@ export default function HomePage() {
                     <img 
                       src={crs.image} 
                       alt={crs.title} 
+                      loading="lazy"
                       className="h-32 w-auto object-contain" 
                     />
                   </div>
@@ -610,9 +649,16 @@ export default function HomePage() {
                     {crs.desc}
                   </p>
 
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                    <Clock className="w-3.5 h-3.5 text-[#4E7E76]" />
-                    <span>{crs.duration}</span>
+                  <div className="flex items-center justify-between text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-[#4E7E76]" />
+                      <span>{crs.duration}</span>
+                    </div>
+                    {coursesPricing[crs.id] && (
+                      <span className="font-bold text-slate-800 dark:text-slate-200 text-[11px] px-2 py-0.5 rounded-md bg-white/80 dark:bg-black/30 border border-black/5 dark:border-white/5">
+                        {coursesPricing[crs.id].priceDisplay}
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -628,6 +674,9 @@ export default function HomePage() {
 
         </div>
       </section>
+
+      {/* 5. مقياس الاتزان النفسي الذاتي (Lead Magnet) */}
+      <SelfAssessmentLeadMagnet />
 
       {/* 6. مشروع أقومية القرآن والمقالات (Section 5) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#FEF9EC]/40 dark:bg-[#2E2413]/20 border-y border-slate-200/70 dark:border-slate-800">

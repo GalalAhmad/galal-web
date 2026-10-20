@@ -23,6 +23,8 @@ import {
   VectorEmergencyTherapy,
   VectorInstitutionalTherapy 
 } from '@/components/Vectors';
+import TestimonialsSection from '@/components/TestimonialsSection';
+import { servicesPricing } from '@/data/pricing';
 
 interface ServiceItem {
   id: string;
@@ -188,6 +190,7 @@ export default function ServicesPage() {
                     <img 
                       src={srv.image} 
                       alt={srv.title} 
+                      loading="lazy"
                       className="w-24 h-24 sm:w-28 sm:h-28 object-contain" 
                     />
                   </div>
@@ -222,13 +225,26 @@ export default function ServicesPage() {
                   </div>
                 </div>
 
-                <a
-                  href="#book"
-                  className={`w-full py-3 px-4 rounded-full text-xs font-bold flex items-center justify-center gap-2 ${srv.btnBg} transition-all shadow-sm`}
-                >
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>احجز موعد هذه الجلسة</span>
-                </a>
+                <div className="space-y-2">
+                  <a
+                    href="#book"
+                    className={`w-full py-3 px-4 rounded-full text-xs font-bold flex items-center justify-center gap-2 ${srv.btnBg} transition-all shadow-sm`}
+                  >
+                    <Calendar className="w-3.5 h-3.5" />
+                    <span>احجز موعد هذه الجلسة</span>
+                  </a>
+
+                  {servicesPricing[srv.id] && (
+                    <div className="text-center pt-1 space-y-0.5">
+                      <div className="text-xs font-black text-slate-800 dark:text-slate-200">
+                        {servicesPricing[srv.id].priceDisplay}
+                      </div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                        {servicesPricing[srv.id].priceSubtitle}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -238,15 +254,20 @@ export default function ServicesPage() {
       <section className="py-8 px-4 sm:px-6 max-w-6xl mx-auto w-full">
         <div className="p-6 sm:p-8 rounded-3xl bg-[#F4EFFC] dark:bg-[#241738]/80 border border-[#E5D9F8] dark:border-[#3D2561] flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
           <div className="space-y-2 text-right">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-black/30 text-[#7C3AED] text-xs font-bold">
-              <Zap className="w-3.5 h-3.5" />
-              <span>خدمة الحجز السريع والمباشر</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-black/30 text-[#7C3AED] text-xs font-bold">
+                <Zap className="w-3.5 h-3.5" />
+                <span>خدمة الحجز السريع والمباشر</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#CC4E46]/10 text-[#CC4E46] dark:text-[#F87171] text-xs font-black border border-[#CC4E46]/20">
+                تسعير خاص: 500 ر.س
+              </span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
               هل تمر بظرف ضاغط وتحتاج لجلسة عاجلة؟
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl font-normal leading-relaxed">
-              إذا كنت بحاجة إلى استماع وتوجيه عاجل خلال 24 ساعة دون انتظار المواعيد المجدولة، يمكنك طلب الحجز الطارئ مباشرة عبر واتساب المخصص.
+              إذا كنت بحاجة إلى استماع وتوجيه عاجل خلال 24 ساعة دون انتظار المواعيد المجدولة، يمكنك طلب الحجز الطارئ مباشرة عبر واتساب المخصص (تسعير مستقل للاستجابة الفورية).
             </p>
           </div>
 
@@ -257,10 +278,17 @@ export default function ServicesPage() {
             className="shrink-0 px-7 py-3.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold flex items-center gap-2 transition shadow-md shadow-[#7C3AED]/25"
           >
             <Phone className="w-4 h-4" />
-            <span>طلب حجز طارئ خلال 24 ساعة عبر واتساب</span>
+            <span>طلب حجز طارئ (500 ر.س) عبر واتساب</span>
           </a>
         </div>
       </section>
+
+      {/* Testimonials Section in Services Page */}
+      <TestimonialsSection 
+        title="آراء وتجارب المستفيدين من الجلسات" 
+        subtitle="تجارب حقيقية تعكس أثر جلسات الاستماع والتوجيه السلوكي والأسري"
+        limit={6}
+      />
 
       {/* Booking Calendar Section (Calendly Embed) */}
       <section id="book" className="py-12 sm:py-16 px-4 sm:px-6 max-w-5xl mx-auto w-full space-y-8">

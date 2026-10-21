@@ -1,0 +1,58 @@
+[
+  {
+    "id": "BK-94102",
+    "clientName": "أحمد الشريف",
+    "clientPhone": "01098765432",
+    "clientEmail": "ahmed.shareef@example.com",
+    "track": "psychological",
+    "trackLabel": "استشارة نفسية فردية",
+    "age": 31,
+    "maritalStatus": "متزوج",
+    "answers": {
+      "psychological_symptoms": ["قلق وتوتر دائم", "تفكير زائد", "نقص النوم"],
+      "physical_symptoms": ["صداع دائم", "ضربات القلب السريعة"],
+      "previous_therapy": "نعم، جلسات إرشادية سابقة قبل عامين",
+      "consultation_reason": "أعاني من ضغوط متزايدة في بيئة العمل تنعكس على هدوئي مع أسرتي وأرغب في استعادة التوازن."
+    },
+    "slotDate": "2026-10-25",
+    "slotTime": "06:00 مساءً",
+    "paymentMethod": "instapay",
+    "receiptNote": "تم التحويل عبر إنستاباي - رقم العملية: IPN984210",
+    "receiptImage": "",
+    "fee": "250 ر.س",
+    "status": "pending_verification",
+    "meetLink": "https://meet.google.com/xyz-galal-psych",
+    "notes": "الحالة تحتاج التركيز على مهارات إدارة الضغوط وتفكيك التشوهات المعرفية.",
+    "homework": [],
+    "created_at": "2026-10-21T20:15:00Z"
+  },
+  {
+    "id": "BK-88219",
+    "clientName": "سارة وعمر",
+    "clientPhone": "01011223344",
+    "clientEmail": "sara.omar@example.com",
+    "track": "marital",
+    "trackLabel": "استشارة زوجية وأسرية",
+    "age": 28,
+    "maritalStatus": "متزوج",
+    "answers": {
+      "attendance_type": "يحضر كلا الزوجين معاً في الجلسة",
+      "marriage_duration": "4 سنوات",
+      "has_children": "نعم، طفل واحد",
+      "main_challenges": ["خلافات متكررة وانسداد لغة الحوار", "تحسين جودة الحياة الزوجية والتواصل"],
+      "reconciliation_will": "هناك رغبة متبادلة في الإصلاح وتجاوز الخلافات",
+      "consultation_reason": "نرغب في تعلم مهارات الإصغاء والتواصل الواعي دون تصعيد الصدام عند الاختلاف."
+    },
+    "slotDate": "2026-10-26",
+    "slotTime": "07:30 مساءً",
+    "paymentMethod": "vodafone_cash",
+    "receiptNote": "محفظة فودافون كاش - تحويل من رقم ينتهي بـ 44",
+    "receiptImage": "",
+    "fee": "350 ر.س",
+    "status": "confirmed",
+    "meetLink": "https://meet.google.com/abc-galal-couple",
+    "notes": "تم تأكيد الحجز وإرسال رابط الجلسة للطرفين.",
+    "homework": ["جسور التواصل الزواجي: من ردود الفعل العفوية إلى الإصغاء الواعي"],
+    "created_at": "2026-10-21T18:30:00Z"
+  }
+]

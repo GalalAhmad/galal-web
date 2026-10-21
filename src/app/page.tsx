@@ -61,7 +61,7 @@ export default function HomePage() {
       btnBg: 'bg-[#CC4E46] hover:bg-[#B33D35] text-white',
       image: '/assets/arabtherapy/girl-animation.svg',
       btnText: 'احجز جلستك النفسية',
-      href: '/services#book',
+      href: '/booking?track=psychological',
     },
     {
       id: 'marital',
@@ -74,7 +74,7 @@ export default function HomePage() {
       btnBg: 'bg-[#154F9C] hover:bg-[#103D7A] text-white',
       image: '/assets/arabtherapy/couple-animation.svg',
       btnText: 'احجز جلستك الزوجية',
-      href: '/services#book',
+      href: '/booking?track=marital',
     },
     {
       id: 'parenting',
@@ -87,7 +87,7 @@ export default function HomePage() {
       btnBg: 'bg-[#4E7E76] hover:bg-[#3D655E] text-white',
       image: '/assets/arabtherapy/boy-animation.svg',
       btnText: 'احجز استشارة تربوية',
-      href: '/services#book',
+      href: '/booking?track=parenting',
     },
     {
       id: 'premarital-inst',
@@ -278,7 +278,7 @@ export default function HomePage() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
             <Link
-              href="/services#book"
+              href="/booking"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-sm font-bold rounded-full transition-all shadow-md shadow-[#CC4E46]/20 hover:scale-[1.02]"
             >
               <Calendar className="w-4 h-4" />
@@ -550,7 +550,7 @@ export default function HomePage() {
 
           <div className="pt-2">
             <Link
-              href="/services#book"
+              href="/booking"
               className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-xs font-bold rounded-full transition shadow-md shadow-[#CC4E46]/20"
             >
               <Calendar className="w-4 h-4" />
@@ -956,7 +956,7 @@ export default function HomePage() {
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3.5">
             <Link
-              href="/services#book"
+              href="/booking"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-sm font-bold rounded-full transition shadow-md shadow-[#CC4E46]/25 hover:scale-[1.02]"
             >
               <Calendar className="w-4 h-4" />

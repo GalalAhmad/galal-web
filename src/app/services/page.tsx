@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
@@ -226,13 +227,13 @@ export default function ServicesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <a
-                    href="#book"
+                  <Link
+                    href={`/booking?track=${srv.id === 'marital' || srv.id === 'premarital' ? 'marital' : srv.id === 'parenting' ? 'parenting' : srv.id === 'youth' ? 'youth' : 'psychological'}`}
                     className={`w-full py-3 px-4 rounded-full text-xs font-bold flex items-center justify-center gap-2 ${srv.btnBg} transition-all shadow-sm`}
                   >
                     <Calendar className="w-3.5 h-3.5" />
                     <span>احجز موعد هذه الجلسة</span>
-                  </a>
+                  </Link>
 
                   {servicesPricing[srv.id] && (
                     <div className="text-center pt-1 space-y-0.5">
@@ -300,6 +301,25 @@ export default function ServicesPage() {
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
             اختر اليوم والوقت الملائم لك من الجدول أدناه، وسيصلك تأكيد الحجز ورابط اللقاء على Google Meet مباشرة.
           </p>
+        </div>
+
+        {/* Smart Booking Banner */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-linear-to-r from-[#4E7E76]/10 via-[#4E7E76]/5 to-transparent border border-[#4E7E76]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-right">
+            <div className="w-10 h-10 rounded-xl bg-[#4E7E76] text-white flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">نظام الحجز الذكي والاستمارة التشخيصية</h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">تشخيص أولي لاحتياجك + دفع مباشر عبر InstaPay أو فودافون كاش دون انتظار</p>
+            </div>
+          </div>
+          <Link
+            href="/booking"
+            className="w-full sm:w-auto px-5 py-2.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-bold rounded-xl transition shadow-sm text-center shrink-0"
+          >
+            الانتقال للحجز الذكي
+          </Link>
         </div>
 
         {/* Embedded Calendly Frame with Arab Therapy styled wrapper */}

@@ -77,7 +77,7 @@ export default function Navbar() {
 
           {/* زر احجز جلسة بلون عرب ثيرابي المرجاني الجذاب */}
           <Link
-            href="/services#book"
+            href="/booking"
             className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-xs font-bold rounded-full transition shadow-sm hover:shadow"
           >
             <Calendar className="w-3.5 h-3.5" />
@@ -111,7 +111,7 @@ export default function Navbar() {
           ))}
           <div className="pt-2">
             <Link
-              href="/services#book"
+              href="/booking"
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center justify-center gap-2 w-full py-3 bg-[#CC4E46] text-white text-xs font-bold rounded-full shadow-sm"
             >

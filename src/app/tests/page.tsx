@@ -324,7 +324,7 @@ export default function PsychologicalTestsPage() {
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-            المقاييس والاختبارات النفسية
+            اختبارات ومقاييس
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
@@ -470,10 +470,11 @@ export default function PsychologicalTestsPage() {
               const meta = SCIENTIFIC_TESTS_METADATA[test.id];
 
               return (
-                <div
+                <Link
                   key={test.id}
+                  href={`/tests/${test.id}`}
                   style={{ backgroundColor: test.color }}
-                  className="relative p-6 rounded-3xl border border-black/5 dark:border-white/10 flex flex-col justify-between shadow-2xs hover:shadow-md transition-all duration-300 hover:-translate-y-1 text-right text-slate-900 group"
+                  className="relative p-6 rounded-3xl border border-black/5 dark:border-white/10 flex flex-col justify-between shadow-2xs hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-right text-slate-900 group cursor-pointer"
                 >
                   <div className="space-y-3">
                     
@@ -501,7 +502,7 @@ export default function PsychologicalTestsPage() {
 
                     {/* Test Title & Demographic */}
                     <div className="space-y-1.5">
-                      <h3 className="text-base font-black text-slate-950 leading-snug">
+                      <h3 className="text-base font-black text-slate-950 leading-snug group-hover:text-[#154F9C] transition">
                         {test.title}
                       </h3>
                       {meta?.targetAudience && (
@@ -529,24 +530,21 @@ export default function PsychologicalTestsPage() {
 
                   {/* Bottom Actions: Start & Scientific Details */}
                   <div className="pt-4 flex items-center justify-between border-t border-black/5 mt-4">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenTest(test, false)}
-                      className="text-[11px] text-slate-800 hover:text-black font-extrabold flex items-center gap-1 cursor-pointer hover:underline"
+                    <span
+                      className="text-[11px] text-slate-800 group-hover:text-black font-extrabold flex items-center gap-1 group-hover:underline"
                     >
                       <Info className="w-3.5 h-3.5" />
                       <span>معرفة المزيد</span>
-                    </button>
+                    </span>
                     
-                    <button
-                      onClick={() => handleOpenTest(test, true)}
-                      className="px-4 py-2 rounded-full bg-slate-900/95 hover:bg-black text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer group-hover:scale-105"
+                    <span
+                      className="px-4 py-2 rounded-full bg-slate-900/95 group-hover:bg-[#154F9C] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs group-hover:scale-105"
                     >
                       <span>بدء المقياس</span>
                       <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-0" />
-                    </button>
+                    </span>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

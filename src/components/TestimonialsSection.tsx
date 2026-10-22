@@ -21,7 +21,7 @@ export default function TestimonialsSection({
 
   // Fetch dynamic published reviews from Admin & Community feedback
   useEffect(() => {
-    fetch('/api/feedback')
+    fetch('/api/feedback', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data && Array.isArray(data.feedback)) {

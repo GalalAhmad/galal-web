@@ -31,7 +31,7 @@ export default function VideosPage() {
 
   // Fetch updated settings & videos from API
   useEffect(() => {
-    fetch('/api/admin/settings')
+    fetch('/api/admin/settings', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (data.settings) {
@@ -45,7 +45,7 @@ export default function VideosPage() {
       })
       .catch(() => {});
 
-    fetch('/api/admin/videos')
+    fetch('/api/admin/videos', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (data.videos && Array.isArray(data.videos)) {
@@ -115,7 +115,7 @@ export default function VideosPage() {
                 href="/tests"
                 className="w-full sm:w-auto px-7 py-3 rounded-full bg-white dark:bg-[#161F2B] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-[#4E7E76] text-xs font-bold transition shadow-2xs"
               >
-                اختبارات نفسية معتمدة
+                اختبارات ومقاييس معتمدة
               </Link>
             </div>
           </div>

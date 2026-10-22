@@ -1,1 +1,82 @@
-[]
+[
+  {
+    "id": "user-1792610001",
+    "name": "أحمد الشريف",
+    "phone": "01098765432",
+    "email": "ahmed.shareef@example.com",
+    "provider": "booking",
+    "clinicalNotes": "الحالة تتابع معنا، تركز على إدارة ضغوط العمل وتفكيك التشوهات المعرفية.",
+    "homework": [
+      {
+        "id": "hw-1",
+        "title": "تمرين تفريغ الأفكار اليومي قبل النوم لمدة 10 دقائق",
+        "link": "/articles#behavior-as-message",
+        "completed": true,
+        "assignedAt": "21 أكتوبر 2026"
+      },
+      {
+        "id": "hw-2",
+        "title": "قراءة مقال: السلوك كرسالة: كيف نفهم ما وراء العناد ونوبات الغضب",
+        "link": "/articles#behavior-as-message",
+        "completed": false,
+        "assignedAt": "22 أكتوبر 2026"
+      }
+    ],
+    "testResults": [
+      {
+        "id": "tr-1",
+        "testId": "depression",
+        "testTitle": "اختبار الاكتئاب (PHQ-9)",
+        "score": 11,
+        "scorePercent": 52,
+        "level": "مستوى متوسط / يستحق الانتباه",
+        "desc": "توجد بعض المؤشرات المتكررة التي قد تسبب لك استنزافاً نفسياً أو تؤثر على طاقتك وعلاقاتك.",
+        "recommendation": "يُنصح بمناقشة هذه المؤشرات في جلسة استشارية لتفكيك أسبابها قبل تراكمها.",
+        "date": "21 أكتوبر 2026"
+      },
+      {
+        "id": "tr-2",
+        "testId": "anxiety",
+        "testTitle": "اختبار القلق والتوتر (GAD-7)",
+        "score": 8,
+        "scorePercent": 38,
+        "level": "مستوى خفيف إلى معتدل",
+        "desc": "مؤشرات قلق خفيفة مرتبطة بالالتزامات اليومية وتحديات العمل.",
+        "recommendation": "ممارسة تمارين التنفس البطني العميق وإعادة تنظيم ساعات النوم.",
+        "date": "20 أكتوبر 2026"
+      }
+    ],
+    "createdAt": "2026-10-21T18:00:00Z"
+  },
+  {
+    "id": "user-1792610002",
+    "name": "سارة وعمر",
+    "phone": "01011223344",
+    "email": "sara.omar@example.com",
+    "provider": "booking",
+    "clinicalNotes": "الزوجان ملتزمان بحضور الجلسة المشتركة القادمة. تم تأكيد موعد 26 أكتوبر وإرسال رابط Google Meet.",
+    "homework": [
+      {
+        "id": "hw-3",
+        "title": "قراءة مقال: جسور التواصل الزواجي: من ردود الفعل العفوية إلى الإصغاء الواعي",
+        "link": "/articles#marital-communication-bridges",
+        "completed": false,
+        "assignedAt": "22 أكتوبر 2026"
+      }
+    ],
+    "testResults": [
+      {
+        "id": "tr-3",
+        "testId": "marital-harmony",
+        "testTitle": "مقياس التوافق والانسجام الزواجي (DAS)",
+        "score": 28,
+        "scorePercent": 70,
+        "level": "مستوى توافق واعد مع نقاط تحتاج حواراً",
+        "desc": "توجد أرضية مودة طيبة، وتحتاج مهارات الحوار إلى تقليل الحدة عند الاختلاف.",
+        "recommendation": "جلسة مشتركة تركز على فن الحوار غير العنيف والاستماع الفعال.",
+        "date": "21 أكتوبر 2026"
+      }
+    ],
+    "createdAt": "2026-10-21T18:30:00Z"
+  }
+]

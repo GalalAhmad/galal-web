@@ -18,78 +18,33 @@ import {
   FileText
 } from 'lucide-react';
 
+import initialFaqs from '@/data/faqs.json';
+
 interface Faq {
   q: string;
   a: string;
-  category: 'services' | 'online' | 'booking' | 'cancellation' | 'courses' | 'privacy';
+  category?: 'services' | 'online' | 'booking' | 'cancellation' | 'courses' | 'privacy' | string;
 }
 
-const faqsData: Faq[] = [
-  // Services
-  {
-    category: 'services',
-    q: 'ما هي المسارات الاستشارية التي يقدمها جلال أحمد؟',
-    a: 'يقدم جلال أحمد ثلاثة مسارات أساسية: الاستشارات النفسية وبصيرة الذات للأفراد، والاستشارات الزواجية والأسرية وبرامج تأهيل المقبلين على الزواج (رحلة رفق وميثاق)، والاستشارات التربوية لإرشاد الوالدين وسيكولوجيا اليافعين والمراهقين.'
-  },
-  {
-    category: 'services',
-    q: 'هل الاستشارات تقدم تشخيصاً طبياً أو وصفاً للأدوية؟',
-    a: 'لا، خدماتنا استشارية وتربوية ونفسية تهدف إلى رفع الوعي وبناء الاتزان وتفكيك المشكلات السلوكية والعلائقية، وليست عيادة طبية ولا تتضمن وصفاً للأدوية أو تشخيصات إكلينيكية سريرية.'
-  },
-  // Online
-  {
-    category: 'online',
-    q: 'كيف تُعقد الجلسات؟ وهل يمكنني الحضور من خارج مصر؟',
-    a: 'الموقع وخدماته تعمل أونلاين فقط؛ تُعقد كافة الجلسات عبر اتصال مرئي مشفر وآمن من خلال منصة Google Meet، ويمكنك الاستفادة من الخدمة بكل أمان من أي دولة في العالم دون الحاجة للتنقل.'
-  },
-  {
-    category: 'online',
-    q: 'ماذا أحتاج قبل بدء موعد الجلسة؟',
-    a: 'تحتاج فقط إلى اتصال إنترنت جيد، ومكان هادئ يضمن لك الراحة والخصوصية، واستخدام جهاز هاتف أو حاسوب مزود بكاميرا وميكروفون. سيصلك رابط الجلسة المشفر تلقائياً قبل الموعد.'
-  },
-  // Booking
-  {
-    category: 'booking',
-    q: 'كيف تتم خطوات الحجز في الموقع؟',
-    a: 'تبدأ بالدخول على صفحة «الحجز»، تختار مجال الاستشارة، تجيب عن استبيان تمهيدي قصير لمساعدتنا على توجيه المسار، ثم تختار اليوم والساعة المناسبة لك من جدول المواعيد، وتدخل الاسم المفضل ووسيلة اتصال واحدة لتأكيد الحجز.'
-  },
-  {
-    category: 'booking',
-    q: 'هل يتطلب الحجز الدفع الإلكتروني الآن؟',
-    a: 'لا، الدفع الإلكتروني مؤجل لمرحلة لاحقة. الحجز الحالي يتيح لك تثبيت موعدك وتنسيق التفاصيل مباشرة.'
-  },
-  // Cancellation
-  {
-    category: 'cancellation',
-    q: 'ما هي سياسة إعادة الجدولة أو الإلغاء؟',
-    a: 'يمكن طلب إعادة جدولة الموعد أو إلغائه بالتواصل المسبق قبل 24 ساعة من موعد الجلسة تقديراً لظروفك ولتنظيم أوقات الاستشارات، وفق سياسة الحجز والإلغاء الموضحة بالموقع.'
-  },
-  // Courses
-  {
-    category: 'courses',
-    q: 'كيف يمكنني التسجيل في الدورات والكورسات؟',
-    a: 'يمكنك استعراض كتالوج الكورسات في صفحة «الكورسات» والضغط على زر «سجّل اهتمامك» لإرسال بيانات التواصل لتصلك مواعيد الانعقاد والتفاصيل فور اعتمادها.'
-  },
-  // Privacy
-  {
-    category: 'privacy',
-    q: 'كيف يتم الحفاظ على خصوصية وسرية بيانات الجلسات؟',
-    a: 'نلتزم التزاماً صارماً بأعلى معايير السرية والأخلاقيات المهنية. لا نجمع سوى الحد الأدنى من البيانات الضرورية، ولا يتم تسجيل الجلسات المرئية، ولا نشارك أي معلومة مع أي طرف ثالث.'
-  },
-  {
-    category: 'privacy',
-    q: 'ماذا أفعل في الحالات الطارئة أو الأزمات الحادة؟',
-    a: 'الموقع والاستشارات ليست خدمة طوارئ ولا تراقب الحالات العاجلة. في حال وجود خطر مباشر على السلامة أو أزمة نفسية حادة، يرجى التوجه فوراً لأقرب مستشفى أو الاتصال بالخطوط الساخنة للطوارئ الطبية في بلدك.'
-  }
-];
-
 export default function FaqPage() {
+  const [faqsList, setFaqsList] = useState<Faq[]>(initialFaqs as any[]);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [search, setSearch] = useState<string>('');
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const filteredFaqs = faqsData.filter((item) => {
-    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
+  React.useEffect(() => {
+    fetch('/api/admin/faqs', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.faqs && Array.isArray(data.faqs) && data.faqs.length > 0) {
+          setFaqsList(data.faqs);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const filteredFaqs = faqsList.filter((item) => {
+    const matchesCategory = activeCategory === 'all' || !item.category || item.category === activeCategory;
     const matchesSearch = item.q.includes(search) || item.a.includes(search);
     return matchesCategory && matchesSearch;
   });

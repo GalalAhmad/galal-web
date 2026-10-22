@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const filePath = path.join(process.cwd(), 'src', 'data', 'faqs.json');
 
 async function readFaqs() {
@@ -24,7 +27,10 @@ async function writeFaqs(data: any[]) {
 export async function GET() {
   try {
     const localData = await readFaqs();
-    return NextResponse.json({ success: true, faqs: localData });
+    return NextResponse.json(
+      { success: true, faqs: localData },
+      { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+    );
   } catch (error) {
     return NextResponse.json({ error: 'Failed to read FAQs' }, { status: 500 });
   }

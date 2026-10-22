@@ -35,6 +35,18 @@ export default function RifqMithaqPage() {
   const [applicantNotes, setApplicantNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [nextBatchDate, setNextBatchDate] = useState(siteSettings.mithaqNextBatch || 'نوفمبر 2026');
+
+  React.useEffect(() => {
+    fetch('/api/settings', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.mithaqNextBatch) {
+          setNextBatchDate(data.mithaqNextBatch);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
@@ -661,7 +673,7 @@ export default function RifqMithaqPage() {
               {/* تاريخ الدفعة القادمة المستمد من ملف الإعدادات القابل للتعديل */}
               <div className="inline-flex items-center justify-center gap-2 py-1.5 px-4 rounded-full bg-[#154F9C]/10 text-[#154F9C] dark:text-[#60A5FA] text-xs font-bold border border-[#154F9C]/20">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>الدفعة القادمة: {siteSettings.mithaqNextBatch || 'نوفمبر 2026'}</span>
+                <span>الدفعة القادمة: {nextBatchDate}</span>
               </div>
             </div>
 

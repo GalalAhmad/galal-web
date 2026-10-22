@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const filePath = path.join(process.cwd(), 'src', 'data', 'advice.json');
 
 async function readAdvice() {

@@ -32,6 +32,17 @@ export default function ArticlesForumPage() {
   const [articles, setArticles] = useState<ArticleItem[]>(initialArticles);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  React.useEffect(() => {
+    fetch('/api/articles', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.articles) && data.articles.length > 0) {
+          setArticles(data.articles);
+        }
+      })
+      .catch(() => {});
+  }, []);
   
   // Active reading modal / article
   const [activeArticle, setActiveArticle] = useState<ArticleItem | null>(null);

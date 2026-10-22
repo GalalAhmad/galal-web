@@ -27,7 +27,14 @@ async function writeFeedback(data: any[]) {
 export async function GET() {
   try {
     const items = await readFeedback();
-    return NextResponse.json({ success: true, feedback: items });
+    return NextResponse.json(
+      { success: true, feedback: items },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json({ error: 'Failed to read feedback' }, { status: 500 });
   }
@@ -53,7 +60,7 @@ export async function POST(request: Request) {
       rating: Number(rating) || 5,
       feedback: feedback.trim(),
       location: location || 'أونلاين',
-      isPublished: body.isPublished !== undefined ? Boolean(body.isPublished) : false,
+      isPublished: body.isPublished !== undefined ? Boolean(body.isPublished) : true,
       created_at: new Date().toISOString(),
     };
 
@@ -65,6 +72,7 @@ export async function POST(request: Request) {
       success: true,
       message: 'شكراً جزيلاً لرأيك القيم! تم استلام تقييمك بنجاح.',
       item: newItem,
+      feedback: updated,
     });
   } catch (error) {
     console.error('Feedback POST error:', error);
@@ -98,6 +106,7 @@ export async function PATCH(request: Request) {
     await writeFeedback(updated);
     return NextResponse.json({ success: true, feedback: updated });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to update feedback' }, { status: 500 });
+    console.error('Feedback PATCH error:', error);
+    return NextResponse.json({ error: 'حدث خطأ أثناء تعديل التقييم' }, { status: 500 });
   }
 }

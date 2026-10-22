@@ -29,6 +29,7 @@ import {
   Info,
   CalendarClock,
   ArrowRight,
+  ArrowLeft,
   FileCheck,
   X
 } from 'lucide-react';
@@ -295,6 +296,20 @@ function BookingWizardContent() {
       }
 
       setSubmittedBooking(data.booking);
+
+      // Save user session for client profile integration
+      try {
+        localStorage.setItem(
+          'galal_user_session',
+          JSON.stringify({
+            name: bookingPayload.clientName,
+            phone: bookingPayload.clientPhone,
+            email: bookingPayload.clientEmail,
+            provider: 'booking',
+          })
+        );
+      } catch (e) {}
+
       setIsPaymentDrawerOpen(false);
       setCurrentStep(6); // Confirmation screen
     } catch (err: any) {
@@ -1388,6 +1403,17 @@ function BookingWizardContent() {
               <p className="text-xs text-slate-500 mt-2">
                 ضغطة واحدة تفتح محادثة واتساب جاهزة ومجهزة برقم حجزك لتسريع اعتماد الموعد وتزويدك برابط الجلسة.
               </p>
+            </div>
+
+            {/* View Client Profile Button */}
+            <div className="pt-2">
+              <Link
+                href="/profile"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#4E7E76] hover:bg-[#3D645E] text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition"
+              >
+                <span>الانتقال لملفي الشخصي ومتابعة الحجز والواجبات</span>
+                <ArrowLeft className="w-4 h-4 rtl:rotate-0" />
+              </Link>
             </div>
 
             {/* Bottom Actions */}

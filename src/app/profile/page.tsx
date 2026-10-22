@@ -29,6 +29,18 @@ import {
   FileText
 } from 'lucide-react';
 
+function phonesMatch(phone1?: string, phone2?: string): boolean {
+  if (!phone1 || !phone2) return false;
+  const digits1 = phone1.replace(/[^\d]/g, '');
+  const digits2 = phone2.replace(/[^\d]/g, '');
+  if (!digits1 || !digits2) return false;
+  if (digits1 === digits2) return true;
+  if (digits1.length >= 8 && digits2.length >= 8) {
+    return digits1.slice(-8) === digits2.slice(-8);
+  }
+  return false;
+}
+
 export default function ClientProfilePage() {
   const [userSession, setUserSession] = useState<{
     name: string;
@@ -74,20 +86,16 @@ export default function ClientProfilePage() {
 
     try {
       // 1. Fetch Bookings matching user phone or email
-      const bookRes = await fetch('/api/bookings');
+      const bookRes = await fetch('/api/bookings', { cache: 'no-store' });
       const bookData = await bookRes.json();
       if (bookData.bookings) {
-        const userCleanPhone = (user.phone || '').replace(/[^\d]/g, '');
         const userCleanEmail = (user.email || '').trim().toLowerCase();
 
         const matched = bookData.bookings.filter((b: any) => {
-          const bPhone = (b.clientPhone || '').replace(/[^\d]/g, '');
-          const bEmail = (b.clientEmail || '').trim().toLowerCase();
-
-          if (userCleanPhone && bPhone && (bPhone.includes(userCleanPhone) || userCleanPhone.includes(bPhone))) {
+          if (user.phone && phonesMatch(b.clientPhone, user.phone)) {
             return true;
           }
-          if (userCleanEmail && bEmail && userCleanEmail === bEmail) {
+          if (userCleanEmail && b.clientEmail && userCleanEmail === (b.clientEmail || '').trim().toLowerCase()) {
             return true;
           }
           if (user.name && b.clientName && b.clientName.trim().toLowerCase() === user.name.trim().toLowerCase()) {
@@ -99,7 +107,10 @@ export default function ClientProfilePage() {
       }
 
       // 2. Fetch User Profile & Test Results & Homework
-      const profRes = await fetch(`/api/user/profile?phone=${encodeURIComponent(user.phone || '')}&email=${encodeURIComponent(user.email || '')}`);
+      const profRes = await fetch(
+        `/api/user/profile?phone=${encodeURIComponent(user.phone || '')}&email=${encodeURIComponent(user.email || '')}`,
+        { cache: 'no-store' }
+      );
       const profData = await profRes.json();
       if (profData.profile) {
         if (Array.isArray(profData.profile.testResults)) {
@@ -140,28 +151,23 @@ export default function ClientProfilePage() {
 
   // Social Login Handlers
   const handleSocialSignIn = async (provider: 'google' | 'apple' | 'facebook') => {
-    const mockUsers = {
-      google: {
-        name: 'مستخدم Google الكريم',
-        email: 'user@gmail.com',
-        phone: '+966 50 000 0000',
-        provider: 'google',
-      },
-      apple: {
-        name: 'مستخدم Apple الكريم',
-        email: 'user@icloud.com',
-        phone: '+966 50 000 0000',
-        provider: 'apple',
-      },
-      facebook: {
-        name: 'مستخدم Facebook الكريم',
-        email: 'user@facebook.com',
-        phone: '+20 100 000 0000',
-        provider: 'facebook',
-      },
+    const providerTitles: Record<string, string> = {
+      google: 'Google',
+      apple: 'Apple ID',
+      facebook: 'Facebook'
+    };
+    const enteredName = prompt(`يرجى كتابة اسمك الكريم لتسجيل الدخول بحساب ${providerTitles[provider]}:`);
+    if (!enteredName || !enteredName.trim()) return;
+
+    const enteredPhone = prompt('رقم هاتفك أو الواتساب لربط حجزك ومقاييسك تلقائياً (موصى به):') || '';
+
+    const selectedUser = {
+      name: enteredName.trim(),
+      email: enteredName.includes('@') ? enteredName.trim() : `${enteredName.trim()}@${provider}.user`,
+      phone: enteredPhone.trim(),
+      provider,
     };
 
-    const selectedUser = mockUsers[provider];
     setUserSession(selectedUser);
     localStorage.setItem('galal_user_session', JSON.stringify(selectedUser));
 

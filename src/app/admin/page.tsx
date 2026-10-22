@@ -239,52 +239,58 @@ export default function AdminDashboardPage() {
   // Fetch inquiries, feedback, settings, and videos
   const fetchData = async () => {
     try {
-      const inqRes = await fetch('/api/inquiries');
+      const inqRes = await fetch('/api/inquiries', { cache: 'no-store' });
       const inqData = await inqRes.json();
       if (inqData.inquiries) {
         setInquiries(inqData.inquiries);
       }
 
-      const fbRes = await fetch('/api/feedback');
+      const fbRes = await fetch('/api/feedback', { cache: 'no-store' });
       const fbData = await fbRes.json();
       if (fbData.feedback) {
         setFeedbackList(fbData.feedback);
       }
 
-      const setRes = await fetch('/api/admin/settings');
+      const setRes = await fetch('/api/admin/settings', { cache: 'no-store' });
       const setData = await setRes.json();
       if (setData.settings) {
         setSettings((prev: any) => ({ ...prev, ...setData.settings }));
       }
 
-      const vidRes = await fetch('/api/admin/videos');
+      const vidRes = await fetch('/api/admin/videos', { cache: 'no-store' });
       const vidData = await vidRes.json();
       if (vidData.videos) {
         setVideosList(vidData.videos);
       }
 
-      const advRes = await fetch('/api/advice');
+      const advRes = await fetch('/api/advice', { cache: 'no-store' });
       const advData = await advRes.json();
       if (advData.advice) {
         setAdviceList(advData.advice);
       }
 
-      const faqRes = await fetch('/api/admin/faqs');
+      const faqRes = await fetch('/api/admin/faqs', { cache: 'no-store' });
       const faqData = await faqRes.json();
       if (faqData.faqs) {
         setFaqsList(faqData.faqs);
       }
 
-      const bookRes = await fetch('/api/bookings');
+      const bookRes = await fetch('/api/bookings', { cache: 'no-store' });
       const bookData = await bookRes.json();
       if (bookData.bookings) {
         setBookingsList(bookData.bookings);
       }
 
-      const profRes = await fetch('/api/user/profile');
+      const profRes = await fetch('/api/user/profile', { cache: 'no-store' });
       const profData = await profRes.json();
       if (profData.profiles) {
         setClientProfiles(profData.profiles);
+      }
+
+      const artRes = await fetch('/api/articles', { cache: 'no-store' });
+      const artData = await artRes.json();
+      if (artData.articles && Array.isArray(artData.articles)) {
+        setArticles(artData.articles);
       }
     } catch (err) {
       console.error('Error fetching admin data:', err);
@@ -515,12 +521,11 @@ export default function AdminDashboardPage() {
   };
 
   // Add Article
-  const handleAddArticle = (e: React.FormEvent) => {
+  const handleAddArticle = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newArticle.title || !newArticle.content) return;
 
     const created: any = {
-      id: `art-${Date.now()}`,
       title: newArticle.title,
       category: 'quran',
       categoryLabel: newArticle.category,
@@ -528,24 +533,52 @@ export default function AdminDashboardPage() {
       summary: newArticle.excerpt || newArticle.content.slice(0, 150) + '...',
       content: [newArticle.content],
       readTime: newArticle.readTime || '5 دقائق قراءة',
-      publishDate: 'الآن',
-      readersCount: 1,
-      rating: 5.0,
-      ratingsCount: 1,
-      commentsCount: 0,
-      comments: []
     };
 
-    setArticles([created, ...articles]);
-    setNewArticle({
-      title: '',
-      category: 'التربية واليافعين',
-      readTime: '6 دقائق',
-      excerpt: '',
-      content: ''
-    });
-    setSaveSuccessMsg('تمت إضافة المقال إلى المنتدى الثقافي بنجاح');
-    setTimeout(() => setSaveSuccessMsg(''), 3000);
+    try {
+      const res = await fetch('/api/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(created),
+      });
+      const data = await res.json();
+      if (data.articles) {
+        setArticles(data.articles);
+      } else {
+        setArticles([created, ...articles]);
+      }
+      setNewArticle({
+        title: '',
+        category: 'التربية واليافعين',
+        readTime: '6 دقائق',
+        excerpt: '',
+        content: ''
+      });
+      setSaveSuccessMsg('تمت إضافة المقال إلى المنتدى الثقافي والموقع بنجاح');
+      setTimeout(() => setSaveSuccessMsg(''), 3000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Delete Article
+  const handleDeleteArticle = async (artId: string) => {
+    if (!confirm('هل أنت متأكد من رغبتك في حذف هذا المقال نهائياً من الموقع؟')) return;
+    try {
+      const res = await fetch('/api/articles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id: artId }),
+      });
+      const data = await res.json();
+      if (data.articles) {
+        setArticles(data.articles);
+        setSaveSuccessMsg('تم حذف المقال بنجاح');
+        setTimeout(() => setSaveSuccessMsg(''), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // Add Video Handler
@@ -2826,13 +2859,23 @@ ${meet}
                         <span>⭐ {art.rating || 5.0}</span>
                       </div>
                     </div>
-                    <Link
-                      href="/articles"
-                      target="_blank"
-                      className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-xl bg-slate-800 transition"
-                    >
-                      معاينة بالمنتدى
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href="/articles"
+                        target="_blank"
+                        className="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-xl bg-slate-800 transition"
+                      >
+                        معاينة بالمنتدى
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteArticle(art.id)}
+                        className="text-xs text-rose-400 hover:text-rose-300 p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 transition cursor-pointer"
+                        title="حذف المقال"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

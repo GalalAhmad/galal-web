@@ -84,7 +84,7 @@ export default function Footer() {
               <Link href="/feedback" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تقييم جلسات</Link>
               <Link href="/aqwameyat-quran" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">أقومية القرآن</Link>
               <Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">من أنا</Link>
-              <Link href="/tests" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition col-span-2">اختبارات ومقاييس نفسية</Link>
+              <Link href="/tests" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition col-span-2">اختبارات ومقاييس</Link>
             </div>
           </div>
 

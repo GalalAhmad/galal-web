@@ -3,6 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import { initialVideos, VideoItem } from '@/data/videos';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const dataFilePath = path.join(process.cwd(), 'src/data/videos.json');
 
 function getVideos(): VideoItem[] {
@@ -30,7 +33,10 @@ function saveVideos(videos: VideoItem[]) {
 // GET /api/admin/videos - List all videos
 export async function GET() {
   const videos = getVideos();
-  return NextResponse.json({ videos });
+  return NextResponse.json(
+    { videos },
+    { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+  );
 }
 
 // POST /api/admin/videos - Add or delete video

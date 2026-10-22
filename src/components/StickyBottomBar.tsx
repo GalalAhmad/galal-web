@@ -100,7 +100,7 @@ export default function StickyBottomBar() {
                 }`}
               >
                 <Brain className="w-3.5 h-3.5 text-[#4E7E76]" />
-                <span>المقاييس</span>
+                <span>اختبارات ومقاييس</span>
               </Link>
               <Link
                 href="/profile"

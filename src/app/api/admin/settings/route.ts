@@ -32,7 +32,10 @@ async function writeSettings(data: any) {
 
 export async function GET() {
   const settings = await readSettings();
-  return NextResponse.json({ success: true, settings });
+  return NextResponse.json(
+    { success: true, settings },
+    { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+  );
 }
 
 export async function POST(request: Request) {

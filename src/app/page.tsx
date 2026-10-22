@@ -36,14 +36,24 @@ export default function HomePage() {
   // FAQ open states
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [faqsList, setFaqsList] = useState(initialFaqs);
+  const [liveSettings, setLiveSettings] = useState<any>(null);
 
-  // Sync latest FAQs if updated in admin
+  // Sync latest FAQs & live pricing if updated in admin
   React.useEffect(() => {
-    fetch('/api/admin/faqs')
+    fetch('/api/admin/faqs', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         if (data.faqs && Array.isArray(data.faqs)) {
           setFaqsList(data.faqs);
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/settings', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data && !data.error) {
+          setLiveSettings(data);
         }
       })
       .catch(() => {});
@@ -456,13 +466,17 @@ export default function HomePage() {
                     <ArrowLeft className="w-3.5 h-3.5" />
                   </Link>
 
-                  {servicesPricing[srv.id] && (
-                    <div className="text-center pt-0.5">
-                      <span className="inline-block text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                        {servicesPricing[srv.id].priceDisplay}
-                      </span>
-                    </div>
-                  )}
+                  <div className="text-center pt-0.5">
+                    <span className="inline-block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                      {srv.id === 'psychological'
+                        ? liveSettings?.individualFee || servicesPricing['psychological']?.priceDisplay
+                        : srv.id === 'marital'
+                        ? liveSettings?.maritalFee || servicesPricing['marital']?.priceDisplay
+                        : srv.id === 'parenting'
+                        ? liveSettings?.parentingFee || servicesPricing['parenting']?.priceDisplay
+                        : liveSettings?.educationalFee || servicesPricing['educational']?.priceDisplay || 'تنسيق مباشر'}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -664,7 +678,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 7. اختبارات نفسية (Psychological Tests Teaser) */}
+      {/* 7. اختبارات ومقاييس (Psychological Tests Teaser) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#EDF7F5]/40 dark:bg-[#112924]/20 border-y border-slate-200/70 dark:border-slate-800">
         <div className="max-w-6xl mx-auto space-y-10">
           
@@ -672,7 +686,7 @@ export default function HomePage() {
             <div className="space-y-2">
               <span className="text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">أدوات الفحص والتقييم الذاتي</span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-                اختبارات نفسية
+                اختبارات ومقاييس
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                 اختبارات مقننة ومجانية 100% تساعدك على قياس مستوى القلق، الاكتئاب، الضغوط، والرضى الزواجي بدقة وسرية

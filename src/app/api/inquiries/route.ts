@@ -3,6 +3,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const filePath = path.join(process.cwd(), 'src', 'data', 'inquiries.json');
 
 async function readInquiries() {

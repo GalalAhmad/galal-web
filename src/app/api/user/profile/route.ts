@@ -24,6 +24,18 @@ async function writeProfiles(data: any[]) {
   }
 }
 
+function phonesMatch(phone1?: string, phone2?: string): boolean {
+  if (!phone1 || !phone2) return false;
+  const digits1 = phone1.replace(/[^\d]/g, '');
+  const digits2 = phone2.replace(/[^\d]/g, '');
+  if (!digits1 || !digits2) return false;
+  if (digits1 === digits2) return true;
+  if (digits1.length >= 8 && digits2.length >= 8) {
+    return digits1.slice(-8) === digits2.slice(-8);
+  }
+  return false;
+}
+
 // GET user profile by phone or email or return all for admin
 export async function GET(request: Request) {
   try {
@@ -47,14 +59,16 @@ export async function GET(request: Request) {
     const cleanEmail = email ? email.trim().toLowerCase() : '';
 
     const profile = profiles.find((p: any) => {
-      const pPhone = (p.phone || '').replace(/[^\d]/g, '');
       const pEmail = (p.email || '').trim().toLowerCase();
-      if (cleanPhone && pPhone && cleanPhone === pPhone) return true;
+      if (cleanPhone && phonesMatch(p.phone, cleanPhone)) return true;
       if (cleanEmail && pEmail && cleanEmail === pEmail) return true;
       return false;
     });
 
-    return NextResponse.json({ success: true, profile: profile || null });
+    return NextResponse.json(
+      { success: true, profile: profile || null },
+      { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+    );
   } catch (error) {
     return NextResponse.json({ error: 'Failed to read user profile' }, { status: 500 });
   }
@@ -75,11 +89,10 @@ export async function POST(request: Request) {
     const profiles = await readProfiles();
 
     let existingIdx = profiles.findIndex((p: any) => {
-      const pPhone = (p.phone || '').replace(/[^\d]/g, '');
       const pEmail = (p.email || '').trim().toLowerCase();
-      if (cleanPhone && pPhone && cleanPhone === pPhone) return true;
+      if (cleanPhone && phonesMatch(p.phone, cleanPhone)) return true;
       if (cleanEmail && pEmail && cleanEmail === pEmail) return true;
-      if (name && p.name && p.name.trim() === name.trim()) return true;
+      if (name && p.name && p.name.trim().toLowerCase() === name.trim().toLowerCase()) return true;
       return false;
     });
 
@@ -165,9 +178,8 @@ export async function PUT(request: Request) {
 
     const idx = profiles.findIndex((p: any) => {
       if (id && p.id === id) return true;
-      const pPhone = (p.phone || '').replace(/[^\d]/g, '');
       const pEmail = (p.email || '').trim().toLowerCase();
-      if (cleanPhone && pPhone && cleanPhone === pPhone) return true;
+      if (cleanPhone && phonesMatch(p.phone, cleanPhone)) return true;
       if (cleanEmail && pEmail && cleanEmail === pEmail) return true;
       return false;
     });

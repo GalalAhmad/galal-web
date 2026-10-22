@@ -111,10 +111,20 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
   };
 
   const handleSocialLogin = (provider: 'google' | 'apple' | 'facebook') => {
+    const providerTitles: Record<string, string> = {
+      google: 'Google',
+      apple: 'Apple ID',
+      facebook: 'Facebook'
+    };
+    const enteredName = prompt(`يرجى كتابة اسمك الكريم لتسجيل الدخول بحساب ${providerTitles[provider]}:`);
+    if (!enteredName || !enteredName.trim()) return;
+
+    const enteredContact = prompt('رقم هاتفك أو بريدك الإلكتروني لحفظ النتيجة في ملفك الشخصي:') || '';
+
     const defaultUser = {
-      name: provider === 'google' ? 'مستخدم Google الكريم' : provider === 'apple' ? 'مستخدم Apple الكريم' : 'مستخدم Facebook الكريم',
-      email: `${provider}@user.com`,
-      phone: '+966 50 000 0000',
+      name: enteredName.trim(),
+      email: enteredContact.includes('@') ? enteredContact.trim() : `${enteredName.trim()}@${provider}.user`,
+      phone: !enteredContact.includes('@') ? enteredContact.trim() : '',
       provider,
     };
     setUserSession(defaultUser);

@@ -4,6 +4,9 @@ import path from 'path';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'feedback.json');
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 async function readFeedback() {
   try {
     const data = await fs.readFile(filePath, 'utf-8');

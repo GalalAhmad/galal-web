@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import {
   Brain,
   HeartHandshake,
@@ -27,54 +29,108 @@ import {
   Info,
   CalendarClock,
   ArrowRight,
-  FileCheck
+  FileCheck,
+  X
 } from 'lucide-react';
-import { intakeTracks, TrackConfig, IntakeQuestion } from '@/data/intakeQuestions';
+import { intakeTracks, TrackConfig } from '@/data/intakeQuestions';
 
-// Days generator for the next 14 days
-function getAvailableDates() {
-  const dates = [];
-  const arabicDays = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+// Payment Logos Components
+function InstaPayBadge() {
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-linear-to-r from-[#7B2CBF] to-[#5A189A] text-white shadow-xs">
+      <span className="font-mono font-black text-[11px] tracking-tight">IPN</span>
+      <span className="text-[10px] font-bold">إنستاباي</span>
+    </div>
+  );
+}
+
+function VodafoneCashBadge() {
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#E60000] text-white shadow-xs">
+      <div className="w-3 h-3 rounded-full bg-white flex items-center justify-center">
+        <span className="text-[#E60000] font-black text-[8px] leading-none">’</span>
+      </div>
+      <span className="text-[10px] font-bold">فودافون كاش</span>
+    </div>
+  );
+}
+
+function NBEBadge() {
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#005A36] text-[#FFD700] shadow-xs">
+      <span className="text-[10px] font-black">الأهلي المصري</span>
+    </div>
+  );
+}
+
+function CardsBadge() {
+  return (
+    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-bold">
+      <span className="text-blue-600 font-extrabold">VISA</span>
+      <span className="text-red-500 font-extrabold">•</span>
+      <span className="text-emerald-600 font-black">مدى</span>
+    </div>
+  );
+}
+
+// Calendar Month Generator (Displays month with days grid like Image 2)
+function getCalendarMonthData() {
   const arabicMonths = [
     'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
     'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
   ];
+  const arabicDayNames = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
 
   const now = new Date();
-  // Start from tomorrow
-  for (let i = 1; i <= 14; i++) {
-    const d = new Date(now);
-    d.setDate(now.getDate() + i);
-    const dayName = arabicDays[d.getDay()];
-    const dayNum = d.getDate();
-    const monthName = arabicMonths[d.getMonth()];
-    const isoDate = d.toISOString().split('T')[0];
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthName = arabicMonths[month];
 
-    dates.push({
-      iso: isoDate,
-      label: `${dayName}، ${dayNum} ${monthName}`,
-      shortLabel: `${dayName} ${dayNum}`,
-      isWeekend: d.getDay() === 5, // Friday
+  // Days in month
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const days = [];
+
+  for (let d = 1; d <= totalDays; d++) {
+    const curDate = new Date(year, month, d);
+    const dayOfWeek = curDate.getDay(); // 0: Sun, 1: Mon, ... 6: Sat
+    // Map to Saturday-first index (Sat=0, Sun=1, Mon=2, Tue=3, Wed=4, Thu=5, Fri=6)
+    const satIndex = (dayOfWeek + 1) % 7;
+    const isPast = d < now.getDate();
+    const isToday = d === now.getDate();
+
+    days.push({
+      dayNumber: d,
+      dateIso: `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      dayName: arabicDayNames[satIndex],
+      isPast,
+      isToday,
+      isSelectable: !isPast,
     });
   }
-  return dates;
+
+  return {
+    year,
+    monthName,
+    days,
+    arabicDayNames,
+  };
 }
 
 const TIME_SLOTS = [
-  { id: '16:00', label: '04:00 مساءً', period: 'مساءً' },
-  { id: '17:30', label: '05:30 مساءً', period: 'مساءً' },
-  { id: '19:00', label: '07:00 مساءً', period: 'مساءً' },
-  { id: '20:30', label: '08:30 مساءً', period: 'مساءً' },
-  { id: '22:00', label: '10:00 مساءً', period: 'ليلاً' },
+  { id: '16:00', label: '04:00 مساءً', duration: '50 دقيقة' },
+  { id: '17:30', label: '05:30 مساءً', duration: '50 دقيقة' },
+  { id: '19:00', label: '07:00 مساءً', duration: '50 دقيقة' },
+  { id: '20:30', label: '08:30 مساءً', duration: '50 دقيقة' },
+  { id: '22:00', label: '10:00 مساءً', duration: '50 دقيقة' },
 ];
 
 function BookingWizardContent() {
   const searchParams = useSearchParams();
   const trackParam = searchParams.get('track');
 
-  // Step state: 1: Track, 2: Intake Questions, 3: Demographics, 4: Policies, 5: Schedule, 6: Payment, 7: Confirmed
-  const [currentStep, setCurrentStep] = useState<number>(1);
-  const [selectedTrackId, setSelectedTrackId] = useState<string>('psychological');
+  // Step state: 1: Track, 2: Intake Questions, 3: Demographics, 4: Policies, 5: Schedule & Pay, 6: Confirmed Ticket
+  const [currentStep, setCurrentStep] = useState<number>(trackParam ? 2 : 1);
+  const [selectedTrackId, setSelectedTrackId] = useState<string>(trackParam || 'psychological');
 
   // Intake answers: key = questionId, value = string | string[]
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -91,12 +147,15 @@ function BookingWizardContent() {
   // Policy Agreement
   const [agreedToPolicies, setAgreedToPolicies] = useState(false);
 
-  // Schedule
-  const availableDates = useMemo(() => getAvailableDates(), []);
-  const [selectedDate, setSelectedDate] = useState<string>(availableDates[0]?.iso || '');
-  const [selectedTime, setSelectedTime] = useState<string>(TIME_SLOTS[1].id);
+  // Calendar & Schedule
+  const calendarData = useMemo(() => getCalendarMonthData(), []);
+  // Default to tomorrow or first selectable
+  const firstSelectable = calendarData.days.find((d) => d.isSelectable && !d.isToday) || calendarData.days.find((d) => d.isSelectable);
+  const [selectedDateIso, setSelectedDateIso] = useState<string>(firstSelectable?.dateIso || '');
+  const [selectedTimeId, setSelectedTimeId] = useState<string>(TIME_SLOTS[1].id);
 
-  // Payment
+  // Payment Drawer Modal State
+  const [isPaymentDrawerOpen, setIsPaymentDrawerOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'instapay' | 'vodafone' | 'bank'>('instapay');
   const [receiptNote, setReceiptNote] = useState('');
   const [receiptImage, setReceiptImage] = useState<string>('');
@@ -107,20 +166,23 @@ function BookingWizardContent() {
   const [submittedBooking, setSubmittedBooking] = useState<any>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Site Settings for payment info
+  // Dynamic Site Settings (Prices & Accounts)
   const [settings, setSettings] = useState({
+    individualFee: 'تبدأ من 250 ر.س',
+    maritalFee: 'تبدأ من 350 ر.س',
+    parentingFee: 'تبدأ من 250 ر.س',
+    emergencyFee: '500 ر.س',
     instapayUrl: 'https://ipn.eg/S/insan/instapay/94JPHf',
     instapayHandle: 'insan@instapay',
     vodafoneCashUrl: 'http://vf.eg/vfcash?id=mt&qrId=iLnA7Q',
     vodafoneCashNumber: '01014876666',
-    internationalIban: 'EG0000000000000000000000000',
+    internationalIban: '0873011024083701019',
     bankName: 'البنك الأهلي المصري',
-    accountHolder: 'جلال أحمد',
+    accountHolder: 'Galal Ahmed Abdelmoti Ahmed',
     whatsapp: '201014876666',
   });
 
   useEffect(() => {
-    // Fetch live settings if available
     fetch('/api/settings')
       .then((res) => res.json())
       .then((data) => {
@@ -131,16 +193,33 @@ function BookingWizardContent() {
       .catch(() => {});
   }, []);
 
-  // Preselect track from query param
+  // Preselect track and auto-advance to intake questions
   useEffect(() => {
     if (trackParam && intakeTracks.some((t) => t.id === trackParam)) {
       setSelectedTrackId(trackParam);
+      setCurrentStep(2);
     }
   }, [trackParam]);
 
   const activeTrack = useMemo(() => {
     return intakeTracks.find((t) => t.id === selectedTrackId) || intakeTracks[0];
   }, [selectedTrackId]);
+
+  // Current fee for track
+  const currentFee = useMemo(() => {
+    switch (activeTrack.id) {
+      case 'psychological':
+        return settings.individualFee || '250 ر.س';
+      case 'marital':
+        return settings.maritalFee || '350 ر.س';
+      case 'parenting':
+        return settings.parentingFee || '250 ر.س';
+      case 'emergency':
+        return settings.emergencyFee || '500 ر.س';
+      default:
+        return settings.individualFee || '250 ر.س';
+    }
+  }, [activeTrack.id, settings]);
 
   const currentQuestions = activeTrack.questions;
   const currentQuestion = currentQuestions[currentQuestionIndex];
@@ -152,12 +231,12 @@ function BookingWizardContent() {
     setTimeout(() => setCopiedField(null), 2500);
   };
 
-  // Handle image upload (base64)
+  // Handle receipt upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 4 * 1024 * 1024) {
-        alert('حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 4 ميجابايت');
+        alert('حجم الصورة كبير، يرجى اختيار صورة أقل من 4 ميجابايت');
         return;
       }
       const reader = new FileReader();
@@ -168,7 +247,7 @@ function BookingWizardContent() {
     }
   };
 
-  // Toggle multi-select question
+  // Toggle multi-select question with "other" support
   const toggleMultiSelectOption = (questionId: string, optionId: string) => {
     setAnswers((prev) => {
       const current = Array.isArray(prev[questionId]) ? prev[questionId] : [];
@@ -180,8 +259,8 @@ function BookingWizardContent() {
     });
   };
 
-  // Submit booking to API
-  const handleSubmitBooking = async () => {
+  // Submit booking to API and finalize
+  const handleConfirmAndPay = async () => {
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -195,12 +274,12 @@ function BookingWizardContent() {
       maritalStatus,
       clientCity,
       answers,
-      slotDate: selectedDate,
-      slotTime: selectedTime,
+      slotDate: selectedDateIso,
+      slotTime: TIME_SLOTS.find((s) => s.id === selectedTimeId)?.label || selectedTimeId,
       paymentMethod,
       receiptNote,
       receiptImage,
-      fee: activeTrack.defaultFee,
+      fee: currentFee,
     };
 
     try {
@@ -216,7 +295,8 @@ function BookingWizardContent() {
       }
 
       setSubmittedBooking(data.booking);
-      setCurrentStep(7); // Show confirmation
+      setIsPaymentDrawerOpen(false);
+      setCurrentStep(6); // Confirmation screen
     } catch (err: any) {
       setSubmitError(err.message || 'حدث خطأ غير متوقع، يرجى المحاولة ثانية.');
     } finally {
@@ -224,16 +304,16 @@ function BookingWizardContent() {
     }
   };
 
-  // Generate WhatsApp message for instant confirmation dispatch
+  // WhatsApp confirmation url
   const getWhatsAppConfirmationUrl = () => {
     if (!submittedBooking) return '#';
     const msg = `مرحباً أستاذ جلال أحمد،
-قمت بحجز موعد استشارة عبر موقعكم الرسمي:
+قمت بحجز موعد استشارة وتأكيد السداد عبر موقعكم:
 
 *رقم الحجز:* ${submittedBooking.id}
 *نوع الاستشارة:* ${submittedBooking.trackLabel}
 *الاسم:* ${submittedBooking.clientName}
-*الموعد المقترح:* ${submittedBooking.slotDate} (${submittedBooking.slotTime})
+*الموعد المختار:* ${submittedBooking.slotDate} (${submittedBooking.slotTime})
 *وسيلة السداد:* ${
       submittedBooking.paymentMethod === 'instapay'
         ? 'إنستاباي'
@@ -247,88 +327,72 @@ function BookingWizardContent() {
     return `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(msg)}`;
   };
 
-  // Dynamic track icon renderer
-  const renderTrackIcon = (iconName: string, className: string = 'w-6 h-6') => {
-    switch (iconName) {
-      case 'Brain':
-        return <Brain className={className} />;
-      case 'HeartHandshake':
-        return <HeartHandshake className={className} />;
-      case 'Sparkles':
-        return <Sparkles className={className} />;
-      case 'Compass':
-        return <Compass className={className} />;
-      case 'Zap':
-        return <Zap className={className} />;
-      default:
-        return <HeartHandshake className={className} />;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-linear-to-b from-slate-50 via-white to-slate-50 dark:from-[#0B0F15] dark:via-[#0D1117] dark:to-[#0B0F15] py-8 sm:py-12 transition-colors">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+    <div className="min-h-screen bg-[#FDFDFC] dark:bg-[#0B0F15] text-slate-800 dark:text-slate-100 flex flex-col justify-between transition-colors">
+      
+      {/* Full Header Navigation with Logo & Sections */}
+      <Navbar />
 
-        {/* Header Breadcrumb / Brand */}
-        <div className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 text-[#3D645E] dark:text-[#7EB5AB] text-xs font-bold mb-3 border border-[#4E7E76]/20">
-            <ShieldCheck className="w-4 h-4 text-[#4E7E76] dark:text-[#5E988E]" />
-            <span>نظام الحجز الذكي وميثاق السرية التامة</span>
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10">
+
+        {/* Breadcrumb Navigation & Back to Home */}
+        <div className="mb-6 flex items-center justify-between text-xs">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-slate-500 hover:text-[#4E7E76] dark:hover:text-[#5E988E] font-bold transition"
+          >
+            <ChevronRight className="w-4 h-4" />
+            <span>العودة للرئيسية</span>
+          </Link>
+
+          <div className="flex items-center gap-2 text-slate-400">
+            <span>الاستشارات</span>
+            <span>/</span>
+            <span className="text-[#4E7E76] dark:text-[#5E988E] font-bold">{activeTrack.title}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            حجز استشارة خاصة مع <span className="text-[#4E7E76] dark:text-[#5E988E]">جلال أحمد</span>
-          </h1>
-          <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
-            خطوات ميسّرة تبدأ بتشخيص أولي دقيق لاحتياجك، وتحديد الموعد الأنسب، وسداد آمن وسريع.
-          </p>
         </div>
 
         {/* Step Progress Stepper (Hidden on Final Success Step) */}
-        {currentStep < 7 && (
-          <div className="mb-8 bg-white dark:bg-[#161B22] p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+        {currentStep < 6 && (
+          <div className="mb-8 bg-white dark:bg-[#161B22] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400">
               <span className={`flex items-center gap-1.5 ${currentStep >= 1 ? 'text-[#4E7E76] dark:text-[#5E988E] font-black' : ''}`}>
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${currentStep >= 1 ? 'bg-[#4E7E76] text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>1</span>
                 <span>المسار</span>
               </span>
-              <span className="hidden sm:inline-block w-8 h-0.5 bg-slate-200 dark:bg-slate-800" />
+              <span className="w-4 sm:w-10 h-0.5 bg-slate-200 dark:bg-slate-800" />
               <span className={`flex items-center gap-1.5 ${currentStep >= 2 ? 'text-[#4E7E76] dark:text-[#5E988E] font-black' : ''}`}>
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${currentStep >= 2 ? 'bg-[#4E7E76] text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>2</span>
                 <span>الاستبيان</span>
               </span>
-              <span className="hidden sm:inline-block w-8 h-0.5 bg-slate-200 dark:bg-slate-800" />
+              <span className="w-4 sm:w-10 h-0.5 bg-slate-200 dark:bg-slate-800" />
               <span className={`flex items-center gap-1.5 ${currentStep >= 3 ? 'text-[#4E7E76] dark:text-[#5E988E] font-black' : ''}`}>
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${currentStep >= 3 ? 'bg-[#4E7E76] text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>3</span>
                 <span>البيانات</span>
               </span>
-              <span className="hidden sm:inline-block w-8 h-0.5 bg-slate-200 dark:bg-slate-800" />
+              <span className="w-4 sm:w-10 h-0.5 bg-slate-200 dark:bg-slate-800" />
               <span className={`flex items-center gap-1.5 ${currentStep >= 4 ? 'text-[#4E7E76] dark:text-[#5E988E] font-black' : ''}`}>
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${currentStep >= 4 ? 'bg-[#4E7E76] text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>4</span>
                 <span>السياسات</span>
               </span>
-              <span className="hidden sm:inline-block w-8 h-0.5 bg-slate-200 dark:bg-slate-800" />
+              <span className="w-4 sm:w-10 h-0.5 bg-slate-200 dark:bg-slate-800" />
               <span className={`flex items-center gap-1.5 ${currentStep >= 5 ? 'text-[#4E7E76] dark:text-[#5E988E] font-black' : ''}`}>
                 <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${currentStep >= 5 ? 'bg-[#4E7E76] text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>5</span>
-                <span>الموعد</span>
-              </span>
-              <span className="hidden sm:inline-block w-8 h-0.5 bg-slate-200 dark:bg-slate-800" />
-              <span className={`flex items-center gap-1.5 ${currentStep >= 6 ? 'text-[#4E7E76] dark:text-[#5E988E] font-black' : ''}`}>
-                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${currentStep >= 6 ? 'bg-[#4E7E76] text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>6</span>
-                <span>السداد</span>
+                <span>الموعد والدفع</span>
               </span>
             </div>
           </div>
         )}
 
-        {/* STEP 1: TRACK SELECTION */}
+        {/* STEP 1: UNIFIED TRACK SELECTION CARDS (MATCHING /services DESIGN) */}
         {currentStep === 1 && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fadeIn">
             <div className="text-center sm:text-right">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-                الخطوة الأولى: اختر نوع الاستشارة المناسب لك
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                اختر نوع الاستشارة المناسب لك
               </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                لكل مسار جلساته واستمارته التشخيصية الموجهة لمساعدتك بأعلى درجات الدقة والخصوصية.
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
+                نفس المسارات المعتمدة في صفحة الاستشارات مع استمارة سريرية موجهة لكل مسار.
               </p>
             </div>
 
@@ -336,40 +400,37 @@ function BookingWizardContent() {
               {intakeTracks.map((track) => {
                 const isSelected = selectedTrackId === track.id;
                 const isEmergency = track.id === 'emergency';
+                const feeDisplay =
+                  track.id === 'psychological'
+                    ? settings.individualFee
+                    : track.id === 'marital'
+                    ? settings.maritalFee
+                    : track.id === 'parenting'
+                    ? settings.parentingFee
+                    : track.id === 'emergency'
+                    ? settings.emergencyFee
+                    : track.defaultFee;
 
                 return (
                   <div
                     key={track.id}
                     onClick={() => setSelectedTrackId(track.id)}
-                    className={`cursor-pointer p-5 rounded-2xl border-2 transition-all relative ${
+                    className={`cursor-pointer p-6 rounded-3xl border-2 transition-all relative ${
                       isSelected
                         ? isEmergency
-                          ? 'border-amber-500 bg-amber-50/40 dark:bg-amber-950/20 shadow-md ring-2 ring-amber-500/20'
-                          : 'border-[#4E7E76] dark:border-[#5E988E] bg-[#4E7E76]/5 dark:bg-[#5E988E]/10 shadow-md ring-2 ring-[#4E7E76]/20'
+                          ? 'border-amber-500 bg-amber-50/40 dark:bg-amber-950/20 shadow-lg ring-2 ring-amber-500/20'
+                          : 'border-[#4E7E76] dark:border-[#5E988E] bg-[#4E7E76]/5 dark:bg-[#5E988E]/10 shadow-lg ring-2 ring-[#4E7E76]/20'
                         : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#161B22] hover:border-slate-300 dark:hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-11 h-11 rounded-xl flex items-center justify-center ${
-                            isSelected
-                              ? isEmergency
-                                ? 'bg-amber-500 text-white'
-                                : 'bg-[#4E7E76] text-white'
-                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
-                          }`}
-                        >
-                          {renderTrackIcon(track.iconName)}
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                            {track.title}
-                          </h3>
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
-                            {track.badge}
-                          </span>
-                        </div>
+                      <div>
+                        <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+                          {track.badge}
+                        </span>
+                        <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white mt-2">
+                          {track.title}
+                        </h3>
                       </div>
 
                       <div
@@ -385,13 +446,13 @@ function BookingWizardContent() {
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed min-h-10">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed min-h-[45px]">
                       {track.desc}
                     </p>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
                       <span className="font-bold text-slate-700 dark:text-slate-300">
-                        قيمة الجلسة: <span className="text-[#4E7E76] dark:text-[#5E988E]">{track.defaultFee}</span>
+                        الرسوم المعتمدة: <strong className="text-[#4E7E76] dark:text-[#5E988E] text-sm">{feeDisplay}</strong>
                       </span>
                       <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5" />
@@ -405,11 +466,12 @@ function BookingWizardContent() {
 
             <div className="flex justify-end pt-4">
               <button
+                type="button"
                 onClick={() => {
                   setCurrentQuestionIndex(0);
                   setCurrentStep(2);
                 }}
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white font-bold rounded-xl transition shadow-md hover:shadow-lg"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white font-bold rounded-2xl transition shadow-md hover:shadow-lg"
               >
                 <span>متابعة للاستمارة التشخيصية</span>
                 <ChevronLeft className="w-5 h-5" />
@@ -418,10 +480,10 @@ function BookingWizardContent() {
           </div>
         )}
 
-        {/* STEP 2: GAMIFIED CLINICAL INTAKE QUESTIONS */}
+        {/* STEP 2: INTAKE QUESTIONS WITH "غير ذلك" AND "اكتب هنا" */}
         {currentStep === 2 && currentQuestion && (
-          <div className="bg-white dark:bg-[#161B22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-            {/* Intake header */}
+          <div className="bg-white dark:bg-[#161B22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-6 animate-fadeIn">
+            {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 bg-[#4E7E76]/10 text-[#4E7E76] dark:text-[#5E988E] text-xs font-bold rounded-full">
@@ -432,6 +494,7 @@ function BookingWizardContent() {
                 </span>
               </div>
               <button
+                type="button"
                 onClick={() => setCurrentStep(1)}
                 className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 font-bold"
               >
@@ -449,7 +512,7 @@ function BookingWizardContent() {
               />
             </div>
 
-            {/* Question Title & Subtitle */}
+            {/* Question Text */}
             <div>
               <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
                 {currentQuestion.question}
@@ -461,11 +524,11 @@ function BookingWizardContent() {
               )}
             </div>
 
-            {/* Question Body Depending on Type */}
-            <div className="pt-2">
-              {/* MULTI-SELECT CHIPS */}
+            {/* Options List */}
+            <div className="pt-2 space-y-3">
+              {/* Multi-Select Options */}
               {currentQuestion.type === 'multi-select' && currentQuestion.options && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {currentQuestion.options.map((option) => {
                     const selectedList: string[] = Array.isArray(answers[currentQuestion.id])
                       ? answers[currentQuestion.id]
@@ -477,7 +540,7 @@ function BookingWizardContent() {
                         type="button"
                         key={option.id}
                         onClick={() => toggleMultiSelectOption(currentQuestion.id, option.id)}
-                        className={`text-right p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3 ${
+                        className={`text-right p-3.5 rounded-xl border-2 transition-all flex items-center justify-between gap-3 ${
                           isChecked
                             ? 'border-[#4E7E76] bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 text-[#3D645E] dark:text-emerald-300 font-bold'
                             : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:border-slate-300'
@@ -496,12 +559,43 @@ function BookingWizardContent() {
                       </button>
                     );
                   })}
+
+                  {/* "غير ذلك" Option for Multi-Select (Image 1 pattern) */}
+                  {(() => {
+                    const selectedList: string[] = Array.isArray(answers[currentQuestion.id])
+                      ? answers[currentQuestion.id]
+                      : [];
+                    const isOtherChecked = selectedList.includes('other');
+
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => toggleMultiSelectOption(currentQuestion.id, 'other')}
+                        className={`text-right p-3.5 rounded-xl border-2 transition-all flex items-center justify-between gap-3 sm:col-span-2 ${
+                          isOtherChecked
+                            ? 'border-[#4E7E76] bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 text-[#3D645E] dark:text-emerald-300 font-bold'
+                            : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                        }`}
+                      >
+                        <span className="text-xs sm:text-sm font-bold">غير ذلك</span>
+                        <span
+                          className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${
+                            isOtherChecked
+                              ? 'bg-[#4E7E76] border-[#4E7E76] text-white'
+                              : 'border-slate-300 dark:border-slate-600'
+                          }`}
+                        >
+                          {isOtherChecked && <Check className="w-3 h-3" />}
+                        </span>
+                      </button>
+                    );
+                  })()}
                 </div>
               )}
 
-              {/* SINGLE-SELECT CARDS */}
+              {/* Single-Select Options */}
               {currentQuestion.type === 'single-select' && currentQuestion.options && (
-                <div className="space-y-3">
+                <div className="space-y-2.5">
                   {currentQuestion.options.map((option) => {
                     const isSelected = answers[currentQuestion.id] === option.id;
 
@@ -536,10 +630,34 @@ function BookingWizardContent() {
                       </button>
                     );
                   })}
+
+                  {/* "غير ذلك" Option for Single-Select */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setAnswers((prev) => ({ ...prev, [currentQuestion.id]: 'other' }))
+                    }
+                    className={`w-full text-right p-4 rounded-xl border-2 transition-all flex items-center justify-between gap-3 ${
+                      answers[currentQuestion.id] === 'other'
+                        ? 'border-[#4E7E76] bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 text-[#3D645E] dark:text-emerald-300 font-bold'
+                        : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                    }`}
+                  >
+                    <span className="text-xs sm:text-sm font-bold">غير ذلك</span>
+                    <span
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        answers[currentQuestion.id] === 'other'
+                          ? 'border-[#4E7E76] bg-[#4E7E76] text-white'
+                          : 'border-slate-300 dark:border-slate-600'
+                      }`}
+                    >
+                      {answers[currentQuestion.id] === 'other' && <span className="w-2 h-2 rounded-full bg-white" />}
+                    </span>
+                  </button>
                 </div>
               )}
 
-              {/* TEXTAREA INPUT */}
+              {/* Textarea Input */}
               {currentQuestion.type === 'textarea' && (
                 <div>
                   <textarea
@@ -551,15 +669,34 @@ function BookingWizardContent() {
                     placeholder={currentQuestion.placeholder || 'اكتب هنا باستفاضة وراحة تامة...'}
                     className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#4E7E76]"
                   />
-                  <p className="text-xs text-slate-500 mt-2 flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-[#4E7E76]" />
-                    <span>ملاحظتك تذهب مباشرة وسرياً للمستشار جلال أحمد فقط للاطلاع عليها قبل الجلسة.</span>
-                  </p>
+                </div>
+              )}
+
+              {/* "اكتب هنا" Box When "غير ذلك" is Selected (Image 1 pattern) */}
+              {(answers[currentQuestion.id] === 'other' ||
+                (Array.isArray(answers[currentQuestion.id]) &&
+                  answers[currentQuestion.id].includes('other'))) && (
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 space-y-1.5 animate-fadeIn">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                    اكتب هنا (صف العرض أو المشكلة بالتحديد):
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={answers[`${currentQuestion.id}_other_text`] || ''}
+                    onChange={(e) =>
+                      setAnswers((prev) => ({
+                        ...prev,
+                        [`${currentQuestion.id}_other_text`]: e.target.value,
+                      }))
+                    }
+                    placeholder="اكتب هنا..."
+                    className="w-full p-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                  />
                 </div>
               )}
             </div>
 
-            {/* Step 2 Navigation Buttons */}
+            {/* Navigation Buttons */}
             <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
@@ -582,7 +719,7 @@ function BookingWizardContent() {
                   if (currentQuestionIndex < currentQuestions.length - 1) {
                     setCurrentQuestionIndex((prev) => prev + 1);
                   } else {
-                    setCurrentStep(3); // Go to demographics
+                    setCurrentStep(3); // Demographics
                   }
                 }}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-bold rounded-xl transition shadow-sm"
@@ -598,20 +735,19 @@ function BookingWizardContent() {
           </div>
         )}
 
-        {/* STEP 3: DEMOGRAPHICS & CONTACT DETAILS */}
+        {/* STEP 3: DEMOGRAPHICS */}
         {currentStep === 3 && (
-          <div className="bg-white dark:bg-[#161B22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+          <div className="bg-white dark:bg-[#161B22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-6 animate-fadeIn">
             <div>
               <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-                الخطوة الثالثة: البيانات الأساسية والتواصل
+                البيانات الأساسية والتواصل
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
-                نستخدم رقم الواتساب لإرسال تأكيد الحجز ورابط جلسة Google Meet ومتابعة استفساراتك.
+                نستخدم رقم الواتساب لإرسال تأكيد الحجز ورابط لقاء Google Meet المباشر.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Client Name */}
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   الاسم الكريم (أو الاسم المستعار المفضل) *
@@ -629,7 +765,6 @@ function BookingWizardContent() {
                 </div>
               </div>
 
-              {/* Phone / WhatsApp */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   رقم الواتساب مع مفتاح الدولة *
@@ -648,7 +783,6 @@ function BookingWizardContent() {
                 </div>
               </div>
 
-              {/* Email */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   البريد الإلكتروني (اختياري)
@@ -663,7 +797,6 @@ function BookingWizardContent() {
                 />
               </div>
 
-              {/* Age */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   العمر (بالسنوات)
@@ -677,7 +810,6 @@ function BookingWizardContent() {
                 />
               </div>
 
-              {/* Marital Status */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   الحالة الاجتماعية
@@ -695,7 +827,6 @@ function BookingWizardContent() {
                 </select>
               </div>
 
-              {/* City / Country */}
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                   بلد ومدينة الإقامة الحالية
@@ -713,7 +844,6 @@ function BookingWizardContent() {
               </div>
             </div>
 
-            {/* Step 3 Navigation */}
             <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
@@ -737,60 +867,55 @@ function BookingWizardContent() {
           </div>
         )}
 
-        {/* STEP 4: POLICIES & PRIVACY CHARTER (MATCHING "ونفس" REFERENCE) */}
+        {/* STEP 4: POLICIES & CHARTER (MATCHING "ونفس") */}
         {currentStep === 4 && (
-          <div className="bg-white dark:bg-[#161B22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+          <div className="bg-white dark:bg-[#161B22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-6 animate-fadeIn">
             <div className="flex items-center gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
               <div className="w-10 h-10 rounded-xl bg-[#4E7E76]/10 text-[#4E7E76] dark:text-[#5E988E] flex items-center justify-center shrink-0">
                 <FileCheck className="w-5 h-5" />
               </div>
               <div>
                 <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-                  الخطوة الرابعة: ميثاق السرية والسياسات التنظيمية
+                  ميثاق السرية والسياسات التنظيمية
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  يرجى قراءة البنود بدقة لضمان جلسة استشارية آمنة وفعالة ومنضبطة للطرفين
+                  يرجى قراءة البنود والموافقة عليها لضمان جلسة آمنة ومنضبطة
                 </p>
               </div>
             </div>
 
-            {/* Policies Cards */}
             <div className="space-y-4">
-              {/* 1. Confidentiality */}
               <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40">
                 <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm mb-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span>1. ميثاق السرية التامة والأمانة المهنية</span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pr-6">
-                  كل ما يتم طرحه ومشاركته داخل الجلسة من معلومات وأعراض ومشاعر هو سر مهني مطلق، محمي بأعلى معايير الأمانة الأخلاقية والمهنية، ولا يُشارك مع أي طرف ثالث إطلاقاً.
+                  كل ما يتم طرحه داخل الجلسة هو سر مهني مطلق، محمي بأعلى معايير الأمانة الأخلاقية والمهنية، ولا يُشارك مع أي طرف إطلاقاً.
                 </p>
               </div>
 
-              {/* 2. Cancellation & Rescheduling */}
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-bold text-sm mb-1.5">
                   <CalendarClock className="w-4 h-4 text-[#4E7E76]" />
                   <span>2. سياسة الإلغاء وتعديل الموعد</span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pr-6">
-                  يحق لك تعديل موعد الجلسة أو تأجيله قبل الموعد بـ <strong>48 ساعة</strong> على الأقل دون أي رسوم إضافية. في حال الإلغاء قبل 48 ساعة يُعاد المبلغ بالكامل.
+                  يحق لك تعديل موعد الجلسة أو تأجيله قبل الموعد بـ <strong>48 ساعة</strong> على الأقل دون أي رسوم إضافية.
                 </p>
               </div>
 
-              {/* 3. Session Readiness & Late Policy */}
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-bold text-sm mb-1.5">
                   <Clock className="w-4 h-4 text-[#4E7E76]" />
                   <span>3. الانضباط الفني وبدء الجلسة</span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pr-6">
-                  تُعقد الجلسات عبر Google Meet بجودة عالية. يرجى التواجد في مكان هادئ وخاص قبل الموعد بـ 5 دقائق والتأكد من جودة الإنترنت وسماعة الرأس. في حال التأخير لأكثر من 15 دقيقة دون إخطار مسبق، تُحتسب الجلسة حرصاً على مواعيد المستفيدين الآخرين.
+                  تُعقد الجلسات عبر Google Meet. يرجى التواجد في مكان هادئ قبل الموعد بـ 5 دقائق. في حال التأخير لأكثر من 15 دقيقة دون إخطار، تُحتسب الجلسة حرصاً على جدول المواعيد.
                 </p>
               </div>
             </div>
 
-            {/* Compulsory Checkbox */}
             <div className="pt-2">
               <label className="flex items-start gap-3 p-4 rounded-2xl bg-[#4E7E76]/5 dark:bg-[#5E988E]/10 border-2 border-[#4E7E76]/30 cursor-pointer select-none">
                 <input
@@ -805,7 +930,6 @@ function BookingWizardContent() {
               </label>
             </div>
 
-            {/* Step 4 Navigation */}
             <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
@@ -822,398 +946,403 @@ function BookingWizardContent() {
                 onClick={() => setCurrentStep(5)}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#4E7E76] hover:bg-[#3D645E] disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl transition shadow-sm"
               >
-                <span>متابعة لاختيار الموعد</span>
+                <span>متابعة لتحديد الموعد والسداد</span>
                 <ChevronLeft className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* STEP 5: SCHEDULE PICKER (DATE & TIME) */}
+        {/* STEP 5: UNIFIED SCHEDULE & TIME & PAY (MATCHING "عوافي" IMAGE 2 PATTERN) */}
         {currentStep === 5 && (
-          <div className="bg-white dark:bg-[#161B22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-            <div>
-              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-                الخطوة الخامسة: حدد اليوم والوقت الأنسب لك
+          <div className="bg-white dark:bg-[#161B22] p-5 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 animate-fadeIn">
+            
+            {/* Header */}
+            <div className="text-center border-b border-slate-100 dark:border-slate-800 pb-4">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                تحديد موعد الجلسة
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
-                جميع المواعيد الموضحة بتوقيت مكة المكرمة والقاهرة.
+              <p className="text-xs text-slate-500 mt-1">
+                اختر اليوم والوقت الملائمين، ثم اضغط زر الدفع لتأكيد الحجز فورياً.
               </p>
             </div>
 
-            {/* Date Selection Grid */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2.5">
-                1. اختر اليوم المتاح (خلال الأسبوعين القادمين):
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5 max-h-56 overflow-y-auto p-1">
-                {availableDates.map((dateObj) => {
-                  const isSelected = selectedDate === dateObj.iso;
+            {/* Calendar View (Image 2 style) */}
+            <div className="max-w-md mx-auto space-y-4">
+              {/* Month Header */}
+              <div className="flex items-center justify-center gap-4 text-base font-extrabold text-[#10B981]">
+                <span>{calendarData.monthName} {calendarData.year}</span>
+              </div>
+
+              {/* Weekdays Labels */}
+              <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-500">
+                {calendarData.arabicDayNames.map((dayName, idx) => (
+                  <div key={idx} className="py-1">
+                    {dayName}
+                  </div>
+                ))}
+              </div>
+
+              {/* Days Grid */}
+              <div className="grid grid-cols-7 gap-1 text-center">
+                {calendarData.days.map((d) => {
+                  const isSelected = selectedDateIso === d.dateIso;
+
                   return (
-                    <button
-                      type="button"
-                      key={dateObj.iso}
-                      onClick={() => setSelectedDate(dateObj.iso)}
-                      className={`p-3 rounded-xl border text-center transition-all ${
-                        isSelected
-                          ? 'border-[#4E7E76] bg-[#4E7E76] text-white font-bold shadow-sm ring-2 ring-[#4E7E76]/20'
-                          : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="text-xs">{dateObj.shortLabel}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Time Slot Selection */}
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2.5">
-                2. اختر التوقيت المناسب:
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
-                {TIME_SLOTS.map((slot) => {
-                  const isSelected = selectedTime === slot.id;
-                  return (
-                    <button
-                      type="button"
-                      key={slot.id}
-                      onClick={() => setSelectedTime(slot.id)}
-                      className={`p-3 rounded-xl border text-center transition-all flex items-center justify-center gap-1.5 ${
-                        isSelected
-                          ? 'border-[#4E7E76] bg-[#4E7E76] text-white font-bold shadow-sm ring-2 ring-[#4E7E76]/20'
-                          : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 hover:border-slate-300'
-                      }`}
-                    >
-                      <Clock className="w-3.5 h-3.5" />
-                      <span className="text-xs">{slot.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Summary Box */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#4E7E76]/10 text-[#4E7E76] flex items-center justify-center">
-                  <Calendar className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">ملخص الموعد المختار</div>
-                  <div className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                    {availableDates.find((d) => d.iso === selectedDate)?.label} — {TIME_SLOTS.find((s) => s.id === selectedTime)?.label}
-                  </div>
-                </div>
-              </div>
-              <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                رسوم الجلسة: <span className="text-[#4E7E76] dark:text-[#5E988E] font-black">{activeTrack.defaultFee}</span>
-              </div>
-            </div>
-
-            {/* Step 5 Navigation */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(4)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-              >
-                <ChevronRight className="w-4 h-4" />
-                <span>العودة للسياسات</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={!selectedDate || !selectedTime}
-                onClick={() => setCurrentStep(6)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#4E7E76] hover:bg-[#3D645E] disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-bold rounded-xl transition shadow-sm"
-              >
-                <span>متابعة لوسائل السداد المباشر</span>
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 6: SMART DIRECT PAYMENT & RECEIPT UPLOAD */}
-        {currentStep === 6 && (
-          <div className="bg-white dark:bg-[#161B22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
-            <div>
-              <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">
-                الخطوة السادسة: السداد المباشر وتأكيد الحجز
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1">
-                اختر وسيلة الدفع الأنسب لك وحوّل مباشرة ثم ارفع صورة الإيصال ليتم اعتماد الموعد فوراً.
-              </p>
-            </div>
-
-            {/* Payment Method Switcher */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {/* InstaPay */}
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('instapay')}
-                className={`p-4 rounded-2xl border-2 text-right transition-all ${
-                  paymentMethod === 'instapay'
-                    ? 'border-[#4E7E76] bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 ring-2 ring-[#4E7E76]/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
-                }`}
-              >
-                <div className="font-bold text-sm text-slate-900 dark:text-white mb-1">
-                  إنستاباي (InstaPay)
-                </div>
-                <div className="text-xs text-slate-500">تحويل فوري ومباشر داخل مصر</div>
-              </button>
-
-              {/* Vodafone Cash */}
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('vodafone')}
-                className={`p-4 rounded-2xl border-2 text-right transition-all ${
-                  paymentMethod === 'vodafone'
-                    ? 'border-red-500 bg-red-50/40 dark:bg-red-950/20 ring-2 ring-red-500/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
-                }`}
-              >
-                <div className="font-bold text-sm text-slate-900 dark:text-white mb-1">
-                  فودافون كاش
-                </div>
-                <div className="text-xs text-slate-500">محفظة إلكترونية مباشرة</div>
-              </button>
-
-              {/* International / Bank */}
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('bank')}
-                className={`p-4 rounded-2xl border-2 text-right transition-all ${
-                  paymentMethod === 'bank'
-                    ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 ring-2 ring-blue-500/20'
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
-                }`}
-              >
-                <div className="font-bold text-sm text-slate-900 dark:text-white mb-1">
-                  تحويل بنكي / من الخارج
-                </div>
-                <div className="text-xs text-slate-500">آيبان البنك الأهلي المصري</div>
-              </button>
-            </div>
-
-            {/* Payment Details Container */}
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-4">
-              {paymentMethod === 'instapay' && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      معرف إنستاباي المعتمد:
-                    </span>
-                    <a
-                      href={settings.instapayUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-bold rounded-lg transition"
-                    >
-                      <span>افتح تطبيق InstaPay للتحويل</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-
-                  <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <code className="text-sm font-bold text-slate-800 dark:text-slate-200" dir="ltr">
-                      {settings.instapayHandle}
-                    </code>
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(settings.instapayHandle, 'instapay')}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold text-slate-700 dark:text-slate-300 rounded-md transition"
-                    >
-                      {copiedField === 'instapay' ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                      <span>{copiedField === 'instapay' ? 'تم النسخ!' : 'نسخ'}</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {paymentMethod === 'vodafone' && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      رقم محفظة فودافون كاش:
-                    </span>
-                    <a
-                      href={settings.vodafoneCashUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg transition"
-                    >
-                      <span>افتح محفظة فودافون كاش</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-
-                  <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <code className="text-sm font-bold text-slate-800 dark:text-slate-200" dir="ltr">
-                      {settings.vodafoneCashNumber}
-                    </code>
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(settings.vodafoneCashNumber, 'vodafone')}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold text-slate-700 dark:text-slate-300 rounded-md transition"
-                    >
-                      {copiedField === 'vodafone' ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                      <span>{copiedField === 'vodafone' ? 'تم النسخ!' : 'نسخ'}</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {paymentMethod === 'bank' && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                      بيانات التحويل البنكي الدولي:
-                    </span>
-                  </div>
-                  <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs space-y-1.5">
-                    <div>
-                      <strong>اسم المستفيد:</strong> {settings.accountHolder}
-                    </div>
-                    <div>
-                      <strong>البنك:</strong> {settings.bankName}
-                    </div>
-                    <div className="flex items-center justify-between pt-1">
-                      <div>
-                        <strong>IBAN:</strong> <span dir="ltr">{settings.internationalIban}</span>
-                      </div>
+                    <div key={d.dateIso} className="flex items-center justify-center p-1">
                       <button
                         type="button"
-                        onClick={() => handleCopy(settings.internationalIban, 'iban')}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-xs font-bold text-slate-700 dark:text-slate-300 rounded-md transition"
+                        disabled={!d.isSelectable}
+                        onClick={() => setSelectedDateIso(d.dateIso)}
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full text-xs font-bold transition-all flex items-center justify-center ${
+                          isSelected
+                            ? 'bg-[#10B981] text-white shadow-md ring-4 ring-[#10B981]/25'
+                            : d.isSelectable
+                            ? 'text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            : 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                        }`}
                       >
-                        {copiedField === 'iban' ? (
-                          <Check className="w-3 h-3 text-emerald-600" />
-                        ) : (
-                          <Copy className="w-3 h-3" />
-                        )}
-                        <span>{copiedField === 'iban' ? 'تم النسخ' : 'نسخ'}</span>
+                        {d.dayNumber}
                       </button>
                     </div>
-                  </div>
-                </div>
-              )}
+                  );
+                })}
+              </div>
 
-              {/* Upload Receipt Section */}
-              <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
-                  إرفاق لقطة شاشة / صورة إيصال التحويل (مستحسن للتأكيد الفوري):
+              {/* Session Duration Badge */}
+              <div className="pt-2 flex justify-end">
+                <span className="inline-block px-3 py-1 rounded-xl border border-[#10B981]/50 text-[#10B981] text-xs font-bold bg-[#10B981]/5">
+                  50 دقيقة
+                </span>
+              </div>
+
+              {/* Available Time Slots */}
+              <div className="pt-2 space-y-2">
+                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 text-right">
+                  المواعيد المتاحة
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {TIME_SLOTS.map((slot) => {
+                    const isSelected = selectedTimeId === slot.id;
+
+                    return (
+                      <button
+                        type="button"
+                        key={slot.id}
+                        onClick={() => setSelectedTimeId(slot.id)}
+                        className={`p-3 rounded-2xl border text-center transition-all flex items-center justify-center gap-1.5 text-xs font-bold ${
+                          isSelected
+                            ? 'border-[#10B981] bg-[#10B981]/10 text-[#047857] dark:text-[#34D399] ring-2 ring-[#10B981]/20'
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                        }`}
+                      >
+                        <Clock className="w-3.5 h-3.5 text-[#10B981]" />
+                        <span>{slot.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Prominent Awafi-style Pay CTA Button (Image 2) */}
+              <div className="pt-4">
+                <button
+                  type="button"
+                  disabled={!selectedDateIso || !selectedTimeId}
+                  onClick={() => setIsPaymentDrawerOpen(true)}
+                  className="w-full py-4 rounded-2xl bg-[#10B981] hover:bg-[#059669] disabled:bg-slate-300 text-white font-extrabold text-sm sm:text-base transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>دفع {currentFee}</span>
+                </button>
+              </div>
+
+              <div className="text-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(4)}
+                  className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 font-bold"
+                >
+                  العودة للخطوة السابقة
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PAYMENT DRAWER / MODAL (MATCHING "عوافي" IMAGE 3 PATTERN) */}
+        {isPaymentDrawerOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-xs animate-fadeIn"
+            onClick={() => setIsPaymentDrawerOpen(false)}
+          >
+            <div
+              className="relative max-w-lg w-full bg-white dark:bg-[#161B22] border-t sm:border border-slate-200 dark:border-slate-700 rounded-t-3xl sm:rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 animate-slideUp text-right"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsPaymentDrawerOpen(false)}
+                  className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                  اختر طريقة الدفع
+                </h3>
+              </div>
+
+              {/* Payment Methods List */}
+              <div className="space-y-3">
+                {/* 1. InstaPay */}
+                <div
+                  onClick={() => setPaymentMethod('instapay')}
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'instapay'
+                      ? 'border-[#7B2CBF] bg-[#7B2CBF]/5 dark:bg-[#7B2CBF]/15 ring-2 ring-[#7B2CBF]/20'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <InstaPayBadge />
+                      <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                        إنستاباي (InstaPay مصر)
+                      </span>
+                    </div>
+                    <span
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'instapay' ? 'border-[#7B2CBF] bg-[#7B2CBF] text-white' : 'border-slate-300'
+                      }`}
+                    >
+                      {paymentMethod === 'instapay' && <Check className="w-3 h-3" />}
+                    </span>
+                  </div>
+
+                  {paymentMethod === 'instapay' && (
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-bold">معرف إنستاباي:</span>
+                        <div className="flex items-center gap-2">
+                          <code className="font-mono font-bold text-slate-800 dark:text-slate-200" dir="ltr">
+                            {settings.instapayHandle}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCopy(settings.instapayHandle, 'instapay');
+                            }}
+                            className="p-1 px-2 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-bold"
+                          >
+                            {copiedField === 'instapay' ? 'تم النسخ!' : 'نسخ'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <a
+                        href={settings.instapayUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 w-full py-2 bg-[#7B2CBF] hover:bg-[#6A24A6] text-white font-bold rounded-xl text-xs transition"
+                      >
+                        <span>افتح تطبيق InstaPay وادفع مباشرة</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. Vodafone Cash */}
+                <div
+                  onClick={() => setPaymentMethod('vodafone')}
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'vodafone'
+                      ? 'border-[#E60000] bg-red-50/40 dark:bg-red-950/20 ring-2 ring-red-500/20'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <VodafoneCashBadge />
+                      <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                        محفظة فودافون كاش
+                      </span>
+                    </div>
+                    <span
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'vodafone' ? 'border-[#E60000] bg-[#E60000] text-white' : 'border-slate-300'
+                      }`}
+                    >
+                      {paymentMethod === 'vodafone' && <Check className="w-3 h-3" />}
+                    </span>
+                  </div>
+
+                  {paymentMethod === 'vodafone' && (
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-bold">رقم المحفظة:</span>
+                        <div className="flex items-center gap-2">
+                          <code className="font-mono font-bold text-slate-800 dark:text-slate-200" dir="ltr">
+                            {settings.vodafoneCashNumber}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCopy(settings.vodafoneCashNumber, 'vodafone');
+                            }}
+                            className="p-1 px-2 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-bold"
+                          >
+                            {copiedField === 'vodafone' ? 'تم النسخ!' : 'نسخ'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <a
+                        href={settings.vodafoneCashUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 w-full py-2 bg-[#E60000] hover:bg-[#CC0000] text-white font-bold rounded-xl text-xs transition"
+                      >
+                        <span>افتح محفظة فودافون كاش للتحويل</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. National Bank of Egypt (IBAN International) */}
+                <div
+                  onClick={() => setPaymentMethod('bank')}
+                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                    paymentMethod === 'bank'
+                      ? 'border-[#005A36] bg-[#005A36]/5 dark:bg-[#005A36]/15 ring-2 ring-[#005A36]/20'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <NBEBadge />
+                      <CardsBadge />
+                      <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                        تحويل بنكي دولي (الأهلي المصري)
+                      </span>
+                    </div>
+                    <span
+                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'bank' ? 'border-[#005A36] bg-[#005A36] text-white' : 'border-slate-300'
+                      }`}
+                    >
+                      {paymentMethod === 'bank' && <Check className="w-3 h-3" />}
+                    </span>
+                  </div>
+
+                  {paymentMethod === 'bank' && (
+                    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 space-y-1.5 text-xs">
+                      <div>
+                        <strong>المستفيد:</strong> {settings.accountHolder}
+                      </div>
+                      <div>
+                        <strong>البنك:</strong> {settings.bankName}
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <div>
+                          <strong>IBAN:</strong> <span className="font-mono" dir="ltr">{settings.internationalIban}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopy(settings.internationalIban, 'iban');
+                          }}
+                          className="p-1 px-2 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px] font-bold"
+                        >
+                          {copiedField === 'iban' ? 'تم النسخ!' : 'نسخ'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Receipt Upload / Note */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  إثبات التحويل (صورة الإيصال أو رقم العملية):
                 </label>
 
-                <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <label className="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 transition">
-                    <Upload className="w-4 h-4 text-[#4E7E76]" />
-                    <span>{receiptImage ? 'تغيير صورة الإيصال' : 'رفع صورة الإيصال'}</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
+                <div className="flex items-center gap-2">
+                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition shrink-0">
+                    <Upload className="w-3.5 h-3.5 text-[#10B981]" />
+                    <span>{receiptImage ? 'تغيير الإيصال' : 'رفع إيصال'}</span>
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
                   </label>
 
                   <input
                     type="text"
                     value={receiptNote}
                     onChange={(e) => setReceiptNote(e.target.value)}
-                    placeholder="أو اكتب رقم العملية / اسم المحوّل هنا..."
-                    className="flex-1 w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-xs focus:outline-hidden focus:ring-2 focus:ring-[#4E7E76]"
+                    placeholder="أو اكتب رقم العملية / اسم المحول..."
+                    className="flex-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-800 dark:text-slate-200 focus:outline-hidden"
                   />
                 </div>
 
-                {/* Receipt Preview */}
                 {receiptImage && (
-                  <div className="mt-3 p-2 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                        تم تجهيز صورة الإيصال بنجاح
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setReceiptImage('')}
-                      className="text-xs text-red-500 hover:text-red-700 font-bold"
-                    >
-                      حذف
-                    </button>
+                  <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>تم إرفاق صورة الإيصال بنجاح</span>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Error Message */}
-            {submitError && (
-              <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-xs text-red-700 dark:text-red-400">
-                {submitError}
+              {/* Error Box */}
+              {submitError && (
+                <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 text-xs font-bold">
+                  {submitError}
+                </div>
+              )}
+
+              {/* Confirm Button (Image 3 style) */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={handleConfirmAndPay}
+                  className="w-full py-3.5 rounded-2xl bg-[#10B981] hover:bg-[#059669] disabled:bg-slate-300 text-white font-extrabold text-sm transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>جاري تأكيد وتسجيل حجزك...</span>
+                    </>
+                  ) : (
+                    <span>تأكيد</span>
+                  )}
+                </button>
               </div>
-            )}
-
-            {/* Step 6 Navigation & Submit */}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(5)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-              >
-                <ChevronRight className="w-4 h-4" />
-                <span>العودة للموعد</span>
-              </button>
-
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={handleSubmitBooking}
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#4E7E76] hover:bg-[#3D645E] disabled:bg-slate-400 text-white text-sm font-bold rounded-xl transition shadow-md hover:shadow-lg"
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>جاري تسجيل وتثبيت حجزك...</span>
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-5 h-5" />
-                    <span>تأكيد تسجيل الحجز الآن</span>
-                  </>
-                )}
-              </button>
             </div>
           </div>
         )}
 
-        {/* STEP 7: CONFIRMATION TICKET & 1-CLICK WHATSAPP DISPATCH */}
-        {currentStep === 7 && submittedBooking && (
-          <div className="bg-white dark:bg-[#161B22] p-6 sm:p-10 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-lg text-center space-y-6">
+        {/* STEP 6: CONFIRMATION TICKET & DIRECT WHATSAPP DISPATCH */}
+        {currentStep === 6 && submittedBooking && (
+          <div className="bg-white dark:bg-[#161B22] p-6 sm:p-10 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-lg text-center space-y-6 animate-fadeIn">
             <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto ring-8 ring-emerald-50 dark:ring-emerald-950/20">
               <CheckCircle2 className="w-9 h-9" />
             </div>
 
             <div>
               <span className="px-3.5 py-1 bg-[#4E7E76]/10 text-[#4E7E76] dark:text-[#5E988E] text-xs font-extrabold rounded-full">
-                تم استلام طلب حجزك بنجاح
+                تم اعتماد وتسجيل حجزك بنجاح
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-2">
                 أهلاً بك أستاذ {submittedBooking.clientName}
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-md mx-auto">
-                تم تسجيل بياناتك التشخيصية والموعد المقترح بنجاح في نظام المواعيد.
+                تم تسجيل بياناتك وموعد جلستك المقترح بنجاح في نظام المواعيد.
               </p>
             </div>
 
@@ -1226,21 +1355,21 @@ function BookingWizardContent() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">نوع الجلسة:</span>
+                <span className="text-slate-500">نوع الاستشارة:</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">
                   {submittedBooking.trackLabel}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">الموعد المقترح:</span>
+                <span className="text-slate-500">الموعد المحدد:</span>
                 <span className="font-bold text-slate-800 dark:text-slate-200">
-                  {submittedBooking.slotDate} — الساعة {submittedBooking.slotTime}
+                  {submittedBooking.slotDate} — {submittedBooking.slotTime}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">حالة الاعتماد:</span>
-                <span className="font-bold text-amber-600 dark:text-amber-400">
-                  قيد مراجعة التحويل وتأكيد الرابط
+                <span className="text-slate-500">حالة السداد:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  تم تسجيل التحويل وإرفاق الإيصال
                 </span>
               </div>
             </div>
@@ -1257,37 +1386,32 @@ function BookingWizardContent() {
                 <span>إرسال إشعار الحجز ورابط السداد للمستشار عبر واتساب فوراً</span>
               </a>
               <p className="text-xs text-slate-500 mt-2">
-                ضغطة واحدة تفتح محادثة واتساب جاهزة ومجهزة برقم حجزك لتسريع اعتماد الموعد وإرسال رابط الجلسة.
+                ضغطة واحدة تفتح محادثة واتساب جاهزة ومجهزة برقم حجزك لتسريع اعتماد الموعد وتزويدك برابط الجلسة.
               </p>
             </div>
 
             {/* Bottom Actions */}
             <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center gap-4 text-xs font-bold">
-              <Link
-                href="/"
-                className="text-slate-600 dark:text-slate-400 hover:text-[#4E7E76] transition"
-              >
+              <Link href="/" className="text-slate-600 dark:text-slate-400 hover:text-[#4E7E76] transition">
                 العودة للرئيسية
               </Link>
               <span>•</span>
-              <Link
-                href="/articles"
-                className="text-slate-600 dark:text-slate-400 hover:text-[#4E7E76] transition"
-              >
-                تصفح المقالات الإرشادية
+              <Link href="/services" className="text-slate-600 dark:text-slate-400 hover:text-[#4E7E76] transition">
+                صفحة الاستشارات
               </Link>
               <span>•</span>
-              <Link
-                href="/tests"
-                className="text-slate-600 dark:text-slate-400 hover:text-[#4E7E76] transition"
-              >
-                إجراء المقاييس النفسية
+              <Link href="/articles" className="text-slate-600 dark:text-slate-400 hover:text-[#4E7E76] transition">
+                تصفح المقالات
               </Link>
             </div>
           </div>
         )}
 
-      </div>
+      </main>
+
+      {/* Full Footer with Logo and All Site Sections */}
+      <Footer />
+
     </div>
   );
 }

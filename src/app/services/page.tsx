@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -44,6 +44,23 @@ interface ServiceItem {
 
 export default function ServicesPage() {
   const [bookingMode, setBookingMode] = useState<'standard' | 'urgent'>('standard');
+  const [liveSettings, setLiveSettings] = useState<any>({
+    individualFee: 'تبدأ من 250 ر.س',
+    maritalFee: 'تبدأ من 350 ر.س',
+    parentingFee: 'تبدأ من 250 ر.س',
+    emergencyFee: '500 ر.س',
+  });
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && !data.error) {
+          setLiveSettings((prev: any) => ({ ...prev, ...data }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const services: ServiceItem[] = [
     {
@@ -235,16 +252,20 @@ export default function ServicesPage() {
                     <span>احجز موعد هذه الجلسة</span>
                   </Link>
 
-                  {servicesPricing[srv.id] && (
-                    <div className="text-center pt-1 space-y-0.5">
-                      <div className="text-xs font-black text-slate-800 dark:text-slate-200">
-                        {servicesPricing[srv.id].priceDisplay}
-                      </div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                        {servicesPricing[srv.id].priceSubtitle}
-                      </div>
+                  <div className="text-center pt-1 space-y-0.5">
+                    <div className="text-xs font-black text-slate-800 dark:text-slate-200">
+                      {srv.id === 'psychological'
+                        ? liveSettings.individualFee
+                        : srv.id === 'marital' || srv.id === 'premarital'
+                        ? liveSettings.maritalFee
+                        : srv.id === 'parenting'
+                        ? liveSettings.parentingFee
+                        : liveSettings.individualFee}
                     </div>
-                  )}
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400">
+                      {srv.id === 'marital' ? 'جلسة ثنائية أو فردية 60-75 دقيقة • لقاء فيديو مشفر' : 'جلسة 50 دقيقة أونلاين عبر Google Meet'}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -261,7 +282,7 @@ export default function ServicesPage() {
                 <span>خدمة الحجز السريع والمباشر</span>
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#CC4E46]/10 text-[#CC4E46] dark:text-[#F87171] text-xs font-black border border-[#CC4E46]/20">
-                تسعير خاص: 500 ر.س
+                تسعير خاص: {liveSettings.emergencyFee}
               </span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
@@ -279,7 +300,7 @@ export default function ServicesPage() {
             className="shrink-0 px-7 py-3.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold flex items-center gap-2 transition shadow-md shadow-[#7C3AED]/25"
           >
             <Phone className="w-4 h-4" />
-            <span>طلب حجز طارئ (500 ر.س) عبر واتساب</span>
+            <span>طلب حجز طارئ ({liveSettings.emergencyFee}) عبر واتساب</span>
           </a>
         </div>
       </section>

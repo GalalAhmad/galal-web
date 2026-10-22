@@ -4,43 +4,16 @@ import { notFound } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { allTestsData } from '@/data/testsData';
+import { SCIENTIFIC_TESTS_METADATA } from '@/data/scientificTestsMetadata';
 import SingleTestClient from './SingleTestClient';
 
 interface Props {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
-// Global/Standard Psychological Assessment Badges dictionary
-const toolBadges: Record<string, string> = {
-  depression: 'PHQ-9 معتمد',
-  anxiety: 'GAD-7 معتمد',
-  burnout: 'MBI مقياس ماسلاش',
-  adhd: 'ASRS-v1.1 معتمد',
-  'marital-harmony': 'DAS التوافق الزواجي',
-  'toxic-relationship': 'DAS العلاقات',
-  ptsd: 'PCL-5 ما بعد الصدمة',
-  ocd: 'Y-BOCS مقياس ييل-براون',
-  bipolar: 'MDQ ثنائي القطب',
-  'social-anxiety': 'LSAS القلق الاجتماعي',
-  'eating-disorders': 'EAT-26 اضطرابات الأكل',
-  schizophrenia: 'BPRS الفصام',
-  'children-behavior': 'CBCL سلوك الأطفال',
-  'emotional-intelligence': 'TEIQue الذكاء العاطفي',
-  'postpartum-depression': 'EPDS اكتئاب ما بعد الولادة',
-  'imposter-syndrome': 'CIPS متلازمة المحتال',
-  anger: 'STAXI إدارة الغضب',
-  'childhood-trauma': 'ACE صدمات الطفولة',
-  'introvert-extrovert': 'Big Five الانبساط والانطواء',
-  npd: 'NPI النرجسية',
-  bpd: 'MSI-BPD الحدية',
-  'job-satisfaction': 'JSS الرضا الوظيفي',
-  'work-life-balance': 'WLB التوازن الحياتي',
-};
-
-// Sensitive tests that require immediate emergency support warnings
-const sensitiveTestIds = ['depression', 'bipolar', 'schizophrenia', 'ptsd'];
+const sensitiveTestIds = ['depression', 'bipolar-disorder-test', 'schizophrenia-assessment', 'ptsd'];
 
 // 1. Static Generation for all 41 Tests
 export async function generateStaticParams() {
@@ -49,9 +22,11 @@ export async function generateStaticParams() {
   }));
 }
 
-// 2. Server-side Metadata for SEO & Googlebot
+// 2. Server-side Metadata for SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const test = allTestsData.find((t) => t.id === params.slug);
+  const { slug } = await params;
+  const test = allTestsData.find((t) => t.id === slug);
+  const meta = SCIENTIFIC_TESTS_METADATA[slug];
 
   if (!test) {
     return {
@@ -59,22 +34,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const toolName = toolBadges[test.id] ? ` (${toolBadges[test.id]})` : '';
+  const toolCode = meta?.code ? ` (${meta.code})` : '';
 
   return {
-    title: `${test.title}${toolName} | مقاييس واختبارات جلال أحمد`,
-    description: test.desc,
-    keywords: [test.title, test.category, 'اختبار نفسي', 'مقياس إكلينيكي', 'جلال أحمد'],
+    title: `${test.title}${toolCode} - مقياس معتمد | جلال أحمد`,
+    description: meta?.clinicalPurpose || test.desc,
+    keywords: [test.title, test.category, meta?.code || '', 'مقياس إكلينيكي', 'جلال أحمد'],
     openGraph: {
-      title: `${test.title}${toolName} | مقاييس واختبارات جلال أحمد`,
-      description: test.desc,
+      title: `${test.title}${toolCode} | مقاييس واختبارات جلال أحمد`,
+      description: meta?.clinicalPurpose || test.desc,
       url: `https://galalahmad.com/tests/${test.id}`,
       type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: test.title,
-      description: test.desc,
     },
     alternates: {
       canonical: `https://galalahmad.com/tests/${test.id}`,
@@ -82,49 +52,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function SingleTestPage({ params }: Props) {
-  const test = allTestsData.find((t) => t.id === params.slug);
+export default async function SingleTestPage({ params }: Props) {
+  const { slug } = await params;
+  const test = allTestsData.find((t) => t.id === slug);
 
   if (!test) {
     notFound();
   }
 
-  const toolBadge = toolBadges[test.id];
+  const meta = SCIENTIFIC_TESTS_METADATA[slug];
   const isSensitive = sensitiveTestIds.includes(test.id);
 
-  // Questionnaire JSON-LD Schema
-  const testJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Quiz',
-    name: test.title,
-    description: test.desc,
-    educationalAlignment: {
-      '@type': 'AlignmentObject',
-      alignmentType: 'educationalSubject',
-      targetName: test.category,
-    },
-    provider: {
-      '@type': 'Person',
-      name: 'جلال أحمد',
-      url: 'https://galalahmad.com',
-    },
-  };
-
   return (
-    <main className="min-h-screen flex flex-col bg-[#FAFCFA] dark:bg-[#0D1117] text-slate-900 dark:text-slate-100 transition-colors">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(testJsonLd) }}
-      />
+    <div className="min-h-screen bg-[#FDFCFB] dark:bg-[#0C111C] text-slate-800 dark:text-slate-100 flex flex-col justify-between antialiased">
       <Navbar />
-
-      <SingleTestClient 
-        test={test} 
-        toolBadge={toolBadge} 
-        isSensitive={isSensitive} 
-      />
-
+      <SingleTestClient test={test} toolBadge={meta?.code} isSensitive={isSensitive} />
       <Footer />
-    </main>
+    </div>
   );
 }

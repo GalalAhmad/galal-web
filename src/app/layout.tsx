@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
+import FloatingWhatsApp from '@/components/FloatingWhatsApp';
+import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import StickyBottomBar from '@/components/StickyBottomBar';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -75,9 +78,6 @@ const jsonLd = {
   ]
 };
 
-import FloatingWhatsApp from '@/components/FloatingWhatsApp';
-import PWAInstallPrompt from '@/components/PWAInstallPrompt';
-
 export default function RootLayout({
   children,
 }: {
@@ -119,6 +119,7 @@ export default function RootLayout({
           {children}
           <FloatingWhatsApp />
           <PWAInstallPrompt />
+          <StickyBottomBar />
         </ThemeProvider>
       </body>
     </html>

@@ -11,7 +11,7 @@ export default function FloatingWhatsApp() {
   const emergencyUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent('طلب حجز جلسة طارئة وعاجلة خلال 24 ساعة مع المستشار جلال أحمد')}`;
 
   return (
-    <div className="fixed bottom-6 start-6 z-50 flex flex-col items-start gap-2.5 select-none print:hidden">
+    <div className="fixed bottom-20 sm:bottom-6 start-4 sm:start-6 z-40 flex flex-col items-start gap-2.5 select-none print:hidden">
       
       {/* Tooltip Note */}
       {showTooltip && (
@@ -51,7 +51,8 @@ export default function FloatingWhatsApp() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-300"></span>
           </span>
           <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-          <span>جلسة طارئة (خلال 24 ساعة)</span>
+          <span className="hidden sm:inline">جلسة طارئة (خلال 24 ساعة)</span>
+          <span className="sm:hidden">جلسة طارئة</span>
         </a>
 
         {/* Floating Sticky WhatsApp Button */}

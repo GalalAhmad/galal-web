@@ -59,10 +59,10 @@ export default function PWAInstallPrompt() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
-    // 7. Show prompt only once after exactly 15 seconds
+    // 7. Show prompt quickly after 3.5 seconds on mobile
     const timer = setTimeout(() => {
       setShowPrompt(true);
-    }, 15000);
+    }, 3500);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
@@ -81,6 +81,9 @@ export default function PWAInstallPrompt() {
         setShowPrompt(false);
       }
       setDeferredPrompt(null);
+    } else {
+      // Fallback instruction
+      alert('لتثبيت التطبيق على جهازك: اضغط على قائمة المتصفح (ثلاث نقاط ⋮) ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».');
     }
   };
 
@@ -99,13 +102,13 @@ export default function PWAInstallPrompt() {
   return (
     <aside 
       aria-label="تثبيت التطبيق"
-      className="fixed bottom-4 inset-x-4 z-50 max-w-md mx-auto p-4 rounded-3xl bg-[#0E1524]/95 dark:bg-[#121A2C]/95 backdrop-blur-md text-white border border-slate-700/80 shadow-2xl animate-fadeIn text-right"
+      className="fixed bottom-20 inset-x-4 z-50 max-w-md mx-auto p-4 rounded-3xl bg-[#0E1524]/95 dark:bg-[#121A2C]/95 backdrop-blur-md text-white border border-slate-700/80 shadow-2xl animate-fadeIn text-right"
     >
       <div className="flex items-start justify-between gap-3">
         {/* Dismiss Button */}
         <button
           onClick={handleDismiss}
-          className="p-1 rounded-full text-slate-400 hover:text-white transition cursor-pointer shrink-0"
+          className="p-1.5 rounded-full text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 transition cursor-pointer shrink-0"
           aria-label="إغلاق التنبيه"
         >
           <X className="w-4 h-4" />
@@ -116,11 +119,11 @@ export default function PWAInstallPrompt() {
           <div className="space-y-1 flex-1">
             <div className="flex items-center gap-1.5 font-bold text-xs text-emerald-400">
               <Smartphone className="w-3.5 h-3.5" />
-              <span>تطبيق جلال أحمد</span>
+              <span>تطبيق جلال أحمد الرسمي</span>
             </div>
             
             <p className="text-xs font-bold text-slate-100 leading-snug">
-              ثبّت تطبيق جلال أحمد على هاتفك — وصول فوري للاستشارات والاختبارات
+              ثبّت التطبيق على هاتفك مجاناً — وصول فوري للاستشارات والمقاييس دون متصفح
             </p>
 
             {/* iOS Helper text */}
@@ -132,21 +135,21 @@ export default function PWAInstallPrompt() {
           </div>
 
           {/* App Icon */}
-          <div className="w-12 h-12 rounded-2xl bg-white p-1.5 flex items-center justify-center shrink-0 shadow-md">
-            <img src="/favicon.png" alt="شعار جلال أحمد" className="w-full h-full object-contain" />
+          <div className="w-12 h-12 rounded-2xl bg-[#FAFCFA] p-1 flex items-center justify-center shrink-0 shadow-md border border-white/20">
+            <img src="/icon-192.png" alt="شعار تطبيق جلال أحمد" className="w-full h-full object-contain rounded-xl" />
           </div>
         </div>
       </div>
 
       {/* Action Button for Android */}
-      {!isIOS && deferredPrompt && (
+      {!isIOS && (
         <div className="pt-3 mt-2 border-t border-slate-800 flex items-center justify-end">
           <button
             onClick={handleInstallClick}
-            className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#4E7E76] to-[#3D655E] hover:from-[#3D655E] hover:to-[#2F4F49] text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+            className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#4E7E76] to-[#3D655E] hover:from-[#3D655E] hover:to-[#2F4F49] text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm cursor-pointer active:scale-98"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>تثبيت التطبيق الآن</span>
+            <span>تثبيت التطبيق على هاتفك الآن</span>
           </button>
         </div>
       )}

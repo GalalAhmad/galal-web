@@ -10,7 +10,7 @@ export default function Footer() {
   const { theme } = useTheme();
 
   return (
-    <footer className="bg-slate-50 dark:bg-[#090D11] border-t border-slate-200/70 dark:border-slate-800 py-16 px-4 sm:px-6 text-right transition-colors">
+    <footer className="bg-slate-50 dark:bg-[#090D11] border-t border-slate-200/70 dark:border-slate-800 pt-16 pb-28 md:pb-16 px-4 sm:px-6 text-right transition-colors">
       <div className="max-w-6xl mx-auto space-y-12">
         
         {/* صف المحتوى الرئيسي */}

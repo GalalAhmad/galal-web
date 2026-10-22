@@ -2,12 +2,13 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'جلال أحمد',
+    name: 'جلال أحمد | استشارات ومقاييس',
     short_name: 'جلال أحمد',
-    description: 'منصة الاستشارات النفسية والزوجية والتربوية وبرامج بناء الإنسان مع المستشار جلال أحمد.',
+    description: 'منصة وتطبيق الاستشارات النفسية والتربوية والزوجية وبناء الإنسان مع المستشار جلال أحمد.',
     start_url: '/',
     id: '/',
     display: 'standalone',
+    orientation: 'portrait-primary',
     dir: 'rtl',
     lang: 'ar',
     background_color: '#FAFCFA',

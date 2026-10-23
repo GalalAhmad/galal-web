@@ -228,6 +228,22 @@ export async function PUT(request: Request) {
       profile.homework = profile.homework.filter((h: any) => h.id !== removeHomeworkId);
     }
 
+    if (body.toggleReadingPlanId) {
+      if (!Array.isArray(profile.readingPlan)) profile.readingPlan = [];
+      const rp = profile.readingPlan.find((r: any) => r.id === body.toggleReadingPlanId);
+      if (rp) {
+        rp.completed = !rp.completed;
+      }
+    }
+
+    if (body.enrollCourse) {
+      if (!Array.isArray(profile.courses)) profile.courses = [];
+      const exists = profile.courses.some((c: any) => c.id === body.enrollCourse.id);
+      if (!exists) {
+        profile.courses.push(body.enrollCourse);
+      }
+    }
+
     profiles[idx] = profile;
     await writeProfiles(profiles);
 

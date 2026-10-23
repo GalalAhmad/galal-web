@@ -47,6 +47,37 @@
         "date": "20 أكتوبر 2026"
       }
     ],
+    "courses": [
+      {
+        "id": "crs-mithaq",
+        "title": "برنامج ميثاق لبناء الأسرة والزواج",
+        "badge": "مسار تدريبي تطبيقي",
+        "progress": 65,
+        "completedModules": 4,
+        "totalModules": 6,
+        "nextSession": "الأحد القادم • 08:00 مساءً عبر زووم",
+        "link": "/courses/family/mithaq",
+        "status": "active"
+      }
+    ],
+    "readingPlan": [
+      {
+        "id": "rp-1",
+        "title": "أقومية القرآن في بناء الإنسان والأسرة",
+        "category": "مشروع أقومية القرآن",
+        "readTime": "8 دقائق",
+        "completed": true,
+        "link": "/aqwameyat-quran"
+      },
+      {
+        "id": "rp-2",
+        "title": "السلوك كرسالة: كيف نفهم ما وراء العناد ونوبات الغضب",
+        "category": "التربية واليافعين",
+        "readTime": "6 دقائق",
+        "completed": false,
+        "link": "/articles/behavior-as-message"
+      }
+    ],
     "createdAt": "2026-10-21T18:00:00Z"
   },
   {
@@ -77,6 +108,29 @@
         "desc": "توجد أرضية مودة طيبة، وتحتاج مهارات الحوار إلى تقليل الحدة عند الاختلاف.",
         "recommendation": "جلسة مشتركة تركز على فن الحوار غير العنيف والاستماع الفعال.",
         "date": "21 أكتوبر 2026"
+      }
+    ],
+    "courses": [
+      {
+        "id": "crs-premarital",
+        "title": "برنامج تأهيل وتأسيس العلاقات الزوجية",
+        "badge": "مسار العلاقات الأسرية",
+        "progress": 40,
+        "completedModules": 2,
+        "totalModules": 5,
+        "nextSession": "الثلاثاء • 07:30 مساءً",
+        "link": "/courses/family/premarital",
+        "status": "active"
+      }
+    ],
+    "readingPlan": [
+      {
+        "id": "rp-3",
+        "title": "جسور التواصل الزواجي: من ردود الفعل العفوية إلى الإصغاء الواعي",
+        "category": "العلاقات الزوجية",
+        "readTime": "7 دقائق",
+        "completed": false,
+        "link": "/articles/marital-communication-bridges"
       }
     ],
     "createdAt": "2026-10-21T18:30:00Z"

@@ -331,16 +331,16 @@ export default function HomePage() {
             {/* Box 1: استشارات متخصصة */}
             <Link
               href="/services"
-              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
+              className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF7F5] dark:bg-[#112924] flex items-center justify-center p-2 border border-[#D6EEEA] dark:border-[#1F4A42] group-hover:scale-105 transition-transform">
                 <img src="/assets/template-icons/award-1.svg" alt="استشارات متخصصة" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0 flex-1">
-                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#4E7E76] transition-colors whitespace-nowrap overflow-hidden">
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#4E7E76] transition-colors leading-snug">
                   استشارات متخصصة
                 </div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] whitespace-nowrap overflow-hidden">فردية، زوجية، وتربوية</div>
+                <div className="text-[10px] sm:text-xs font-bold text-[#4E7E76] dark:text-[#5E988E] leading-tight">فردية، زوجية، وتربوية</div>
                 <div className="text-[11px] text-slate-500 hidden sm:block">جلسات أونلاين بسرية تامة</div>
               </div>
             </Link>
@@ -348,51 +348,51 @@ export default function HomePage() {
             {/* Box 2: بناء وتمكين */}
             <Link
               href="/courses"
-              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
+              className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] flex items-center justify-center p-2 border border-[#D6E6F8] dark:border-[#1E3A5F] group-hover:scale-105 transition-transform">
                 <img src="/assets/template-icons/award-3.svg" alt="بناء وتمكين" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0 flex-1">
-                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#154F9C] transition-colors whitespace-nowrap overflow-hidden">
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#154F9C] transition-colors leading-snug">
                   بناء وتمكين
                 </div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#154F9C] dark:text-[#60A5FA] whitespace-nowrap overflow-hidden">الأسرة، الشباب، والمؤسسات</div>
+                <div className="text-[10px] sm:text-xs font-bold text-[#154F9C] dark:text-[#60A5FA] leading-tight">الأسرة، الشباب، والمؤسسات</div>
                 <div className="text-[11px] text-slate-500 hidden sm:block">برامج تأهيلية وتطبيقية</div>
               </div>
             </Link>
 
-            {/* Box 3: مقاييس واختبارات */}
+            {/* Box 3: اختبارات ومقاييس (Renamed to match section) */}
             <Link
               href="/tests"
-              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
+              className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FEF9EC] dark:bg-[#2E2413] flex items-center justify-center p-2 border border-[#FDF0CD] dark:border-[#4D3A1B] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/award-2.svg" alt="مقاييس واختبارات" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/award-2.svg" alt="اختبارات ومقاييس" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0 flex-1">
-                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#D97706] transition-colors whitespace-nowrap overflow-hidden">
-                  مقاييس واختبارات
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#D97706] transition-colors leading-snug">
+                  اختبارات ومقاييس
                 </div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#D97706] dark:text-[#F59E0B] whitespace-nowrap overflow-hidden">+40 مقياساً نفسياً</div>
+                <div className="text-[10px] sm:text-xs font-bold text-[#D97706] dark:text-[#F59E0B] leading-tight">+40 مقياساً نفسياً</div>
                 <div className="text-[11px] text-slate-500 hidden sm:block">تقييمات علمية دقيقة وموثوقة</div>
               </div>
             </Link>
 
-            {/* Box 4: معرفة ووعي */}
+            {/* Box 4: أقومية القرآن (Updated title, direct link to /aqwameyat-quran) */}
             <Link
-              href="/articles"
-              className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
+              href="/aqwameyat-quran"
+              className="p-3 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all flex items-center gap-2.5 sm:gap-4 text-right group min-w-0"
             >
               <div className="w-10 h-10 sm:w-14 sm:h-14 shrink-0 rounded-2xl bg-[#FDF1EE] dark:bg-[#251816] flex items-center justify-center p-2 border border-[#F8DDD9] dark:border-[#42221E] group-hover:scale-105 transition-transform">
-                <img src="/assets/template-icons/time.svg" alt="معرفة ووعي" className="w-full h-full object-contain" />
+                <img src="/assets/template-icons/time.svg" alt="أقومية القرآن" className="w-full h-full object-contain" />
               </div>
               <div className="space-y-0.5 min-w-0 flex-1">
-                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#CC4E46] transition-colors whitespace-nowrap overflow-hidden">
-                  معرفة ووعي
+                <div className="text-xs sm:text-base lg:text-lg font-black text-slate-900 dark:text-slate-100 group-hover:text-[#CC4E46] transition-colors leading-snug">
+                  أقومية القرآن
                 </div>
-                <div className="text-[11px] sm:text-xs font-bold text-[#CC4E46] dark:text-[#F87171] whitespace-nowrap overflow-hidden">رؤى ومقالات فكرية</div>
-                <div className="text-[11px] text-slate-500 hidden sm:block">أقومية القرآن والنفس والتربية</div>
+                <div className="text-[10px] sm:text-xs font-bold text-[#CC4E46] dark:text-[#F87171] leading-tight">منهج بصيرة وهداية ونور</div>
+                <div className="text-[11px] text-slate-500 hidden sm:block">رؤية قرآنية للنفس والأسرة والواقع</div>
               </div>
             </Link>
 
@@ -466,17 +466,19 @@ export default function HomePage() {
                     <ArrowLeft className="w-3.5 h-3.5" />
                   </Link>
 
-                  <div className="text-center pt-0.5">
-                    <span className="inline-block text-[11px] font-bold text-slate-600 dark:text-slate-300">
-                      {srv.id === 'psychological'
-                        ? liveSettings?.individualFee || servicesPricing['psychological']?.priceDisplay
-                        : srv.id === 'marital'
-                        ? liveSettings?.maritalFee || servicesPricing['marital']?.priceDisplay
-                        : srv.id === 'parenting'
-                        ? liveSettings?.parentingFee || servicesPricing['parenting']?.priceDisplay
-                        : liveSettings?.educationalFee || servicesPricing['educational']?.priceDisplay || 'تنسيق مباشر'}
-                    </span>
-                  </div>
+                  {liveSettings?.showPricing && (
+                    <div className="text-center pt-0.5">
+                      <span className="inline-block text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                        {srv.id === 'psychological'
+                          ? liveSettings?.individualFee || servicesPricing['psychological']?.priceDisplay
+                          : srv.id === 'marital'
+                          ? liveSettings?.maritalFee || servicesPricing['marital']?.priceDisplay
+                          : srv.id === 'parenting'
+                          ? liveSettings?.parentingFee || servicesPricing['parenting']?.priceDisplay
+                          : liveSettings?.educationalFee || servicesPricing['educational']?.priceDisplay || 'تنسيق مباشر'}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

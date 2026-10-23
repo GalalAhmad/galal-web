@@ -103,6 +103,7 @@ function getCalendarMonthData() {
       dayNumber: d,
       dateIso: `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
       dayName: arabicDayNames[satIndex],
+      dayOfWeek,
       isPast,
       isToday,
       isSelectable: !isPast,
@@ -155,6 +156,24 @@ function BookingWizardContent() {
   const [selectedDateIso, setSelectedDateIso] = useState<string>(firstSelectable?.dateIso || '');
   const [selectedTimeId, setSelectedTimeId] = useState<string>(TIME_SLOTS[1].id);
 
+  // Live Availability & Blocked Slots (Calendly System)
+  const [availabilityData, setAvailabilityData] = useState<{
+    workingDays: number[];
+    timeSlots: { id: string; label: string; enabled: boolean }[];
+    blockedDates: string[];
+  }>({
+    workingDays: [0, 1, 2, 3, 4, 6],
+    timeSlots: [
+      { id: '16:00', label: '04:00 مساءً', enabled: true },
+      { id: '17:30', label: '05:30 مساءً', enabled: true },
+      { id: '19:00', label: '07:00 مساءً', enabled: true },
+      { id: '20:30', label: '08:30 مساءً', enabled: true },
+      { id: '22:00', label: '10:00 مساءً', enabled: true },
+    ],
+    blockedDates: [],
+  });
+  const [bookedSlotsList, setBookedSlotsList] = useState<{ date: string; time: string }[]>([]);
+
   // Payment Drawer Modal State
   const [isPaymentDrawerOpen, setIsPaymentDrawerOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'instapay' | 'vodafone' | 'bank'>('instapay');
@@ -169,6 +188,7 @@ function BookingWizardContent() {
 
   // Dynamic Site Settings (Prices & Accounts)
   const [settings, setSettings] = useState({
+    showPricing: false,
     individualFee: 'تبدأ من 250 ر.س',
     maritalFee: 'تبدأ من 350 ر.س',
     parentingFee: 'تبدأ من 250 ر.س',
@@ -192,7 +212,76 @@ function BookingWizardContent() {
         }
       })
       .catch(() => {});
+
+    fetch('/api/availability')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.availability) {
+          setAvailabilityData(data.availability);
+        }
+        if (data?.bookedSlots) {
+          setBookedSlotsList(data.bookedSlots);
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  // Sync selected date with working days and blocked dates
+  useEffect(() => {
+    if (calendarData.days.length > 0) {
+      const isCurrentValid = calendarData.days.some(
+        (d) =>
+          d.dateIso === selectedDateIso &&
+          !d.isPast &&
+          availabilityData.workingDays.includes(d.dayOfWeek) &&
+          !availabilityData.blockedDates.includes(d.dateIso)
+      );
+      if (!isCurrentValid) {
+        const firstValid =
+          calendarData.days.find(
+            (d) =>
+              !d.isPast &&
+              !d.isToday &&
+              availabilityData.workingDays.includes(d.dayOfWeek) &&
+              !availabilityData.blockedDates.includes(d.dateIso)
+          ) ||
+          calendarData.days.find(
+            (d) =>
+              !d.isPast &&
+              availabilityData.workingDays.includes(d.dayOfWeek) &&
+              !availabilityData.blockedDates.includes(d.dateIso)
+          );
+        if (firstValid) {
+          setSelectedDateIso(firstValid.dateIso);
+        }
+      }
+    }
+  }, [availabilityData, calendarData, selectedDateIso]);
+
+  // Sync selected time slot with available/unbooked slots
+  useEffect(() => {
+    const activeSlots = availabilityData.timeSlots.filter((s) => s.enabled);
+    if (activeSlots.length > 0) {
+      const isCurrentValid = activeSlots.some(
+        (s) =>
+          s.id === selectedTimeId &&
+          !bookedSlotsList.some(
+            (b) => b.date === selectedDateIso && (b.time === s.label || b.time === s.id)
+          )
+      );
+      if (!isCurrentValid) {
+        const firstAvailable = activeSlots.find(
+          (s) =>
+            !bookedSlotsList.some(
+              (b) => b.date === selectedDateIso && (b.time === s.label || b.time === s.id)
+            )
+        );
+        if (firstAvailable) {
+          setSelectedTimeId(firstAvailable.id);
+        }
+      }
+    }
+  }, [selectedDateIso, availabilityData, bookedSlotsList, selectedTimeId]);
 
   // Preselect track and auto-advance to intake questions
   useEffect(() => {
@@ -276,7 +365,10 @@ function BookingWizardContent() {
       clientCity,
       answers,
       slotDate: selectedDateIso,
-      slotTime: TIME_SLOTS.find((s) => s.id === selectedTimeId)?.label || selectedTimeId,
+      slotTime:
+        availabilityData.timeSlots.find((s) => s.id === selectedTimeId)?.label ||
+        TIME_SLOTS.find((s) => s.id === selectedTimeId)?.label ||
+        selectedTimeId,
       paymentMethod,
       receiptNote,
       receiptImage,
@@ -296,6 +388,10 @@ function BookingWizardContent() {
       }
 
       setSubmittedBooking(data.booking);
+      setBookedSlotsList((prev) => [
+        ...prev,
+        { date: selectedDateIso, time: bookingPayload.slotTime },
+      ]);
 
       // Save user session for client profile integration
       try {
@@ -466,9 +562,15 @@ function BookingWizardContent() {
                     </p>
 
                     <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                      <span className="font-bold text-slate-700 dark:text-slate-300">
-                        الرسوم المعتمدة: <strong className="text-[#4E7E76] dark:text-[#5E988E] text-sm">{feeDisplay}</strong>
-                      </span>
+                      {settings.showPricing ? (
+                        <span className="font-bold text-slate-700 dark:text-slate-300">
+                          الرسوم المعتمدة: <strong className="text-[#4E7E76] dark:text-[#5E988E] text-sm">{feeDisplay}</strong>
+                        </span>
+                      ) : (
+                        <span className="font-bold text-[#4E7E76] dark:text-[#5E988E]">
+                          جلسة استشارية متخصصة ومباشرة
+                        </span>
+                      )}
                       <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
                         <Clock className="w-3.5 h-3.5" />
                         {track.duration}
@@ -1001,20 +1103,23 @@ function BookingWizardContent() {
               {/* Days Grid */}
               <div className="grid grid-cols-7 gap-1 text-center">
                 {calendarData.days.map((d) => {
+                  const isWorkingDay = availabilityData.workingDays.includes(d.dayOfWeek);
+                  const isBlocked = availabilityData.blockedDates.includes(d.dateIso);
+                  const isDaySelectable = !d.isPast && isWorkingDay && !isBlocked;
                   const isSelected = selectedDateIso === d.dateIso;
 
                   return (
                     <div key={d.dateIso} className="flex items-center justify-center p-1">
                       <button
                         type="button"
-                        disabled={!d.isSelectable}
+                        disabled={!isDaySelectable}
                         onClick={() => setSelectedDateIso(d.dateIso)}
                         className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full text-xs font-bold transition-all flex items-center justify-center ${
                           isSelected
                             ? 'bg-[#10B981] text-white shadow-md ring-4 ring-[#10B981]/25'
-                            : d.isSelectable
+                            : isDaySelectable
                             ? 'text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-                            : 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                            : 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'
                         }`}
                       >
                         {d.dayNumber}
@@ -1038,25 +1143,37 @@ function BookingWizardContent() {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {TIME_SLOTS.map((slot) => {
-                    const isSelected = selectedTimeId === slot.id;
+                  {availabilityData.timeSlots
+                    .filter((slot) => slot.enabled)
+                    .map((slot) => {
+                      const isSelected = selectedTimeId === slot.id;
+                      const isBooked = bookedSlotsList.some(
+                        (b) =>
+                          b.date === selectedDateIso &&
+                          (b.time === slot.label || b.time === slot.id)
+                      );
 
-                    return (
-                      <button
-                        type="button"
-                        key={slot.id}
-                        onClick={() => setSelectedTimeId(slot.id)}
-                        className={`p-3 rounded-2xl border text-center transition-all flex items-center justify-center gap-1.5 text-xs font-bold ${
-                          isSelected
-                            ? 'border-[#10B981] bg-[#10B981]/10 text-[#047857] dark:text-[#34D399] ring-2 ring-[#10B981]/20'
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
-                        }`}
-                      >
-                        <Clock className="w-3.5 h-3.5 text-[#10B981]" />
-                        <span>{slot.label}</span>
-                      </button>
-                    );
-                  })}
+                      return (
+                        <button
+                          type="button"
+                          key={slot.id}
+                          disabled={isBooked}
+                          onClick={() => setSelectedTimeId(slot.id)}
+                          className={`p-3 rounded-2xl border text-center transition-all flex items-center justify-center gap-1.5 text-xs font-bold ${
+                            isBooked
+                              ? 'border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/40 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50'
+                              : isSelected
+                              ? 'border-[#10B981] bg-[#10B981]/10 text-[#047857] dark:text-[#34D399] ring-2 ring-[#10B981]/20'
+                              : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                          }`}
+                        >
+                          <Clock className={`w-3.5 h-3.5 ${isBooked ? 'text-slate-400' : 'text-[#10B981]'}`} />
+                          <span>
+                            {slot.label} {isBooked ? '(محجوز)' : ''}
+                          </span>
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
 
@@ -1068,7 +1185,7 @@ function BookingWizardContent() {
                   onClick={() => setIsPaymentDrawerOpen(true)}
                   className="w-full py-4 rounded-2xl bg-[#10B981] hover:bg-[#059669] disabled:bg-slate-300 text-white font-extrabold text-sm sm:text-base transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>دفع {currentFee}</span>
+                  <span>{settings.showPricing ? `دفع ${currentFee}` : 'تأكيد الموعد والمتابعة'}</span>
                 </button>
               </div>
 

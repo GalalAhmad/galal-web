@@ -1,0 +1,11 @@
+{
+  "workingDays": [0, 1, 2, 3, 4, 6],
+  "timeSlots": [
+    { "id": "16:00", "label": "04:00 مساءً", "enabled": true },
+    { "id": "17:30", "label": "05:30 مساءً", "enabled": true },
+    { "id": "19:00", "label": "07:00 مساءً", "enabled": true },
+    { "id": "20:30", "label": "08:30 مساءً", "enabled": true },
+    { "id": "22:00", "label": "10:00 مساءً", "enabled": true }
+  ],
+  "blockedDates": []
+}

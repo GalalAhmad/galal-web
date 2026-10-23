@@ -253,15 +253,21 @@ export default function ServicesPage() {
                   </Link>
 
                   <div className="text-center pt-1 space-y-0.5">
-                    <div className="text-xs font-black text-slate-800 dark:text-slate-200">
-                      {srv.id === 'psychological'
-                        ? liveSettings.individualFee
-                        : srv.id === 'marital' || srv.id === 'premarital'
-                        ? liveSettings.maritalFee
-                        : srv.id === 'parenting'
-                        ? liveSettings.parentingFee
-                        : liveSettings.individualFee}
-                    </div>
+                    {liveSettings?.showPricing ? (
+                      <div className="text-xs font-black text-slate-800 dark:text-slate-200">
+                        {srv.id === 'psychological'
+                          ? liveSettings.individualFee
+                          : srv.id === 'marital' || srv.id === 'premarital'
+                          ? liveSettings.maritalFee
+                          : srv.id === 'parenting'
+                          ? liveSettings.parentingFee
+                          : liveSettings.individualFee}
+                      </div>
+                    ) : (
+                      <div className="text-[11px] font-bold text-[#4E7E76] dark:text-[#5E988E]">
+                        مساحة آمنة وسرية 100%
+                      </div>
+                    )}
                     <div className="text-[10px] text-slate-500 dark:text-slate-400">
                       {srv.id === 'marital' ? 'جلسة ثنائية أو فردية 60-75 دقيقة • لقاء فيديو مشفر' : 'جلسة 50 دقيقة أونلاين عبر Google Meet'}
                     </div>
@@ -281,15 +287,21 @@ export default function ServicesPage() {
                 <Zap className="w-3.5 h-3.5" />
                 <span>خدمة الحجز السريع والمباشر</span>
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#CC4E46]/10 text-[#CC4E46] dark:text-[#F87171] text-xs font-black border border-[#CC4E46]/20">
-                تسعير خاص: {liveSettings.emergencyFee}
-              </span>
+              {liveSettings?.showPricing ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#CC4E46]/10 text-[#CC4E46] dark:text-[#F87171] text-xs font-black border border-[#CC4E46]/20">
+                  تسعير خاص: {liveSettings.emergencyFee}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold border border-emerald-500/20">
+                  استجابة فورية خلال 24 ساعة
+                </span>
+              )}
             </div>
             <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100">
               هل تمر بظرف ضاغط وتحتاج لجلسة عاجلة؟
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl font-normal leading-relaxed">
-              إذا كنت بحاجة إلى استماع وتوجيه عاجل خلال 24 ساعة دون انتظار المواعيد المجدولة، يمكنك طلب الحجز الطارئ مباشرة عبر واتساب المخصص (تسعير مستقل للاستجابة الفورية).
+              إذا كنت بحاجة إلى استماع وتوجيه عاجل خلال 24 ساعة دون انتظار المواعيد المجدولة، يمكنك طلب الحجز الطارئ مباشرة عبر واتساب المخصص (استجابة فورية وتنسيق مباشر).
             </p>
           </div>
 
@@ -300,7 +312,7 @@ export default function ServicesPage() {
             className="shrink-0 px-7 py-3.5 rounded-full bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold flex items-center gap-2 transition shadow-md shadow-[#7C3AED]/25"
           >
             <Phone className="w-4 h-4" />
-            <span>طلب حجز طارئ ({liveSettings.emergencyFee}) عبر واتساب</span>
+            <span>{liveSettings?.showPricing ? `طلب حجز طارئ (${liveSettings.emergencyFee}) عبر واتساب` : 'طلب حجز طارئ عاجل عبر واتساب'}</span>
           </a>
         </div>
       </section>

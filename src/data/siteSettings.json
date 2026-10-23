@@ -5,6 +5,7 @@
   "whatsapp": "201014876666",
   "email": "info@galalahmad.com",
   "cancellationPolicyHours": 48,
+  "showPricing": false,
   "calendlyUrl": "https://calendly.com",
   "emergencyFee": "500 ر.س",
   "individualFee": "تبدأ من 250 ر.س",

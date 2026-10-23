@@ -33,6 +33,7 @@ import {
   MessageSquareHeart,
   CalendarClock,
   CalendarCheck,
+  Calendar,
   BookOpen,
   Image as ImageIcon,
   ChevronDown,
@@ -54,7 +55,27 @@ export default function AdminDashboardPage() {
   const [inputPassword, setInputPassword] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
 
-  const [activeTab, setActiveTab] = useState<'crm' | 'clients' | 'inquiries' | 'advice' | 'feedback' | 'faqs' | 'pricing' | 'tracks' | 'videos' | 'articles' | 'settings'>('crm');
+  const [activeTab, setActiveTab] = useState<'crm' | 'availability' | 'clients' | 'inquiries' | 'advice' | 'feedback' | 'faqs' | 'pricing' | 'tracks' | 'videos' | 'articles' | 'settings'>('crm');
+
+  // Availability & Scheduling State (Calendly System)
+  const [availability, setAvailability] = useState<{
+    workingDays: number[];
+    timeSlots: { id: string; label: string; enabled: boolean }[];
+    blockedDates: string[];
+  }>({
+    workingDays: [0, 1, 2, 3, 4, 6],
+    timeSlots: [
+      { id: '16:00', label: '04:00 مساءً', enabled: true },
+      { id: '17:30', label: '05:30 مساءً', enabled: true },
+      { id: '19:00', label: '07:00 مساءً', enabled: true },
+      { id: '20:30', label: '08:30 مساءً', enabled: true },
+      { id: '22:00', label: '10:00 مساءً', enabled: true },
+    ],
+    blockedDates: [],
+  });
+  const [newSlotLabel, setNewSlotLabel] = useState('');
+  const [newBlockedDate, setNewBlockedDate] = useState('');
+  const [savingAvailability, setSavingAvailability] = useState(false);
 
   // Client Dossiers & Psychological Profiles State
   const [clientProfiles, setClientProfiles] = useState<any[]>([]);
@@ -291,6 +312,12 @@ export default function AdminDashboardPage() {
       const artData = await artRes.json();
       if (artData.articles && Array.isArray(artData.articles)) {
         setArticles(artData.articles);
+      }
+
+      const availRes = await fetch('/api/availability', { cache: 'no-store' });
+      const availData = await availRes.json();
+      if (availData.availability) {
+        setAvailability(availData.availability);
       }
     } catch (err) {
       console.error('Error fetching admin data:', err);
@@ -824,6 +851,97 @@ ${meet}
     }
   };
 
+  // Availability & Calendly Handlers
+  const DAYS_OF_WEEK = [
+    { index: 6, label: 'السبت' },
+    { index: 0, label: 'الأحد' },
+    { index: 1, label: 'الإثنين' },
+    { index: 2, label: 'الثلاثاء' },
+    { index: 3, label: 'الأربعاء' },
+    { index: 4, label: 'الخميس' },
+    { index: 5, label: 'الجمعة' },
+  ];
+
+  const handleToggleWorkingDay = (dayIndex: number) => {
+    setAvailability(prev => {
+      const exists = prev.workingDays.includes(dayIndex);
+      const newDays = exists
+        ? prev.workingDays.filter(d => d !== dayIndex)
+        : [...prev.workingDays, dayIndex].sort();
+      return { ...prev, workingDays: newDays };
+    });
+  };
+
+  const handleToggleTimeSlot = (slotId: string) => {
+    setAvailability(prev => ({
+      ...prev,
+      timeSlots: prev.timeSlots.map(s => s.id === slotId ? { ...s, enabled: !s.enabled } : s)
+    }));
+  };
+
+  const handleAddNewSlot = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSlotLabel.trim()) return;
+    const id = `slot_${Date.now()}`;
+    setAvailability(prev => ({
+      ...prev,
+      timeSlots: [...prev.timeSlots, { id, label: newSlotLabel.trim(), enabled: true }]
+    }));
+    setNewSlotLabel('');
+  };
+
+  const handleDeleteSlot = (slotId: string) => {
+    setAvailability(prev => ({
+      ...prev,
+      timeSlots: prev.timeSlots.filter(s => s.id !== slotId)
+    }));
+  };
+
+  const handleAddBlockedDate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBlockedDate) return;
+    if (!availability.blockedDates.includes(newBlockedDate)) {
+      setAvailability(prev => ({
+        ...prev,
+        blockedDates: [...prev.blockedDates, newBlockedDate].sort()
+      }));
+    }
+    setNewBlockedDate('');
+  };
+
+  const handleRemoveBlockedDate = (dateStr: string) => {
+    setAvailability(prev => ({
+      ...prev,
+      blockedDates: prev.blockedDates.filter(d => d !== dateStr)
+    }));
+  };
+
+  const handleSaveAvailability = async () => {
+    setSavingAvailability(true);
+    try {
+      const res = await fetch('/api/availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workingDays: availability.workingDays,
+          timeSlots: availability.timeSlots,
+          blockedDates: availability.blockedDates
+        })
+      });
+      if (res.ok) {
+        setSaveSuccessMsg('تم حفظ وتحديث جدول المواعيد وأيام العمل بنجاح!');
+        setTimeout(() => setSaveSuccessMsg(''), 4000);
+      } else {
+        alert('حدث خطأ أثناء حفظ جدول المواعيد.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('تعذر الاتصال بالخادم لحفظ جدول المواعيد.');
+    } finally {
+      setSavingAvailability(false);
+    }
+  };
+
   // 1. Loading state
   if (authLoading) {
     return (
@@ -970,6 +1088,22 @@ ${meet}
                 {bookingsList.length}
               </span>
             ) : null}
+          </button>
+
+          {/* AVAILABILITY & CALENDLY SCHEDULING TAB BUTTON */}
+          <button
+            onClick={() => setActiveTab('availability')}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition text-right cursor-pointer ${
+              activeTab === 'availability' ? 'bg-[#154F9C] text-white shadow-md' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Calendar className="w-4 h-4 text-amber-400" />
+              <span>جدول المواعيد وأيام الحجز (كالندي)</span>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-amber-300">
+              {availability.workingDays.length} أيام
+            </span>
           </button>
 
           {/* CLIENT DOSSIERS & PSYCHOLOGICAL PROFILES TAB BUTTON */}
@@ -1529,6 +1663,254 @@ ${meet}
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* TAB 0.3: AVAILABILITY & CALENDLY SCHEDULING SYSTEM */}
+          {activeTab === 'availability' && (
+            <div className="space-y-6 animate-fadeIn">
+              {/* Header Card */}
+              <div className="p-6 rounded-3xl bg-[#0E1524] border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-base font-bold text-white flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-amber-400" />
+                    <span>جدول المواعيد وأيام الحجز (نظام الحجز الذكي - كالنـدي)</span>
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                    تحكم كامل في أيام العمل الأسبوعية، والمواعيد اليومية، وتواريخ الإجازات. يقوم النظام تلقائياً بقفل أي موعد يتم حجزه لمنع التعارض.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={savingAvailability}
+                  onClick={handleSaveAvailability}
+                  className="px-6 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 disabled:bg-slate-700 text-slate-950 font-black text-xs transition flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10 cursor-pointer shrink-0"
+                >
+                  {savingAvailability ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>جارٍ حفظ التغييرات...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span>حفظ ومزامنة المواعيد فورياً</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* 1. Weekly Working Days */}
+              <div className="p-6 rounded-3xl bg-[#0E1524] border border-slate-800 space-y-4">
+                <div className="border-b border-slate-800/80 pb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-emerald-400" />
+                      <span>أيام العمل الأسبوعية المتاحة للجمهور</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      اضغط على أي يوم لفتحه أو إغلاقه أمام حجوزات العملاء في التقويم.
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-amber-300">
+                    {availability.workingDays.length} من 7 أيام مفعلة
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3">
+                  {DAYS_OF_WEEK.map((day) => {
+                    const isWorking = availability.workingDays.includes(day.index);
+                    return (
+                      <button
+                        key={day.index}
+                        type="button"
+                        onClick={() => handleToggleWorkingDay(day.index)}
+                        className={`p-3.5 rounded-2xl border-2 text-center transition-all flex flex-col items-center justify-center gap-2 cursor-pointer ${
+                          isWorking
+                            ? 'border-emerald-500/60 bg-emerald-500/10 text-white shadow-sm ring-1 ring-emerald-500/20'
+                            : 'border-slate-800 bg-slate-900/60 text-slate-500 hover:border-slate-700'
+                        }`}
+                      >
+                        <span className="text-xs font-extrabold">{day.label}</span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isWorking
+                              ? 'bg-emerald-500/20 text-emerald-300'
+                              : 'bg-slate-800 text-slate-500'
+                          }`}
+                        >
+                          {isWorking ? 'متاح للحجز' : 'مغلق / إجازة'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. Daily Time Slots */}
+              <div className="p-6 rounded-3xl bg-[#0E1524] border border-slate-800 space-y-5">
+                <div className="border-b border-slate-800/80 pb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <CalendarClock className="w-4 h-4 text-cyan-400" />
+                      <span>المواعيد اليومية (ساعات استقبال الاستشارات)</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      يمكنك تعطيل/تفعيل أي موعد بضغطة زر، أو إضافة مواعيد جديدة تناسب جدولك.
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-cyan-300">
+                    {availability.timeSlots.filter((s) => s.enabled).length} موعد نشط
+                  </span>
+                </div>
+
+                {/* Slots Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {availability.timeSlots.map((slot) => (
+                    <div
+                      key={slot.id}
+                      className={`p-3.5 rounded-2xl border flex items-center justify-between transition-all ${
+                        slot.enabled
+                          ? 'border-cyan-500/30 bg-cyan-950/20 text-white'
+                          : 'border-slate-800 bg-slate-900/40 text-slate-500 opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Clock className={`w-4 h-4 ${slot.enabled ? 'text-cyan-400' : 'text-slate-600'}`} />
+                        <div>
+                          <span className="text-xs font-extrabold block">{slot.label}</span>
+                          <span className="text-[10px] text-slate-400">مدة الجلسة: 50 دقيقة</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleTimeSlot(slot.id)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition cursor-pointer ${
+                            slot.enabled
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30'
+                              : 'bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700'
+                          }`}
+                        >
+                          {slot.enabled ? 'مفعّل' : 'معطّل'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteSlot(slot.id)}
+                          title="حذف هذا الموعد"
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add New Slot Form */}
+                <form
+                  onSubmit={handleAddNewSlot}
+                  className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row items-center gap-3"
+                >
+                  <div className="flex-1 w-full">
+                    <input
+                      type="text"
+                      value={newSlotLabel}
+                      onChange={(e) => setNewSlotLabel(e.target.value)}
+                      placeholder="أضف موعداً جديداً (مثال: 11:00 صباحاً أو 03:00 عصراً)..."
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder:text-slate-500 focus:outline-hidden focus:border-cyan-500"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={!newSlotLabel.trim()}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-cyan-600 hover:bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>إضافة الموعد</span>
+                  </button>
+                </form>
+              </div>
+
+              {/* 3. Blocked Dates / Vacation Manager */}
+              <div className="p-6 rounded-3xl bg-[#0E1524] border border-slate-800 space-y-5">
+                <div className="border-b border-slate-800/80 pb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-rose-400" />
+                      <span>إدارة الإجازات والأيام الاستثنائية المحظورة (Blocked Dates)</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      حدد تواريخ محددة لحظر الحجز فيها (مثل سفر، مؤتمر، أو إجازة رسمية) لتصبح غير قابلة للاختيار في التقويم.
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-rose-300">
+                    {availability.blockedDates.length} تاريخ محظور
+                  </span>
+                </div>
+
+                {/* Add Blocked Date Form */}
+                <form
+                  onSubmit={handleAddBlockedDate}
+                  className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col sm:flex-row items-center gap-3"
+                >
+                  <div className="flex-1 w-full">
+                    <input
+                      type="date"
+                      value={newBlockedDate}
+                      onChange={(e) => setNewBlockedDate(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-hidden focus:border-rose-500"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={!newBlockedDate}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-rose-600 hover:bg-rose-500 disabled:bg-slate-800 disabled:text-slate-500 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>حظر هذا التاريخ من الحجز</span>
+                  </button>
+                </form>
+
+                {/* Blocked Dates List */}
+                {availability.blockedDates.length > 0 ? (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {availability.blockedDates.map((dateStr) => (
+                      <div
+                        key={dateStr}
+                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-950/30 border border-rose-800/40 text-xs text-rose-200"
+                      >
+                        <span className="font-mono font-bold">{dateStr}</span>
+                        <span className="text-[10px] text-rose-400">(محظور)</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveBlockedDate(dateStr)}
+                          className="text-rose-400 hover:text-white transition cursor-pointer p-0.5"
+                          title="إلغاء حظر التاريخ"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 italic">
+                    لا توجد تواريخ محظورة حالياً. جميع أيام العمل المحددة بالأعلى متاحة بالكامل للعملاء.
+                  </p>
+                )}
+              </div>
+
+              {/* 4. Calendly Lock Info Box */}
+              <div className="p-5 rounded-2xl bg-[#154F9C]/10 border border-[#154F9C]/30 flex items-start gap-3.5">
+                <ShieldCheck className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <div className="text-xs space-y-1">
+                  <h4 className="font-bold text-white">كيف يعمل نظام منع التعارض (Smart Calendly Engine)؟</h4>
+                  <p className="text-slate-300 leading-relaxed">
+                    بمجرد أن يختار العميل يوماً ووقتاً ويؤكد حجزه، يقوم النظام تلقائياً بتسجيل الموعد وإغلاقه أمام الزوار الآخرين لنفس التاريخ، مما يمنع الحجز المزدوج نهائياً وبدقة تامة.
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
@@ -2377,6 +2759,32 @@ ${meet}
               </div>
 
               <form onSubmit={handleSaveSettings} className="space-y-4">
+                {/* Master Switch for Public Pricing */}
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-amber-300 flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-amber-400" />
+                      <span>عرض الأسعار والرسوم للجمهور في الموقع</span>
+                    </h3>
+                    <p className="text-xs text-slate-300 mt-0.5">
+                      {settings.showPricing
+                        ? 'الأسعار معروضة حالياً على كروت الاستشارات وصفحات الحجز.'
+                        : 'الأسعار مخفية حالياً عن الزوار في الموقع بالكامل (الوضع الحالي المعتمد).'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSettings({ ...settings, showPricing: !settings.showPricing })}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                      settings.showPricing
+                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                    }`}
+                  >
+                    {settings.showPricing ? 'مفعّل (معروضة للجمهور)' : 'معطّل (مخفية عن الجمهور)'}
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   
                   <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
@@ -3032,6 +3440,32 @@ ${meet}
               </div>
 
               <form onSubmit={handleSaveSettings} className="space-y-4">
+                {/* Master Switch for Public Pricing */}
+                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-amber-300 flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-amber-400" />
+                      <span>عرض الأسعار والرسوم للجمهور في الموقع</span>
+                    </h3>
+                    <p className="text-xs text-slate-300 mt-0.5">
+                      {settings.showPricing
+                        ? 'الأسعار معروضة حالياً على كروت الاستشارات وصفحات الحجز.'
+                        : 'الأسعار مخفية حالياً عن الزوار في الموقع بالكامل (الوضع الحالي المعتمد).'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSettings({ ...settings, showPricing: !settings.showPricing })}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
+                      settings.showPricing
+                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                    }`}
+                  >
+                    {settings.showPricing ? 'مفعّل (معروضة للجمهور)' : 'معطّل (مخفية عن الجمهور)'}
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   
                   <div>

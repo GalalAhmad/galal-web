@@ -8,8 +8,32 @@ import { useTheme } from '@/context/ThemeContext';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
+
+  // Smart Mobile Header: Sticks & slides into view when scrolling UP
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY <= 60) {
+        setShowHeader(true);
+      } else if (currentScrollY < lastScrollY - 4) {
+        // Scrolling UP -> show header immediately!
+        setShowHeader(true);
+      } else if (currentScrollY > lastScrollY + 10 && currentScrollY > 100) {
+        // Scrolling DOWN -> hide header on mobile to maximize content area
+        if (!mobileMenuOpen) {
+          setShowHeader(false);
+        }
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY, mobileMenuOpen]);
 
   const navLinks = [
     { href: '/', label: 'رئيسية' },
@@ -23,8 +47,10 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 transition-colors shadow-xs">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
+    <header className={`sticky top-0 z-40 bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 transition-all duration-300 shadow-xs ${
+      showHeader ? 'translate-y-0' : '-translate-y-full md:translate-y-0'
+    }`}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
         
         {/* الشعار المعتمد بدون نص لتوسيع مساحة الهيدر */}
         <Link href="/" className="flex items-center group shrink-0" title="جلال أحمد - الصفحة الرئيسية">

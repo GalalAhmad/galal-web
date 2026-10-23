@@ -789,6 +789,123 @@ function BookingWizardContent() {
                 </div>
               )}
 
+              {/* Single-line Text Input / Structured Child Details */}
+              {currentQuestion.type === 'text' && (
+                <div className="space-y-3">
+                  {currentQuestion.id === 'child_basic' ? (
+                    <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-4 animate-fadeIn">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            اسم الابن / الابنة <span className="text-rose-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={answers['child_name'] || ''}
+                            onChange={(e) => {
+                              const name = e.target.value;
+                              setAnswers((prev) => {
+                                const age = prev['child_age'] || '';
+                                const grade = prev['child_grade'] || '';
+                                const parts = [
+                                  name && `الاسم: ${name}`,
+                                  age && `العمر: ${age}`,
+                                  grade && `المرحلة: ${grade}`,
+                                ].filter(Boolean);
+                                return {
+                                  ...prev,
+                                  child_name: name,
+                                  [currentQuestion.id]: parts.join(' • '),
+                                };
+                              });
+                            }}
+                            placeholder="مثال: يوسف"
+                            className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs sm:text-sm focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            العمر <span className="text-rose-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={answers['child_age'] || ''}
+                            onChange={(e) => {
+                              const age = e.target.value;
+                              setAnswers((prev) => {
+                                const name = prev['child_name'] || '';
+                                const grade = prev['child_grade'] || '';
+                                const parts = [
+                                  name && `الاسم: ${name}`,
+                                  age && `العمر: ${age}`,
+                                  grade && `المرحلة: ${grade}`,
+                                ].filter(Boolean);
+                                return {
+                                  ...prev,
+                                  child_age: age,
+                                  [currentQuestion.id]: parts.join(' • '),
+                                };
+                              });
+                            }}
+                            placeholder="مثال: 9 سنوات"
+                            className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs sm:text-sm focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                            المرحلة الدراسية
+                          </label>
+                          <input
+                            type="text"
+                            value={answers['child_grade'] || ''}
+                            onChange={(e) => {
+                              const grade = e.target.value;
+                              setAnswers((prev) => {
+                                const name = prev['child_name'] || '';
+                                const age = prev['child_age'] || '';
+                                const parts = [
+                                  name && `الاسم: ${name}`,
+                                  age && `العمر: ${age}`,
+                                  grade && `المرحلة: ${grade}`,
+                                ].filter(Boolean);
+                                return {
+                                  ...prev,
+                                  child_grade: grade,
+                                  [currentQuestion.id]: parts.join(' • '),
+                                };
+                              });
+                            }}
+                            placeholder="مثال: الصف الثالث الابتدائي"
+                            className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs sm:text-sm focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                          />
+                        </div>
+                      </div>
+
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        تُسجل هذه البيانات في ملف الاستشارة لتقييم الاحتياجات النفسية والنمائية للطفل بدقة.
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <input
+                        type="text"
+                        value={answers[currentQuestion.id] || ''}
+                        onChange={(e) =>
+                          setAnswers((prev) => ({
+                            ...prev,
+                            [currentQuestion.id]: e.target.value,
+                          }))
+                        }
+                        placeholder={currentQuestion.placeholder || 'اكتب إجابتك هنا...'}
+                        className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 text-sm focus:outline-hidden focus:ring-2 focus:ring-[#4E7E76]"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* "اكتب هنا" Box When "غير ذلك" is Selected (Image 1 pattern) */}
               {(answers[currentQuestion.id] === 'other' ||
                 (Array.isArray(answers[currentQuestion.id]) &&

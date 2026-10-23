@@ -48,11 +48,19 @@ export async function GET(request: Request) {
 
     if (id) {
       const profile = profiles.find((p: any) => p.id === id);
-      return NextResponse.json({ success: true, profile: profile || null });
+      if (profile) {
+        const { passwordHash, ...safeProfile } = profile;
+        return NextResponse.json({ success: true, profile: safeProfile });
+      }
+      return NextResponse.json({ success: true, profile: null });
     }
 
     if (!phone && !email) {
-      return NextResponse.json({ success: true, profiles });
+      const safeProfiles = profiles.map((p: any) => {
+        const { passwordHash, ...safe } = p;
+        return safe;
+      });
+      return NextResponse.json({ success: true, profiles: safeProfiles });
     }
 
     const cleanPhone = phone ? phone.replace(/[^\d]/g, '') : '';
@@ -65,8 +73,10 @@ export async function GET(request: Request) {
       return false;
     });
 
+    const safeProfile = profile ? (({ passwordHash, ...rest }) => rest)(profile) : null;
+
     return NextResponse.json(
-      { success: true, profile: profile || null },
+      { success: true, profile: safeProfile },
       { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
     );
   } catch (error) {

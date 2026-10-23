@@ -4,6 +4,7 @@
     "name": "أحمد الشريف",
     "phone": "01098765432",
     "email": "ahmed.shareef@example.com",
+    "passwordHash": "fa1e838e0d94b84aa2e1f5819ee376cc1884c3d35b21b95954a57484305615f3",
     "provider": "booking",
     "clinicalNotes": "الحالة تتابع معنا، تركز على إدارة ضغوط العمل وتفكيك التشوهات المعرفية.",
     "homework": [
@@ -53,6 +54,7 @@
     "name": "سارة وعمر",
     "phone": "01011223344",
     "email": "sara.omar@example.com",
+    "passwordHash": "fa1e838e0d94b84aa2e1f5819ee376cc1884c3d35b21b95954a57484305615f3",
     "provider": "booking",
     "clinicalNotes": "الزوجان ملتزمان بحضور الجلسة المشتركة القادمة. تم تأكيد موعد 26 أكتوبر وإرسال رابط Google Meet.",
     "homework": [

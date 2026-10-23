@@ -111,34 +111,8 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
   };
 
   const handleSocialLogin = (provider: 'google' | 'apple' | 'facebook') => {
-    const providerTitles: Record<string, string> = {
-      google: 'Google',
-      apple: 'Apple ID',
-      facebook: 'Facebook'
-    };
-    const enteredName = prompt(`يرجى كتابة اسمك الكريم لتسجيل الدخول بحساب ${providerTitles[provider]}:`);
-    if (!enteredName || !enteredName.trim()) return;
-
-    const enteredContact = prompt('رقم هاتفك أو بريدك الإلكتروني لحفظ النتيجة في ملفك الشخصي:') || '';
-
-    const defaultUser = {
-      name: enteredName.trim(),
-      email: enteredContact.includes('@') ? enteredContact.trim() : `${enteredName.trim()}@${provider}.user`,
-      phone: !enteredContact.includes('@') ? enteredContact.trim() : '',
-      provider,
-    };
-    setUserSession(defaultUser);
-    try {
-      localStorage.setItem('galal_user_session', JSON.stringify(defaultUser));
-    } catch (e) {}
-    setShowAuthModal(false);
-
-    if (showResult) {
-      const total = answers.reduce((a, b) => a + b, 0);
-      const maxPossible = test.questions.length * 3;
-      const pct = Math.round((total / Math.max(1, maxPossible)) * 100);
-      saveResult(total, pct, getResultDetails(pct));
-    }
+    // Redirect to real login/register portal
+    window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
   };
 
   const handleQuickLogin = (e: React.FormEvent) => {

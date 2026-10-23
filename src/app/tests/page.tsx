@@ -167,28 +167,9 @@ export default function PsychologicalTestsPage() {
     }
   };
 
-  // Social Sign-in
+  // Social Sign-in -> Redirect to real auth portal
   const handleSocialLogin = (provider: 'google' | 'apple' | 'facebook') => {
-    const mockUsers = {
-      google: { name: 'مستخدم Google الكريم', email: 'user@gmail.com', phone: '+966 50 000 0000', provider: 'google' },
-      apple: { name: 'مستخدم Apple الكريم', email: 'user@icloud.com', phone: '+966 50 000 0000', provider: 'apple' },
-      facebook: { name: 'مستخدم Facebook الكريم', email: 'user@facebook.com', phone: '+20 100 000 0000', provider: 'facebook' },
-    };
-    const defaultUser = mockUsers[provider];
-    setUserSession(defaultUser);
-    try {
-      localStorage.setItem('galal_user_session', JSON.stringify(defaultUser));
-    } catch (e) {}
-    setShowAuthModal(false);
-
-    if (pendingTest) {
-      setActiveTest(pendingTest);
-      setViewingOverview(false);
-      setCurrentQuestionIndex(0);
-      setAnswers([]);
-      setShowResult(false);
-      setPendingTest(null);
-    }
+    window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
   };
 
   // Quick Phone / Name Sign-in

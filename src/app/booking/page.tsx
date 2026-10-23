@@ -146,6 +146,19 @@ function BookingWizardContent() {
   const [maritalStatus, setMaritalStatus] = useState('أعزب');
   const [clientCity, setClientCity] = useState('');
 
+  // Auto-fill logged-in client credentials if active
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('galal_user_session');
+      if (saved) {
+        const user = JSON.parse(saved);
+        if (user.name) setClientName(user.name);
+        if (user.phone) setClientPhone(user.phone);
+        if (user.email) setClientEmail(user.email);
+      }
+    } catch (e) {}
+  }, []);
+
   // Policy Agreement
   const [agreedToPolicies, setAgreedToPolicies] = useState(false);
 

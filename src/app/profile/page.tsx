@@ -26,7 +26,11 @@ import {
   Plus,
   CheckSquare,
   Square,
-  FileText
+  FileText,
+  Eye,
+  EyeOff,
+  UserPlus,
+  LogIn
 } from 'lucide-react';
 
 function phonesMatch(phone1?: string, phone2?: string): boolean {
@@ -62,10 +66,34 @@ export default function ClientProfilePage() {
   // Assigned Homework & Readings list
   const [clientHomework, setClientHomework] = useState<any[]>([]);
 
-  // Quick Login form inputs
-  const [inputName, setInputName] = useState('');
-  const [inputPhone, setInputPhone] = useState('');
-  const [inputEmail, setInputEmail] = useState('');
+  // Authentication UI State for non-logged-in users
+  const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
+
+  // Login inputs
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
+
+  // Register inputs
+  const [regName, setRegName] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+  const [showRegPassword, setShowRegPassword] = useState(false);
+  const [regLoading, setRegLoading] = useState(false);
+  const [regError, setRegError] = useState('');
+  const [regSuccess, setRegSuccess] = useState('');
+
+  // Forgot password inputs
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotMsg, setForgotMsg] = useState('');
+  const [forgotError, setForgotError] = useState('');
 
   // Check login on mount
   useEffect(() => {
@@ -149,64 +177,157 @@ export default function ClientProfilePage() {
     }
   };
 
-  // Social Login Handlers
-  const handleSocialSignIn = async (provider: 'google' | 'apple' | 'facebook') => {
-    const providerTitles: Record<string, string> = {
-      google: 'Google',
-      apple: 'Apple ID',
-      facebook: 'Facebook'
-    };
-    const enteredName = prompt(`يرجى كتابة اسمك الكريم لتسجيل الدخول بحساب ${providerTitles[provider]}:`);
-    if (!enteredName || !enteredName.trim()) return;
+  // Real Login Handler
+  const handleRealLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
 
-    const enteredPhone = prompt('رقم هاتفك أو الواتساب لربط حجزك ومقاييسك تلقائياً (موصى به):') || '';
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: loginIdentifier.trim(),
+          password: loginPassword,
+        }),
+      });
 
-    const selectedUser = {
-      name: enteredName.trim(),
-      email: enteredName.includes('@') ? enteredName.trim() : `${enteredName.trim()}@${provider}.user`,
-      phone: enteredPhone.trim(),
-      provider,
-    };
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setLoginError(data.error || 'حدث خطأ في تسجيل الدخول');
+        setLoginLoading(false);
+        return;
+      }
 
-    setUserSession(selectedUser);
-    localStorage.setItem('galal_user_session', JSON.stringify(selectedUser));
+      setUserSession(data.user);
+      try {
+        localStorage.setItem('galal_user_session', JSON.stringify(data.user));
+      } catch (err) {}
 
-    // Save profile to server
-    await fetch('/api/user/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(selectedUser),
-    });
-
-    fetchClientData(selectedUser);
+      fetchClientData(data.user);
+    } catch (err) {
+      setLoginError('تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً');
+    } finally {
+      setLoginLoading(false);
+    }
   };
 
-  // Quick Guest Sign-in Handler
-  const handleQuickSignIn = async (e: React.FormEvent) => {
+  // Real Register Handler
+  const handleRealRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputName.trim() || (!inputPhone.trim() && !inputEmail.trim())) {
-      alert('يرجى كتابة الاسم ورقم الهاتف أو البريد الإلكتروني للمتابعة');
+    setRegError('');
+    setRegSuccess('');
+
+    if (regPassword !== regConfirmPassword) {
+      setRegError('كلمة المرور وتأكيدها غير متطابقين');
       return;
     }
 
-    const userData = {
-      name: inputName.trim(),
-      phone: inputPhone.trim(),
-      email: inputEmail.trim(),
-      provider: 'phone_quick',
-    };
+    if (regPassword.length < 6) {
+      setRegError('كلمة المرور يجب أن لا تقل عن 6 خانات أو أحرف');
+      return;
+    }
 
-    setUserSession(userData);
-    localStorage.setItem('galal_user_session', JSON.stringify(userData));
+    setRegLoading(true);
 
-    // Save profile to server
-    await fetch('/api/user/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData),
-    });
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: regName.trim(),
+          phone: regPhone.trim(),
+          email: regEmail.trim(),
+          password: regPassword,
+        }),
+      });
 
-    fetchClientData(userData);
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setRegError(data.error || 'تعذر إنشاء الحساب');
+        setRegLoading(false);
+        return;
+      }
+
+      setUserSession(data.user);
+      try {
+        localStorage.setItem('galal_user_session', JSON.stringify(data.user));
+      } catch (err) {}
+
+      setRegSuccess('تم إنشاء حسابك وتأكيده بنجاح!');
+      fetchClientData(data.user);
+    } catch (err) {
+      setRegError('حدث خطأ غير متوقع أثناء إنشاء الحساب');
+    } finally {
+      setRegLoading(false);
+    }
+  };
+
+  // Demo Login Handler
+  const handleQuickDemoLogin = async () => {
+    setLoginIdentifier('01098765432');
+    setLoginPassword('123456');
+    setLoginLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: '01098765432',
+          password: '123456',
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        setUserSession(data.user);
+        localStorage.setItem('galal_user_session', JSON.stringify(data.user));
+        fetchClientData(data.user);
+      }
+    } catch (e) {
+      setLoginError('تعذر تسجيل الدخول بالحساب التجريبي');
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  // Forgot Password Handler
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError('');
+    setForgotMsg('');
+    setForgotLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: forgotIdentifier.trim(),
+          newPassword: forgotNewPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setForgotError(data.error || 'تعذر إعادة تعيين كلمة المرور');
+        setForgotLoading(false);
+        return;
+      }
+
+      setForgotMsg(data.message || 'تم تعيين كلمة المرور بنجاح!');
+      setTimeout(() => {
+        setShowForgotModal(false);
+        setAuthTab('login');
+        setLoginIdentifier(forgotIdentifier);
+        setForgotMsg('');
+      }, 2000);
+    } catch (err) {
+      setForgotError('حدث خطأ في الاتصال بالخادم');
+    } finally {
+      setForgotLoading(false);
+    }
   };
 
   // Sign out
@@ -236,109 +357,360 @@ export default function ClientProfilePage() {
           <span className="text-slate-400">بوابة المستفيد • الملف الشخصي والمتابعة</span>
         </div>
 
-        {/* 1. NOT LOGGED IN VIEW: 4 Easy Login Channels */}
+        {/* 1. NOT LOGGED IN VIEW: REAL AUTHENTICATION PORTAL */}
         {!userSession ? (
           <div className="max-w-md mx-auto bg-white dark:bg-[#161B22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6 text-center animate-fadeIn">
-            <div className="w-16 h-16 rounded-2xl bg-[#4E7E76]/10 text-[#4E7E76] dark:text-[#5E988E] flex items-center justify-center mx-auto">
-              <User className="w-8 h-8" />
+            <div className="w-14 h-14 rounded-2xl bg-[#4E7E76]/10 text-[#4E7E76] dark:text-[#5E988E] flex items-center justify-center mx-auto">
+              <User className="w-7 h-7" />
             </div>
 
             <div>
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                بوابة المستفيد وسجل المتابعة
+                بوابة المستفيد • جلال أحمد
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
-                سجّل دخولك بضغطة زر واحدة للوصول إلى مواعيد جلساتك، رابط Google Meet، التكليفات القرائية، وتاريخ مقاييسك النفسية.
+                سجّل دخولك للوصول إلى جلساتك المعتمدة، روابط Google Meet، وتكليفاتك وتاريخ مقاييسك النفسية.
               </p>
             </div>
 
-            {/* Social Logins */}
-            <div className="space-y-2.5 pt-2">
-              {/* Google */}
+            {/* Tab Selector */}
+            <div className="grid grid-cols-2 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
               <button
                 type="button"
-                onClick={() => handleSocialSignIn('google')}
-                className="w-full py-3 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-3 shadow-xs cursor-pointer"
+                onClick={() => {
+                  setAuthTab('login');
+                  setLoginError('');
+                }}
+                className={`py-2.5 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer ${
+                  authTab === 'login'
+                    ? 'bg-white dark:bg-slate-800 text-[#4E7E76] dark:text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                <span>المتابعة باستخدام حساب Google</span>
+                <LogIn className="w-3.5 h-3.5" />
+                <span>تسجيل الدخول</span>
               </button>
 
-              {/* Apple */}
               <button
                 type="button"
-                onClick={() => handleSocialSignIn('apple')}
-                className="w-full py-3 px-4 rounded-2xl bg-black hover:bg-slate-900 text-white text-xs font-bold transition flex items-center justify-center gap-3 shadow-xs cursor-pointer"
+                onClick={() => {
+                  setAuthTab('register');
+                  setRegError('');
+                }}
+                className={`py-2.5 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer ${
+                  authTab === 'register'
+                    ? 'bg-white dark:bg-slate-800 text-[#4E7E76] dark:text-white shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
               >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 170 170">
-                  <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.04-7.69-7.85-12.01-14.42-5.74-8.8-10.24-18.73-13.51-29.77-3.27-11.04-4.91-21.84-4.91-32.4 0-14.28 3.59-26.24 10.77-35.88 7.18-9.64 16.27-14.59 27.27-14.85 4.69 0 10.15 1.34 16.39 4.02 6.23 2.68 10.18 4.07 11.84 4.17 1.89 0 6.04-1.51 12.44-4.53 6.4-3.02 12.03-4.32 16.9-3.9 12.44.88 22.38 5.67 29.83 14.37-10.88 6.64-16.21 15.72-15.99 27.23.23 9.06 3.65 16.82 10.27 23.28 6.62 6.46 14.62 10.11 24.01 10.96-2.01 6.18-4.43 12.28-7.27 18.28zM119.22 33.15c0-7.25 2.66-14.16 7.99-20.72 5.33-6.57 11.88-10.78 19.66-12.63.12 1 .18 1.95.18 2.87 0 7.14-2.82 14.15-8.46 21.03-5.64 6.88-12.23 10.9-19.78 12.07-.12-.87-.19-1.74-.19-2.62z"/>
-                </svg>
-                <span>المتابعة باستخدام Apple</span>
-              </button>
-
-              {/* Facebook */}
-              <button
-                type="button"
-                onClick={() => handleSocialSignIn('facebook')}
-                className="w-full py-3 px-4 rounded-2xl bg-[#1877F2] hover:bg-[#166FE5] text-white text-xs font-bold transition flex items-center justify-center gap-3 shadow-xs cursor-pointer"
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-                <span>المتابعة باستخدام Facebook</span>
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>إنشاء حساب جديد</span>
               </button>
             </div>
 
-            {/* Divider */}
-            <div className="relative flex py-1 items-center">
-              <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-              <span className="flex-shrink mx-3 text-[11px] text-slate-400">أو الدخول المباشر بالهاتف</span>
-              <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
-            </div>
+            {/* TAB 1: REAL LOGIN FORM */}
+            {authTab === 'login' && (
+              <form onSubmit={handleRealLogin} className="space-y-4 text-right animate-fadeIn">
+                {loginError && (
+                  <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{loginError}</span>
+                  </div>
+                )}
 
-            {/* Quick Phone Sign-in */}
-            <form onSubmit={handleQuickSignIn} className="space-y-3 text-right">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  الاسم الكريم *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={inputName}
-                  onChange={(e) => setInputName(e.target.value)}
-                  placeholder="مثال: أحمد عبد الله"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
-                />
-              </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    رقم الهاتف أو البريد الإلكتروني <span className="text-rose-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      dir="ltr"
+                      value={loginIdentifier}
+                      onChange={(e) => setLoginIdentifier(e.target.value)}
+                      placeholder="01000000000 أو user@example.com"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                    />
+                    <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                      <User className="w-4 h-4" />
+                    </div>
+                  </div>
+                </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  رقم الهاتف / الواتساب *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  dir="ltr"
-                  value={inputPhone}
-                  onChange={(e) => setInputPhone(e.target.value)}
-                  placeholder="+966 50 000 0000 أو +20 100 000 0000"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
-                />
-              </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      كلمة المرور <span className="text-rose-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotModal(true)}
+                      className="text-[11px] text-[#4E7E76] dark:text-[#5E988E] hover:underline cursor-pointer"
+                    >
+                      نسيت كلمة المرور؟
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showLoginPassword ? 'text' : 'password'}
+                      required
+                      dir="ltr"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
+                    >
+                      {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
 
-              <button
-                type="submit"
-                className="w-full py-3.5 rounded-2xl bg-[#4E7E76] hover:bg-[#3D645E] text-white font-extrabold text-xs transition shadow-md cursor-pointer"
+                <button
+                  type="submit"
+                  disabled={loginLoading}
+                  className="w-full py-3.5 rounded-2xl bg-[#4E7E76] hover:bg-[#3D645E] disabled:bg-slate-400 text-white font-extrabold text-sm transition shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {loginLoading ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>جارٍ التحقق وتسجيل الدخول...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4" />
+                      <span>تسجيل الدخول</span>
+                    </>
+                  )}
+                </button>
+
+                {/* Demo account quick login button */}
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={handleQuickDemoLogin}
+                    className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#4E7E76] dark:hover:text-[#5E988E] underline transition"
+                  >
+                    الدخول السريع بحساب تجريبي معتمد (أحمد الشريف)
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* TAB 2: REAL REGISTER FORM */}
+            {authTab === 'register' && (
+              <form onSubmit={handleRealRegister} className="space-y-4 text-right animate-fadeIn">
+                {regError && (
+                  <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{regError}</span>
+                  </div>
+                )}
+
+                {regSuccess && (
+                  <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>{regSuccess}</span>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    الاسم الكامل <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={regName}
+                    onChange={(e) => setRegName(e.target.value)}
+                    placeholder="مثال: عبد الرحمن محمد"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      رقم الهاتف / الواتساب <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      dir="ltr"
+                      value={regPhone}
+                      onChange={(e) => setRegPhone(e.target.value)}
+                      placeholder="01012345678"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      البريد الإلكتروني <span className="text-slate-400 font-normal">(اختياري)</span>
+                    </label>
+                    <input
+                      type="email"
+                      dir="ltr"
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      placeholder="name@example.com"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      كلمة المرور <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showRegPassword ? 'text' : 'password'}
+                        required
+                        dir="ltr"
+                        value={regPassword}
+                        onChange={(e) => setRegPassword(e.target.value)}
+                        placeholder="6 أحرف على الأقل"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowRegPassword(!showRegPassword)}
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition cursor-pointer"
+                      >
+                        {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      تأكيد كلمة المرور <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type={showRegPassword ? 'text' : 'password'}
+                      required
+                      dir="ltr"
+                      value={regConfirmPassword}
+                      onChange={(e) => setRegConfirmPassword(e.target.value)}
+                      placeholder="أعد إدخال كلمة المرور"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <span>
+                    بياناتك الشخصية وجلساتك الاستشارية محمية ومحاطة بميثاق السرية التامة وفق أعلى المعايير الأخلاقية والمهنية.
+                  </span>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={regLoading}
+                  className="w-full py-3.5 rounded-2xl bg-[#4E7E76] hover:bg-[#3D645E] disabled:bg-slate-400 text-white font-extrabold text-sm transition shadow-md hover:shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {regLoading ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>جارٍ إنشاء الحساب وتجهيز ملفك...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4" />
+                      <span>إنشاء الحساب ومتابعة</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+
+            {/* FORGOT PASSWORD MODAL */}
+            {showForgotModal && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn"
+                onClick={() => setShowForgotModal(false)}
               >
-                الدخول وعرض ملفي
-              </button>
-            </form>
+                <div
+                  className="relative max-w-md w-full bg-white dark:bg-[#161B22] rounded-3xl p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 text-right animate-slideUp"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotModal(false)}
+                      className="p-1 rounded-lg text-slate-400 hover:text-white"
+                    >
+                      ✕
+                    </button>
+                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                      إعادة تعيين كلمة المرور
+                    </h3>
+                  </div>
+
+                  {forgotError && (
+                    <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 text-xs font-bold">
+                      {forgotError}
+                    </div>
+                  )}
+
+                  {forgotMsg && (
+                    <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold">
+                      {forgotMsg}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleForgotSubmit} className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        رقم الهاتف أو البريد الإلكتروني المسجل:
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        dir="ltr"
+                        value={forgotIdentifier}
+                        onChange={(e) => setForgotIdentifier(e.target.value)}
+                        placeholder="01000000000 أو user@example.com"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs text-left text-slate-900 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        كلمة المرور الجديدة:
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        dir="ltr"
+                        value={forgotNewPassword}
+                        onChange={(e) => setForgotNewPassword(e.target.value)}
+                        placeholder="6 أحرف أو أرقام على الأقل"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs text-left text-slate-900 dark:text-white"
+                      />
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={forgotLoading}
+                        className="w-full py-3 rounded-xl bg-[#4E7E76] hover:bg-[#3D645E] text-white font-bold text-xs transition"
+                      >
+                        {forgotLoading ? 'جارٍ الحفظ...' : 'حفظ كلمة المرور الجديدة'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           /* 2. LOGGED IN DASHBOARD */

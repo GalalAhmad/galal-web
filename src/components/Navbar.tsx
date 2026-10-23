@@ -3,15 +3,28 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Calendar, Sun, Moon } from 'lucide-react';
+import { Menu, X, Calendar, Sun, Moon, User, ChevronLeft } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [userSession, setUserSession] = useState<{ name: string } | null>(null);
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
+
+  // Check user session
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem('galal_user_session');
+      if (saved) {
+        setUserSession(JSON.parse(saved));
+      } else {
+        setUserSession(null);
+      }
+    } catch (e) {}
+  }, [pathname]);
 
   // Smart Mobile Header: Sticks & slides into view when scrolling UP
   React.useEffect(() => {
@@ -101,6 +114,16 @@ export default function Navbar() {
             )}
           </button>
 
+          {/* User Account / Login Button */}
+          <Link
+            href={userSession?.name ? '/profile' : '/login'}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+            title={userSession?.name ? 'الملف الشخصي والمتابعة' : 'تسجيل الدخول / إنشاء حساب'}
+          >
+            <User className="w-3.5 h-3.5 text-[#4E7E76] dark:text-[#5E988E]" />
+            <span>{userSession?.name ? userSession.name.split(' ')[0] : 'دخول / حسابي'}</span>
+          </Link>
+
           {/* زر احجز جلسة بلون عرب ثيرابي المرجاني الجذاب */}
           <Link
             href="/booking"
@@ -135,7 +158,19 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
+            <Link
+              href={userSession?.name ? '/profile' : '/login'}
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 text-xs font-extrabold text-slate-800 dark:text-slate-100"
+            >
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-[#4E7E76] dark:text-[#5E988E]" />
+                <span>{userSession?.name ? `حسابي (${userSession.name})` : 'بوابة المستفيد (تسجيل الدخول / إنشاء حساب)'}</span>
+              </div>
+              <ChevronLeft className="w-4 h-4 text-slate-400 rtl:rotate-0" />
+            </Link>
+
             <Link
               href="/booking"
               onClick={() => setMobileMenuOpen(false)}

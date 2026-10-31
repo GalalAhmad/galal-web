@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
-import FloatingWhatsApp from '@/components/FloatingWhatsApp';
+import { AuthProvider } from '@/context/AuthContext';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import StickyBottomBar from '@/components/StickyBottomBar';
 
@@ -116,10 +116,11 @@ export default function RootLayout({
       </head>
       <body className="antialiased selection:bg-accent-500 selection:text-white">
         <ThemeProvider>
-          {children}
-          <FloatingWhatsApp />
-          <PWAInstallPrompt />
-          <StickyBottomBar />
+          <AuthProvider>
+            {children}
+            <PWAInstallPrompt />
+            <StickyBottomBar />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

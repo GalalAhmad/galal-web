@@ -28,7 +28,17 @@ async function writeProfiles(data: any[]) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, phone, email, password } = body;
+    const { 
+      name, 
+      phone, 
+      email, 
+      password, 
+      gender, 
+      ageGroup, 
+      maritalStatus, 
+      country, 
+      city 
+    } = body;
 
     // 1. Validation
     if (!name || name.trim().length < 2) {
@@ -83,6 +93,11 @@ export async function POST(request: Request) {
       email: cleanEmail || '',
       passwordHash: hashPassword(password),
       provider: 'credentials',
+      gender: gender || '',
+      ageGroup: ageGroup || '',
+      maritalStatus: maritalStatus || '',
+      country: country || '',
+      city: city || '',
       clinicalNotes: '',
       homework: [],
       testResults: [],
@@ -100,6 +115,11 @@ export async function POST(request: Request) {
         name: newProfile.name,
         phone: newProfile.phone,
         email: newProfile.email,
+        gender: newProfile.gender,
+        ageGroup: newProfile.ageGroup,
+        maritalStatus: newProfile.maritalStatus,
+        country: newProfile.country,
+        city: newProfile.city,
         provider: newProfile.provider,
         createdAt: newProfile.createdAt,
       },

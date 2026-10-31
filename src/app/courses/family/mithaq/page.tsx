@@ -23,12 +23,15 @@ import {
   Compass,
   Shield,
   Layers,
-  Home
+  Home,
+  LogIn
 } from 'lucide-react';
 
 import siteSettings from '@/data/siteSettings.json';
+import { useAuth } from '@/context/AuthContext';
 
 export default function RifqMithaqPage() {
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [applicantName, setApplicantName] = useState('');
   const [applicantPhone, setApplicantPhone] = useState('');
@@ -36,6 +39,12 @@ export default function RifqMithaqPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [nextBatchDate, setNextBatchDate] = useState(siteSettings.mithaqNextBatch || 'نوفمبر 2026');
+
+  React.useEffect(() => {
+    if (user?.name && !applicantName) {
+      setApplicantName(user.name);
+    }
+  }, [user, applicantName]);
 
   React.useEffect(() => {
     fetch('/api/settings', { cache: 'no-store' })
@@ -677,7 +686,27 @@ export default function RifqMithaqPage() {
               </div>
             </div>
 
-            {submitSuccess ? (
+            {!isAuthenticated && !authLoading ? (
+              <div className="p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-black/20 border border-dashed border-slate-300 dark:border-slate-700 text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-[#154F9C]/10 text-[#154F9C] flex items-center justify-center mx-auto">
+                  <LogIn className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white">تسجيل الدخول مطلوب للتقديم</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
+                    يمكنك تصفح جميع محطات وتفاصيل البرنامج بحرية، ولإرسال طلب الانضمام ومتابعة حالة ملفك يرجى تسجيل الدخول أو إنشاء حسابك.
+                  </p>
+                </div>
+                <Link
+                  href="/login?redirect=/courses/family/mithaq#register"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs sm:text-sm font-bold transition shadow-md shadow-[#154F9C]/20"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>تسجيل الدخول للتقديم في البرنامج</span>
+                  <ArrowLeft className="w-4 h-4 rtl:rotate-0" />
+                </Link>
+              </div>
+            ) : submitSuccess ? (
               <div className="p-4 rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold text-center">
                 ✓ تم تجهيز طلبك وسيتم فتح محادثة واتساب للتنسيق وتزويدك بالموعد والتفاصيل.
               </div>

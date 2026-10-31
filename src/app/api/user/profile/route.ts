@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import { hashPassword, phonesMatch, normalizePhone } from '@/lib/auth';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'userProfiles.json');
 
@@ -22,18 +23,6 @@ async function writeProfiles(data: any[]) {
   } catch (err) {
     console.error('Error writing userProfiles.json:', err);
   }
-}
-
-function phonesMatch(phone1?: string, phone2?: string): boolean {
-  if (!phone1 || !phone2) return false;
-  const digits1 = phone1.replace(/[^\d]/g, '');
-  const digits2 = phone2.replace(/[^\d]/g, '');
-  if (!digits1 || !digits2) return false;
-  if (digits1 === digits2) return true;
-  if (digits1.length >= 8 && digits2.length >= 8) {
-    return digits1.slice(-8) === digits2.slice(-8);
-  }
-  return false;
 }
 
 // GET user profile by phone or email or return all for admin
@@ -88,7 +77,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { phone, email, name, provider, testResult, notes, homework } = body;
+    const { phone, email, name, provider, testResult, notes, homework, gender, ageGroup, maritalStatus, country, city } = body;
 
     if (!phone && !email && !name) {
       return NextResponse.json({ error: 'الاسم ورقم الهاتف أو البريد ضروري' }, { status: 400 });
@@ -113,6 +102,11 @@ export async function POST(request: Request) {
       if (cleanPhone && !profile.phone) profile.phone = cleanPhone;
       if (cleanEmail && !profile.email) profile.email = cleanEmail;
       if (provider) profile.provider = provider;
+      if (gender) profile.gender = gender;
+      if (ageGroup) profile.ageGroup = ageGroup;
+      if (maritalStatus) profile.maritalStatus = maritalStatus;
+      if (country) profile.country = country;
+      if (city) profile.city = city;
       if (notes !== undefined) profile.clinicalNotes = notes;
 
       if (homework) {
@@ -146,6 +140,11 @@ export async function POST(request: Request) {
         name: name || 'مستفيد جديد',
         phone: cleanPhone || '',
         email: cleanEmail || '',
+        gender: gender || '',
+        ageGroup: ageGroup || '',
+        maritalStatus: maritalStatus || '',
+        country: country || '',
+        city: city || '',
         provider: provider || 'guest',
         clinicalNotes: notes || '',
         homework: homework ? [homework] : [],
@@ -176,11 +175,11 @@ export async function POST(request: Request) {
   }
 }
 
-// PUT: Admin updates client notes, homework, or info
+// PUT: Admin updates client notes, homework, or password
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, phone, email, notes, homework, toggleHomeworkId, removeHomeworkId, name } = body;
+    const { id, phone, email, notes, homework, toggleHomeworkId, removeHomeworkId, name, newPassword } = body;
 
     const profiles = await readProfiles();
     const cleanPhone = phone ? phone.replace(/[^\d]/g, '') : '';
@@ -202,6 +201,9 @@ export async function PUT(request: Request) {
 
     if (name) profile.name = name;
     if (notes !== undefined) profile.clinicalNotes = notes;
+    if (newPassword) {
+      profile.passwordHash = hashPassword(newPassword);
+    }
 
     if (!Array.isArray(profile.homework)) {
       profile.homework = [];

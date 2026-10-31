@@ -31,8 +31,11 @@ import {
   ArrowRight,
   ArrowLeft,
   FileCheck,
-  X
+  X,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { intakeTracks, TrackConfig } from '@/data/intakeQuestions';
 
 // Payment Logos Components
@@ -74,8 +77,8 @@ function CardsBadge() {
   );
 }
 
-// Calendar Month Generator (Displays month with days grid like Image 2)
-function getCalendarMonthData() {
+// Calendar Month Generator (Displays month with days grid supporting any year & month)
+function getCalendarMonthData(targetYear?: number, targetMonth?: number) {
   const arabicMonths = [
     'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
     'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'
@@ -83,25 +86,29 @@ function getCalendarMonthData() {
   const arabicDayNames = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
 
   const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  const year = targetYear !== undefined ? targetYear : now.getFullYear();
+  const month = targetMonth !== undefined ? targetMonth : now.getMonth();
   const monthName = arabicMonths[month];
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   // Days in month
   const totalDays = new Date(year, month + 1, 0).getDate();
+  const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0: Sun ... 6: Sat
+  const startOffset = (firstDayOfWeek + 1) % 7; // Saturday = 0
+
   const days = [];
 
   for (let d = 1; d <= totalDays; d++) {
     const curDate = new Date(year, month, d);
-    const dayOfWeek = curDate.getDay(); // 0: Sun, 1: Mon, ... 6: Sat
-    // Map to Saturday-first index (Sat=0, Sun=1, Mon=2, Tue=3, Wed=4, Thu=5, Fri=6)
+    const dayOfWeek = curDate.getDay();
     const satIndex = (dayOfWeek + 1) % 7;
-    const isPast = d < now.getDate();
-    const isToday = d === now.getDate();
+    const dateIso = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const isPast = dateIso < todayIso;
+    const isToday = dateIso === todayIso;
 
     days.push({
       dayNumber: d,
-      dateIso: `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+      dateIso,
       dayName: arabicDayNames[satIndex],
       dayOfWeek,
       isPast,
@@ -112,8 +119,10 @@ function getCalendarMonthData() {
 
   return {
     year,
+    month,
     monthName,
     days,
+    startOffset,
     arabicDayNames,
   };
 }
@@ -127,6 +136,7 @@ const TIME_SLOTS = [
 ];
 
 function BookingWizardContent() {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const trackParam = searchParams.get('track');
 
@@ -146,24 +156,48 @@ function BookingWizardContent() {
   const [maritalStatus, setMaritalStatus] = useState('أعزب');
   const [clientCity, setClientCity] = useState('');
 
-  // Auto-fill logged-in client credentials if active
+  // Auto-fill logged-in client credentials from AuthContext
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('galal_user_session');
-      if (saved) {
-        const user = JSON.parse(saved);
-        if (user.name) setClientName(user.name);
-        if (user.phone) setClientPhone(user.phone);
-        if (user.email) setClientEmail(user.email);
-      }
-    } catch (e) {}
-  }, []);
+    if (user?.name) {
+      setClientName(user.name);
+      if (user.phone) setClientPhone(user.phone);
+      if (user.email) setClientEmail(user.email);
+      if (user.ageGroup) setClientAge(user.ageGroup);
+      if (user.maritalStatus) setMaritalStatus(user.maritalStatus);
+      if (user.country || user.city) setClientCity(user.city || user.country || '');
+    }
+  }, [user]);
 
   // Policy Agreement
   const [agreedToPolicies, setAgreedToPolicies] = useState(false);
 
+  const now = new Date();
+  const [calendarYear, setCalendarYear] = useState<number>(now.getFullYear());
+  const [calendarMonth, setCalendarMonth] = useState<number>(now.getMonth());
+
   // Calendar & Schedule
-  const calendarData = useMemo(() => getCalendarMonthData(), []);
+  const calendarData = useMemo(() => getCalendarMonthData(calendarYear, calendarMonth), [calendarYear, calendarMonth]);
+  const isCurrentMonth = calendarYear === now.getFullYear() && calendarMonth === now.getMonth();
+
+  const handlePrevMonth = () => {
+    if (isCurrentMonth) return;
+    if (calendarMonth === 0) {
+      setCalendarMonth(11);
+      setCalendarYear((prev) => prev - 1);
+    } else {
+      setCalendarMonth((prev) => prev - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (calendarMonth === 11) {
+      setCalendarMonth(0);
+      setCalendarYear((prev) => prev + 1);
+    } else {
+      setCalendarMonth((prev) => prev + 1);
+    }
+  };
+
   // Default to tomorrow or first selectable
   const firstSelectable = calendarData.days.find((d) => d.isSelectable && !d.isToday) || calendarData.days.find((d) => d.isSelectable);
   const [selectedDateIso, setSelectedDateIso] = useState<string>(firstSelectable?.dateIso || '');
@@ -226,7 +260,7 @@ function BookingWizardContent() {
       })
       .catch(() => {});
 
-    fetch('/api/availability')
+    fetch('/api/availability', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data?.availability) {
@@ -450,6 +484,46 @@ function BookingWizardContent() {
 
     return `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(msg)}`;
   };
+
+  if (!user?.name) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#070B11] text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-[#4E7E76] selection:text-white">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center py-16 px-4 sm:px-6">
+          <div className="max-w-md w-full bg-white dark:bg-[#0E1524] rounded-3xl border-2 border-amber-200 dark:border-amber-900/60 p-8 text-center space-y-5 shadow-xl animate-fadeIn">
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <Lock className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                تسجيل الدخول مطلوب لحجز استشارة
+              </h1>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                لضمان خصوصيتك وسرية بياناتك، وتوثيق ملفك الاستشاري وتاريخ جلساتك وتكليفاتك، يرجى تسجيل الدخول أو إنشاء حسابك في ثوانٍ.
+              </p>
+            </div>
+            <div className="pt-2 space-y-2.5">
+              <Link
+                href={`/login?redirect=${encodeURIComponent('/booking' + (trackParam ? `?track=${trackParam}` : ''))}`}
+                className="w-full py-3.5 px-6 rounded-full bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-md shadow-[#4E7E76]/20"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>تسجيل الدخول والمتابعة للحجز</span>
+              </Link>
+              <Link
+                href={`/login?redirect=${encodeURIComponent('/booking' + (trackParam ? `?track=${trackParam}` : ''))}`}
+                className="w-full py-3 px-6 rounded-full border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center justify-center gap-2"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>إنشاء حساب جديد</span>
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFDFC] dark:bg-[#0B0F15] text-slate-800 dark:text-slate-100 flex flex-col justify-between transition-colors">
@@ -966,7 +1040,11 @@ function BookingWizardContent() {
                   if (currentQuestionIndex < currentQuestions.length - 1) {
                     setCurrentQuestionIndex((prev) => prev + 1);
                   } else {
-                    setCurrentStep(3); // Demographics
+                    if (user?.name && (user.phone || clientPhone)) {
+                      setCurrentStep(4); // Skip demographics straight to Policies
+                    } else {
+                      setCurrentStep(3); // Demographics
+                    }
                   }
                 }}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-bold rounded-xl transition shadow-sm"
@@ -974,6 +1052,8 @@ function BookingWizardContent() {
                 <span>
                   {currentQuestionIndex < currentQuestions.length - 1
                     ? 'السؤال التالي'
+                    : user?.name
+                    ? 'المتابعة لاختيار الموعد'
                     : 'الانتقال للبيانات الأساسية'}
                 </span>
                 <ChevronLeft className="w-4 h-4" />
@@ -1180,7 +1260,13 @@ function BookingWizardContent() {
             <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
               <button
                 type="button"
-                onClick={() => setCurrentStep(3)}
+                onClick={() => {
+                  if (user?.name && (user.phone || clientPhone)) {
+                    setCurrentStep(2);
+                  } else {
+                    setCurrentStep(3);
+                  }
+                }}
                 className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -1216,9 +1302,32 @@ function BookingWizardContent() {
 
             {/* Calendar View (Image 2 style) */}
             <div className="max-w-md mx-auto space-y-4">
-              {/* Month Header */}
-              <div className="flex items-center justify-center gap-4 text-base font-extrabold text-[#10B981]">
-                <span>{calendarData.monthName} {calendarData.year}</span>
+              {/* Month Header with Navigation */}
+              <div className="flex items-center justify-between text-base font-extrabold text-[#4E7E76] dark:text-[#5E988E] px-2">
+                <button
+                  type="button"
+                  disabled={isCurrentMonth}
+                  onClick={handlePrevMonth}
+                  className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition flex items-center gap-1 text-xs"
+                  title="الشهر السابق"
+                >
+                  <ChevronRight className="w-4 h-4 rtl:rotate-0" />
+                  <span>الشهر السابق</span>
+                </button>
+
+                <span className="text-sm sm:text-base font-black">
+                  {calendarData.monthName} {calendarData.year}
+                </span>
+
+                <button
+                  type="button"
+                  onClick={handleNextMonth}
+                  className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition flex items-center gap-1 text-xs"
+                  title="الشهر القادم"
+                >
+                  <span>الشهر القادم</span>
+                  <ChevronLeft className="w-4 h-4 rtl:rotate-0" />
+                </button>
               </div>
 
               {/* Weekdays Labels */}
@@ -1232,6 +1341,9 @@ function BookingWizardContent() {
 
               {/* Days Grid */}
               <div className="grid grid-cols-7 gap-1 text-center">
+                {Array.from({ length: calendarData.startOffset || 0 }).map((_, i) => (
+                  <div key={'spacer-' + i} className="p-1" />
+                ))}
                 {calendarData.days.map((d) => {
                   const isWorkingDay = availabilityData.workingDays.includes(d.dayOfWeek);
                   const isBlocked = availabilityData.blockedDates.includes(d.dateIso);
@@ -1635,6 +1747,40 @@ function BookingWizardContent() {
                 </span>
               </div>
             </div>
+
+            {/* Google Meet Link Display */}
+            {submittedBooking.meetLink && (
+              <div className="max-w-md mx-auto p-4 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] border border-[#D6E6F8] dark:border-[#1E3A5F] text-right space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-[#154F9C] dark:text-[#60A5FA]">
+                    🎥 رابط قاعة الجلسة الاستشارية (Google Meet):
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(submittedBooking.meetLink);
+                      setCopiedField('meetLink');
+                      setTimeout(() => setCopiedField(null), 2000);
+                    }}
+                    className="text-xs font-bold text-[#154F9C] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>{copiedField === 'meetLink' ? 'تم النسخ!' : 'نسخ الرابط'}</span>
+                  </button>
+                </div>
+                <a
+                  href={submittedBooking.meetLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block text-xs font-mono font-bold text-slate-700 dark:text-slate-300 break-all underline"
+                >
+                  {submittedBooking.meetLink}
+                </a>
+                <p className="text-[11px] text-slate-500 pt-1">
+                  ✉️ تم إرسال نسخة من تفاصيل الموعد ورابط قاعة Google Meet إلى بريدك الإلكتروني ({submittedBooking.clientEmail || 'المسجل'}).
+                </p>
+              </div>
+            )}
 
             {/* 1-Click WhatsApp Button */}
             <div className="pt-2">

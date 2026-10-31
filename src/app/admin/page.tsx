@@ -44,7 +44,9 @@ import {
   Brain,
   Sparkles,
   Zap,
-  Search
+  Search,
+  Key,
+  UserPlus
 } from 'lucide-react';
 import { articlesData as initialArticles } from '@/data/articles';
 
@@ -79,6 +81,14 @@ export default function AdminDashboardPage() {
 
   // Client Dossiers & Psychological Profiles State
   const [clientProfiles, setClientProfiles] = useState<any[]>([]);
+  const [showAddClientModal, setShowAddClientModal] = useState<boolean>(false);
+  const [newClientName, setNewClientName] = useState<string>('');
+  const [newClientPhone, setNewClientPhone] = useState<string>('');
+  const [newClientEmail, setNewClientEmail] = useState<string>('');
+  const [newClientPassword, setNewClientPassword] = useState<string>('Galal@2026');
+  const [createdClientWhatsAppUrl, setCreatedClientWhatsAppUrl] = useState<string | null>(null);
+  const [addClientLoading, setAddClientLoading] = useState<boolean>(false);
+  const [addClientMsg, setAddClientMsg] = useState<string>('');
   const [loadingClients, setLoadingClients] = useState<boolean>(true);
   const [clientSearchQuery, setClientSearchQuery] = useState<string>('');
   const [expandedClientId, setExpandedClientId] = useState<string | null>(null);
@@ -939,6 +949,82 @@ ${meet}
       alert('تعذر الاتصال بالخادم لحفظ جدول المواعيد.');
     } finally {
       setSavingAvailability(false);
+    }
+  };
+
+  // Add Client & Password Handlers
+  const handleAddClientSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClientName.trim() || (!newClientPhone.trim() && !newClientEmail.trim())) {
+      alert('الاسم ورقم الهاتف أو البريد ضروري');
+      return;
+    }
+    setAddClientLoading(true);
+    setAddClientMsg('');
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newClientName.trim(),
+          phone: newClientPhone.trim(),
+          email: newClientEmail.trim(),
+          password: newClientPassword.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        alert(data.error || 'تعذر إضافة المستفيد');
+        setAddClientLoading(false);
+        return;
+      }
+      // Refresh client profiles
+      const profRes = await fetch('/api/user/profile', { cache: 'no-store' });
+      const profData = await profRes.json();
+      if (profData.profiles) setClientProfiles(profData.profiles);
+
+      const cleanPhone = (newClientPhone || '').replace(/[^\d]/g, '');
+      const msg = `أهلاً بك أ. ${newClientName.trim()} في منصة المستشار جـلال أحـمد 🌿\nتم تجهيز ملفك الاستشاري الشخصي بنجاح لمتابعة جلساتك ومقاييسك وتكليفاتك الإرشادية.\n\nبيانات دخولك الخاصة:\n👤 اسم المستخدم: ${newClientPhone.trim() || newClientEmail.trim()}\n🔑 كلمة المرور: ${newClientPassword.trim()}\n🔗 رابط الدخول المباشر: https://galalahmad.com/login\n\nنتمنى لك رحلة موفقة نحو الاتزان وراحة البال.`;
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+      setCreatedClientWhatsAppUrl(waUrl);
+      setAddClientMsg('تم إنشاء حساب وملف المستفيد بنجاح!');
+    } catch (err) {
+      alert('حدث خطأ في الاتصال بالخادم');
+    } finally {
+      setAddClientLoading(false);
+    }
+  };
+
+  const handleResetClientPassword = async (client: any) => {
+    const newPass = prompt(`أدخل كلمة المرور الجديدة للمستفيد (${client.name}):`, 'Galal@2026');
+    if (!newPass || newPass.trim().length < 6) {
+      if (newPass !== null) alert('كلمة المرور يجب أن لا تقل عن 6 أحرف أو أرقام');
+      return;
+    }
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: client.id,
+          phone: client.phone,
+          email: client.email,
+          newPassword: newPass.trim(),
+        }),
+      });
+      if (res.ok) {
+        const cleanPhone = (client.phone || '').replace(/[^\d]/g, '');
+        const msg = `أهلاً بك أ. ${client.name} في منصة المستشار جلال أحمد 🌿\nتمت إعادة تعيين كلمة المرور الخاصة بحسابك بنجاح:\n🔑 كلمة المرور الجديدة: ${newPass.trim()}\n🔗 رابط الدخول: https://galalahmad.com/login`;
+        if (cleanPhone && confirm('تم تحديث كلمة المرور بنجاح! هل تريد إرسال بيانات الدخول الجديدة للعميل عبر واتساب فوراً؟')) {
+          window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+        } else {
+          alert('تم تحديث كلمة المرور بنجاح!');
+        }
+      } else {
+        alert('تعذر تحديث كلمة المرور');
+      }
+    } catch (e) {
+      alert('حدث خطأ في الاتصال');
     }
   };
 
@@ -1932,6 +2018,18 @@ ${meet}
                   <span className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
                     إجمالي المستفيدين المسجلين: <strong className="text-white font-mono">{clientProfiles.length}</strong>
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddClientModal(true);
+                      setAddClientMsg('');
+                      setCreatedClientWhatsAppUrl(null);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-extrabold text-xs transition flex items-center gap-1.5 shadow-md shadow-cyan-600/20 cursor-pointer"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span>إضافة مستفيد جديد يدوياً</span>
+                  </button>
                 </div>
               </div>
 
@@ -2028,6 +2126,16 @@ ${meet}
                               <span className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-amber-300">
                                 تكليفات: <strong className="text-white font-mono">{hwCount}</strong>
                               </span>
+
+                              <button
+                                type="button"
+                                onClick={() => handleResetClientPassword(client)}
+                                className="p-2 rounded-xl bg-amber-950/40 border border-amber-800 text-amber-300 hover:bg-amber-900/40 transition cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+                                title="إعادة تعيين كلمة المرور للمستفيد وإرسالها عبر واتساب"
+                              >
+                                <Key className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">إعادة ضبط الباسورد</span>
+                              </button>
 
                               {cleanClientPhone && (
                                 <a
@@ -3646,6 +3754,120 @@ ${meet}
         </main>
 
       </div>
+      {/* Modal: Add Client Manually */}
+      {showAddClientModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn text-right">
+          <div className="max-w-md w-full bg-[#0E1524] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-cyan-400" />
+                <span>إضافة مستفيد جديد وتوليد بيانات الدخول</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAddClientModal(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {addClientMsg && (
+              <div className="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs font-bold space-y-2">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>{addClientMsg}</span>
+                </div>
+                {createdClientWhatsAppUrl && (
+                  <a
+                    href={createdClientWhatsAppUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-black text-center transition shadow-md"
+                  >
+                    💬 إرسال بيانات الدخول للعميل عبر واتساب الآن
+                  </a>
+                )}
+              </div>
+            )}
+
+            <form onSubmit={handleAddClientSubmit} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  اسم المستفيد *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newClientName}
+                  onChange={(e) => setNewClientName(e.target.value)}
+                  placeholder="مثال: د. ماجد السعيد"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  رقم الواتساب (لتوليد الرسالة) *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  dir="ltr"
+                  value={newClientPhone}
+                  onChange={(e) => setNewClientPhone(e.target.value)}
+                  placeholder="مثال: 01014876666 أو +966..."
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white text-left focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  البريد الإلكتروني (اختياري)
+                </label>
+                <input
+                  type="email"
+                  dir="ltr"
+                  value={newClientEmail}
+                  onChange={(e) => setNewClientEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white text-left focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  كلمة المرور المؤقتة *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newClientPassword}
+                  onChange={(e) => setNewClientPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddClientModal(false)}
+                  className="px-4 py-2.5 rounded-xl border border-slate-800 text-slate-400 hover:text-white text-xs font-bold"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={addClientLoading}
+                  className="px-6 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-black text-xs transition cursor-pointer shadow-md"
+                >
+                  {addClientLoading ? 'جارٍ الإنشاء...' : 'إنشاء الحساب وتجهيز الواتساب'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

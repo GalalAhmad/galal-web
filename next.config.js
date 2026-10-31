@@ -1,8 +1,10 @@
+const { withSentryConfig } = require("@sentry/nextjs/config");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    unoptimized: true
+    unoptimized: true,
   },
   experimental: {
     cpus: 1,
@@ -35,4 +37,18 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = withSentryConfig(
+  nextConfig,
+  {
+    silent: true,
+    org: process.env.SENTRY_ORG || "rifq-2w",
+    project: process.env.SENTRY_PROJECT || "galal-web",
+  },
+  {
+    widenClientFileUpload: true,
+    transpileClientSDK: false,
+    tunnelRoute: "/monitoring",
+    hideSourceMaps: true,
+    disableLogger: true,
+  }
+);

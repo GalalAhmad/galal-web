@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import { sendBookingConfirmationEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -43,14 +44,14 @@ async function syncUserProfile(name: string, phone: string, email?: string) {
 
     if (existingIdx >= 0) {
       if (name) profiles[existingIdx].name = name;
-      if (phone && !profiles[existingIdx].phone) profiles[existingIdx].phone = phone;
-      if (email && !profiles[existingIdx].email) profiles[existingIdx].email = email;
+      if (cleanPhone && !profiles[existingIdx].phone) profiles[existingIdx].phone = cleanPhone;
+      if (cleanEmail && !profiles[existingIdx].email) profiles[existingIdx].email = cleanEmail;
     } else {
       profiles.unshift({
         id: `user-${Date.now()}`,
         name: name || 'مستفيد جديد',
-        phone: phone || '',
-        email: email || '',
+        phone: cleanPhone || '',
+        email: cleanEmail || '',
         provider: 'booking',
         clinicalNotes: '',
         homework: [],
@@ -152,6 +153,19 @@ export async function POST(request: Request) {
     // Auto-create/sync client dossier in userProfiles.json
     await syncUserProfile(newBooking.clientName, newBooking.clientPhone, newBooking.clientEmail);
 
+    // Send confirmation email with Google Meet details
+    if (newBooking.clientEmail) {
+      sendBookingConfirmationEmail({
+        to: newBooking.clientEmail,
+        clientName: newBooking.clientName,
+        bookingId: newBooking.id,
+        trackLabel: newBooking.trackLabel,
+        slotDate: newBooking.slotDate,
+        slotTime: newBooking.slotTime,
+        meetLink: newBooking.meetLink,
+      }).catch((err) => console.error('Email send background error:', err));
+    }
+
     return NextResponse.json({ success: true, booking: newBooking });
   } catch (error) {
     console.error('Booking submission error:', error);
@@ -159,37 +173,34 @@ export async function POST(request: Request) {
   }
 }
 
-export async function PATCH(request: Request) {
+// PUT: Admin updates booking status, time, or Google Meet link
+export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, status, meetLink, notes, homework, action } = body;
+    const { id, status, slotDate, slotTime, meetLink, notes } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing booking ID' }, { status: 400 });
+      return NextResponse.json({ error: 'معرّف الحجز مطلوب' }, { status: 400 });
     }
 
     const currentList = await readBookings();
-    const idx = currentList.findIndex((item: any) => item.id === id);
+    const idx = currentList.findIndex((b: any) => b.id === id);
 
     if (idx === -1) {
-      return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+      return NextResponse.json({ error: 'الحجز غير موجود' }, { status: 404 });
     }
 
-    if (action === 'delete') {
-      const filtered = currentList.filter((item: any) => item.id !== id);
-      await writeBookings(filtered);
-      return NextResponse.json({ success: true, bookings: filtered });
-    }
-
-    if (status) currentList[idx].status = status;
+    if (status !== undefined) currentList[idx].status = status;
+    if (slotDate !== undefined) currentList[idx].slotDate = slotDate;
+    if (slotTime !== undefined) currentList[idx].slotTime = slotTime;
     if (meetLink !== undefined) currentList[idx].meetLink = meetLink;
     if (notes !== undefined) currentList[idx].notes = notes;
-    if (homework !== undefined) currentList[idx].homework = homework;
+    currentList[idx].updated_at = new Date().toISOString();
 
     await writeBookings(currentList);
-    return NextResponse.json({ success: true, booking: currentList[idx], bookings: currentList });
+    return NextResponse.json({ success: true, booking: currentList[idx] });
   } catch (error) {
     console.error('Booking update error:', error);
-    return NextResponse.json({ error: 'Failed to update booking' }, { status: 500 });
+    return NextResponse.json({ error: 'حدث خطأ أثناء تعديل الحجز' }, { status: 500 });
   }
 }

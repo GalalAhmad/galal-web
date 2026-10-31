@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Building2, 
   Sparkles, 
@@ -16,10 +17,12 @@ import {
   ArrowLeft,
   CheckCircle2,
   FileCheck2,
-  PhoneCall
+  PhoneCall,
+  LogIn
 } from 'lucide-react';
 
 export default function InstitutionsTrackPage() {
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [instName, setInstName] = useState('');
   const [contactPerson, setContactPerson] = useState('');
   const [phone, setPhone] = useState('');
@@ -28,6 +31,12 @@ export default function InstitutionsTrackPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  React.useEffect(() => {
+    if (user?.name && !contactPerson) {
+      setContactPerson(user.name);
+    }
+  }, [user, contactPerson]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -176,7 +185,7 @@ export default function InstitutionsTrackPage() {
       </section>
 
       {/* Institutional Inquiry Form */}
-      <section className="py-16 sm:py-20 bg-[#FDFCFB] dark:bg-[#0C111C]">
+      <section id="register" className="py-16 sm:py-20 bg-[#FDFCFB] dark:bg-[#0C111C]">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           
           <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#121A2C] border border-slate-200 dark:border-slate-800 shadow-xl text-right">
@@ -191,7 +200,27 @@ export default function InstitutionsTrackPage() {
               </p>
             </div>
 
-            {submitted ? (
+            {!isAuthenticated && !authLoading ? (
+              <div className="p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-black/20 border border-dashed border-slate-300 dark:border-slate-700 text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-[#154F9C]/10 text-[#154F9C] flex items-center justify-center mx-auto">
+                  <LogIn className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white">تسجيل الدخول مطلوب لإرسال الطلب</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
+                    يمكنكم الاطلاع على كافة برامج وحقائب المسار المؤسسي، ولإرسال طلب رسمي للتعاقد يرجى تسجيل الدخول أو إنشاء حساب.
+                  </p>
+                </div>
+                <Link
+                  href="/login?redirect=/courses/institutions#register"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs sm:text-sm font-bold transition shadow-md shadow-[#154F9C]/20"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>تسجيل الدخول لطلب عرض المؤسسات</span>
+                  <ArrowLeft className="w-4 h-4 rtl:rotate-0" />
+                </Link>
+              </div>
+            ) : submitted ? (
               <div className="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center space-y-3">
                 <CheckCircle2 className="w-10 h-10 text-emerald-600 dark:text-emerald-400 mx-auto" />
                 <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">

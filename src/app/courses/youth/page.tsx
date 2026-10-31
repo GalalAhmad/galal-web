@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Sparkles, 
   Send, 
@@ -16,16 +17,24 @@ import {
   BrainCircuit,
   MessageCircle,
   Lightbulb,
-  CheckCircle2
+  CheckCircle2,
+  LogIn
 } from 'lucide-react';
 
 export default function YouthTrackPage() {
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [ageGroup, setAgeGroup] = useState('15 - 18 سنة (مرحلة التكليف واليافعين)');
   const [interests, setInterests] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+
+  React.useEffect(() => {
+    if (user?.name && !name) {
+      setName(user.name);
+    }
+  }, [user, name]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,7 +156,7 @@ export default function YouthTrackPage() {
       </section>
 
       {/* Early Interest Waiting List */}
-      <section className="py-16 sm:py-20 bg-[#FDFCFB] dark:bg-[#0C111C]">
+      <section id="register" className="py-16 sm:py-20 bg-[#FDFCFB] dark:bg-[#0C111C]">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           
           <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#121A2C] border border-slate-200 dark:border-slate-800 shadow-xl text-right">
@@ -162,7 +171,27 @@ export default function YouthTrackPage() {
               </p>
             </div>
 
-            {submitted ? (
+            {!isAuthenticated && !authLoading ? (
+              <div className="p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-black/20 border border-dashed border-slate-300 dark:border-slate-700 text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-[#7452B8]/10 text-[#7452B8] flex items-center justify-center mx-auto">
+                  <LogIn className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white">تسجيل الدخول مطلوب للتسجيل المبكر</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
+                    يمكنك استكشاف محاور ورؤية مسار الشباب، ولتسجيل اهتمامك في قائمة الانتظار يرجى تسجيل الدخول أو إنشاء حساب جديد.
+                  </p>
+                </div>
+                <Link
+                  href="/login?redirect=/courses/youth#register"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#7452B8] hover:bg-[#5C3FA0] text-white text-xs sm:text-sm font-bold transition shadow-md shadow-[#7452B8]/20"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>تسجيل الدخول للانضمام لقائمة الانتظار</span>
+                  <ArrowLeft className="w-4 h-4 rtl:rotate-0" />
+                </Link>
+              </div>
+            ) : submitted ? (
               <div className="p-5 rounded-2xl bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 text-center text-[#7452B8] dark:text-purple-300 text-xs font-semibold">
                 ✓ تم تسجيل رغبتك بنجاح! سيتم إخطارك بكل جديد عن المسار فور الإطلاق.
               </div>

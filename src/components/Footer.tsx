@@ -38,85 +38,64 @@ export default function Footer() {
               <Clock className="w-4 h-4 shrink-0 text-[#CC4E46]" />
               <span>مرونة المواعيد: إعادة الجدولة والإلغاء متاح مجاناً حتى 48 ساعة قبل الموعد.</span>
             </div>
-
-            {/* Social Media Links Icons (Configurable via src/data/siteConfig.ts) */}
-            <div className="pt-2 flex items-center gap-2.5">
-              <span className="text-xs font-bold text-slate-500">تابعنا:</span>
-              <div className="flex items-center gap-2">
-                {siteConfig.socialLinks.map((s, idx) => (
-                  <a
-                    key={idx}
-                    href={s.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={s.name}
-                    className="w-8 h-8 rounded-full bg-white dark:bg-[#161F2B] border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-[#4E7E76] dark:hover:text-[#5E988E] hover:border-[#4E7E76] transition shadow-2xs"
-                  >
-                    {s.icon === 'linkedin' && (
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                    )}
-                    {s.icon === 'x' && (
-                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                    )}
-                    {s.icon === 'youtube' && (
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                    )}
-                    {s.icon === 'instagram' && (
-                      <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                    )}
-                  </a>
-                ))}
-              </div>
-            </div>
           </div>
 
-          {/* روابط أقسام الموقع بتوزيع متوازن على عمودين */}
-          <div className="md:col-span-4 space-y-3">
-            <h4 className="text-xs font-black text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">
-              أقسام الموقع
+          {/* روابط سريعة للمنصة */}
+          <div className="md:col-span-2 space-y-3">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+              مسارات المنصة
             </h4>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs text-slate-600 dark:text-slate-400 font-semibold">
-              <Link href="/" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">رئيسية</Link>
-              <Link href="/articles" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مقالات</Link>
-              <Link href="/services" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">استشارات</Link>
-              <Link href="/videos" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مرئيات</Link>
-              <Link href="/courses" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">بناء وتمكين</Link>
-              <Link href="/feedback" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تقييم جلسات</Link>
-              <Link href="/aqwameyat-quran" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">أقومية القرآن</Link>
-              <Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">من أنا</Link>
-              <Link href="/tests" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition col-span-2">اختبارات ومقاييس</Link>
-            </div>
+            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400 font-medium">
+              <li><Link href="/services" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">دليل الاستشارات</Link></li>
+              <li><Link href="/courses/family/mithaq" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">برنامج ميثاق للأسرة</Link></li>
+              <li><Link href="/courses/family/premarital" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تأهيل المقبلين على الزواج</Link></li>
+              <li><Link href="/tests" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">الاختبارات والمقاييس النفسية</Link></li>
+              <li><Link href="/aqwameyat-quran" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مشروع أقومية القرآن</Link></li>
+              <li><Link href="/articles" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">المنتدى الفكري والمقالات</Link></li>
+              <li><Link href="/videos" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">مكتبة المرئيات واليوتيوب</Link></li>
+            </ul>
           </div>
 
-          {/* التواصل والتنسيق الرسمي */}
+          {/* الجلسات والسرية */}
+          <div className="md:col-span-2 space-y-3">
+            <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+              عن الاستشارات
+            </h4>
+            <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400 font-medium">
+              <li><Link href="/booking" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition font-bold text-[#CC4E46]">حجز موعد جلسة</Link></li>
+              <li><Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">السيرة الذاتية والخبرات</Link></li>
+              <li><Link href="/faq" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">الأسئلة الشائعة</Link></li>
+              <li><Link href="/feedback" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تقييمات وآراء المستفيدين</Link></li>
+              <li><Link href="/policies" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">سياسة الخصوصية والسرية</Link></li>
+              <li><Link href="/contact" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">التواصل مع المكتب</Link></li>
+            </ul>
+          </div>
+
+          {/* قنوات التواصل المباشر */}
           <div className="md:col-span-3 space-y-3">
-            <h4 className="text-xs font-black text-[#4E7E76] dark:text-[#5E988E] uppercase tracking-wider">
-              التواصل والتنسيق المباشر
+            <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+              التواصل والاستفسار
             </h4>
-            <div className="space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
+            <div className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
               <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-[#4E7E76] shrink-0" />
-                <a href="mailto:info@galalahmad.com" className="hover:underline font-mono text-slate-700 dark:text-slate-300">
-                  info@galalahmad.com
-                </a>
+                <Phone className="w-3.5 h-3.5 text-[#4E7E76] shrink-0" />
+                <span dir="ltr" className="font-mono text-slate-700 dark:text-slate-300">+20 101 487 6666</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-[#4E7E76] shrink-0" />
-                <a href="https://wa.me/201014876666" target="_blank" rel="noopener noreferrer" className="hover:underline font-mono text-slate-700 dark:text-slate-300" dir="ltr">
-                  +20 101 487 6666
-                </a>
+                <Mail className="w-3.5 h-3.5 text-[#4E7E76] shrink-0" />
+                <span className="font-mono text-slate-700 dark:text-slate-300">info@galalahmad.com</span>
               </div>
               <div className="flex items-center gap-2">
-                <Video className="w-4 h-4 text-[#4E7E76] shrink-0" />
-                <span>جلسات أونلاين خاصة عبر Google Meet</span>
+                <Video className="w-3.5 h-3.5 text-[#4E7E76] shrink-0" />
+                <span>جلسات أونلاين عبر Google Meet</span>
               </div>
-              <div className="flex items-center gap-2 pt-1">
-                <Linkedin className="w-4 h-4 text-[#154F9C] shrink-0" />
+              <div className="flex items-center gap-2 pt-2">
+                <Linkedin className="w-3.5 h-3.5 text-[#154F9C] shrink-0" />
                 <a 
                   href="https://linkedin.com/in/galal3hmad/" 
                   target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:underline text-[11px] text-slate-500"
+                  rel="noopener noreferrer" 
+                  className="hover:underline font-mono text-[11px]"
                 >
                   linkedin.com/in/galal3hmad
                 </a>
@@ -134,10 +113,13 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* سطر الحقوق */}
+        {/* سطر الحقوق ورقم الإصدار */}
         <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div>
-            جميع الحقوق محفوظة © {new Date().getFullYear()} — جـلال أحـمد (`galalahmad.com`)
+          <div className="flex items-center gap-2">
+            <span>جميع الحقوق محفوظة © {new Date().getFullYear()} — جـلال أحـمد (galalahmad.com)</span>
+            <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
+              v1.2.0
+            </span>
           </div>
           <div className="flex gap-4 text-slate-500 font-semibold">
             <Link href="/policies" className="hover:underline">السياسات والخصوصية</Link>

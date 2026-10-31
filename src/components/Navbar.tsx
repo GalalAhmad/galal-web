@@ -5,26 +5,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Calendar, Sun, Moon, User, ChevronLeft } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [userSession, setUserSession] = useState<{ name: string } | null>(null);
   const { theme, toggleTheme } = useTheme();
+  const { user } = useAuth();
   const pathname = usePathname();
-
-  // Check user session
-  React.useEffect(() => {
-    try {
-      const saved = localStorage.getItem('galal_user_session');
-      if (saved) {
-        setUserSession(JSON.parse(saved));
-      } else {
-        setUserSession(null);
-      }
-    } catch (e) {}
-  }, [pathname]);
 
   // Smart Mobile Header: Sticks & slides into view when scrolling UP
   React.useEffect(() => {
@@ -65,7 +54,7 @@ export default function Navbar() {
     }`}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
         
-        {/* الشعار المعتمد بدون نص لتوسيع مساحة الهيدر */}
+        {/* الشعار المعتمد */}
         <Link href="/" className="flex items-center group shrink-0" title="جلال أحمد - الصفحة الرئيسية">
           <img 
             src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
@@ -74,7 +63,7 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* روابط التنقل الرئيسية - بدون ال التعريف لتصميم عصري متزن */}
+        {/* روابط التنقل الرئيسية */}
         <nav className="hidden lg:flex items-center gap-6 sm:gap-7 text-[13px] font-bold text-slate-600 dark:text-slate-300">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
@@ -103,7 +92,7 @@ export default function Navbar() {
           {/* تبديل المظهر */}
           <button
             onClick={toggleTheme}
-            className="p-2 sm:p-2.5 rounded-full text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+            className="p-2 sm:p-2.5 rounded-full text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
             title={theme === 'dark' ? 'التحويل إلى المظهر الفاتح المريح' : 'التحويل إلى المظهر الليلي'}
             aria-label="تبديل المظهر"
           >
@@ -116,15 +105,15 @@ export default function Navbar() {
 
           {/* User Account / Login Button */}
           <Link
-            href={userSession?.name ? '/profile' : '/login'}
+            href={user?.name ? '/profile' : '/login'}
             className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
-            title={userSession?.name ? 'الملف الشخصي والمتابعة' : 'تسجيل الدخول / إنشاء حساب'}
+            title={user?.name ? 'الملف الشخصي والمتابعة' : 'تسجيل الدخول / إنشاء حساب'}
           >
             <User className="w-3.5 h-3.5 text-[#4E7E76] dark:text-[#5E988E]" />
-            <span>{userSession?.name ? userSession.name.split(' ')[0] : 'دخول / حسابي'}</span>
+            <span>{user?.name ? user.name.split(' ')[0] : 'دخول / حسابي'}</span>
           </Link>
 
-          {/* زر احجز جلسة بلون عرب ثيرابي المرجاني الجذاب */}
+          {/* زر احجز جلسة */}
           <Link
             href="/booking"
             className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-xs font-bold rounded-full transition shadow-sm hover:shadow"
@@ -136,7 +125,7 @@ export default function Navbar() {
           {/* زر قائمة الجوال */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="lg:hidden p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
             aria-label="القائمة الرئيسية"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -160,13 +149,13 @@ export default function Navbar() {
           ))}
           <div className="pt-2 space-y-2">
             <Link
-              href={userSession?.name ? '/profile' : '/login'}
+              href={user?.name ? '/profile' : '/login'}
               onClick={() => setMobileMenuOpen(false)}
               className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 text-xs font-extrabold text-slate-800 dark:text-slate-100"
             >
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-[#4E7E76] dark:text-[#5E988E]" />
-                <span>{userSession?.name ? `حسابي (${userSession.name})` : 'بوابة المستفيد (تسجيل الدخول / إنشاء حساب)'}</span>
+                <span>{user?.name ? `حسابي (${user.name})` : 'بوابة المستفيد (تسجيل الدخول / إنشاء حساب)'}</span>
               </div>
               <ChevronLeft className="w-4 h-4 text-slate-400 rtl:rotate-0" />
             </Link>

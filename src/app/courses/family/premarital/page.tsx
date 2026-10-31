@@ -28,15 +28,24 @@ import {
   FileText,
   BookmarkCheck,
   Award,
-  ChevronRight
+  ChevronRight,
+  LogIn
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function RifqPremaritalPage() {
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [applicantName, setApplicantName] = useState('');
   const [applicantPhone, setApplicantPhone] = useState('');
   const [applicantStatus, setApplicantStatus] = useState('مقبل على الزواج (مخطوب)');
   const [applicantNotes, setApplicantNotes] = useState('');
+
+  React.useEffect(() => {
+    if (user?.name && !applicantName) {
+      setApplicantName(user.name);
+    }
+  }, [user, applicantName]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -752,7 +761,27 @@ export default function RifqPremaritalPage() {
               سيتم التواصل معك فور اعتماد موعد الدفعة وتفاصيل الحضور
             </p>
 
-            {submitSuccess ? (
+            {!isAuthenticated && !authLoading ? (
+              <div className="p-6 sm:p-8 rounded-2xl bg-slate-50 dark:bg-black/20 border border-dashed border-slate-300 dark:border-slate-700 text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-[#168962]/10 text-[#168962] flex items-center justify-center mx-auto">
+                  <LogIn className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white">تسجيل الدخول مطلوب للتقديم</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
+                    يمكنك تصفح محاور ومحتويات البرنامج التأهيلي كاملة، ولتقديم طلب التسجيل يرجى تسجيل الدخول أو إنشاء حسابك.
+                  </p>
+                </div>
+                <Link
+                  href="/login?redirect=/courses/family/premarital#register"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#168962] hover:bg-[#127251] text-white text-xs sm:text-sm font-bold transition shadow-md shadow-[#168962]/20"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>تسجيل الدخول للتقديم في البرنامج</span>
+                  <ArrowLeft className="w-4 h-4 rtl:rotate-0" />
+                </Link>
+              </div>
+            ) : submitSuccess ? (
               <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-center text-emerald-800 dark:text-emerald-300 text-xs font-semibold">
                 ✓ تم فتح واتساب للتأكيد، وجارٍ استلام بياناتك بنجاح!
               </div>

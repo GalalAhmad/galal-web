@@ -8,27 +8,19 @@ import {
   Calendar, 
   Brain, 
   User, 
-  MessageCircle, 
-  Sparkles,
   ArrowUp,
   Compass
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function StickyBottomBar() {
   const pathname = usePathname();
   const { theme } = useTheme();
-  const [userSession, setUserSession] = useState<{ name: string } | null>(null);
+  const { user } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('galal_user_session');
-      if (saved) {
-        setUserSession(JSON.parse(saved));
-      }
-    } catch (e) {}
-
     const handleScroll = () => {
       // Show sticky bar on desktop once scrolled 120px down
       if (window.scrollY > 120) {
@@ -117,15 +109,15 @@ export default function StickyBottomBar() {
 
           {/* Tab 4: Client Profile / Account */}
           <Link
-            href="/profile"
+            href={user?.name ? '/profile' : '/login'}
             className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition ${
-              pathname === '/profile'
+              pathname === '/profile' || pathname === '/login'
                 ? 'text-[#4E7E76] dark:text-[#5E988E] font-black'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
             }`}
           >
             <User className="w-5 h-5 mb-0.5" />
-            <span className="text-[10px] font-bold">{userSession?.name ? 'حسابي' : 'دخول'}</span>
+            <span className="text-[10px] font-bold">{user?.name ? 'حسابي' : 'دخول'}</span>
           </Link>
         </div>
       </div>
@@ -176,7 +168,7 @@ export default function StickyBottomBar() {
                 <span>اختبارات ومقاييس</span>
               </Link>
               <Link
-                href="/profile"
+                href={user?.name ? '/profile' : '/login'}
                 className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1 ${
                   pathname === '/profile'
                     ? 'text-[#4E7E76] dark:text-[#5E988E] bg-[#4E7E76]/10 font-black'
@@ -184,7 +176,7 @@ export default function StickyBottomBar() {
                 }`}
               >
                 <User className="w-3.5 h-3.5" />
-                <span>{userSession?.name ? 'ملفي' : 'دخول'}</span>
+                <span>{user?.name ? `حسابي (${user.name.split(' ')[0]})` : 'دخول'}</span>
               </Link>
             </nav>
           </div>

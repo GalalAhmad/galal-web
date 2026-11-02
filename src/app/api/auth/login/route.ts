@@ -2,28 +2,12 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import { verifyPassword, hashPassword, phonesMatch, normalizePhone } from '@/lib/auth';
+import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'userProfiles.json');
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-async function readProfiles() {
-  try {
-    const data = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (err) {
-    return [];
-  }
-}
-
-async function writeProfiles(data: any[]) {
-  try {
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error writing userProfiles.json:', err);
-  }
-}
 
 export async function POST(request: Request) {
   try {
@@ -48,9 +32,64 @@ export async function POST(request: Request) {
     const cleanPhone = normalizePhone(cleanInput);
     const cleanEmail = cleanInput.toLowerCase();
 
-    const profiles = await readProfiles();
+    // 1. Check in Supabase if configured
+    if (isSupabaseConfigured) {
+      let query = supabaseAdmin.from('profiles').select('*');
+      if (cleanPhone && cleanEmail) {
+        query = query.or(`phone.eq.${cleanPhone},email.eq.${cleanEmail}`);
+      } else if (cleanPhone) {
+        query = query.eq('phone', cleanPhone);
+      } else {
+        query = query.eq('email', cleanEmail);
+      }
 
-    // Find user by phone or email
+      const { data: users, error: dbErr } = await query;
+      if (!dbErr && users && users.length > 0) {
+        const user = users[0];
+
+        if (user.password_hash) {
+          const isMatch = verifyPassword(password, user.password_hash);
+          if (!isMatch) {
+            return NextResponse.json(
+              { error: 'كلمة المرور غير صحيحة. يرجى التأكد وإعادة المحاولة.' },
+              { status: 401 }
+            );
+          }
+        } else {
+          // If no password set yet, set it now
+          await supabaseAdmin
+            .from('profiles')
+            .update({ password_hash: hashPassword(password), updated_at: new Date().toISOString() })
+            .eq('id', user.id);
+        }
+
+        return NextResponse.json({
+          success: true,
+          user: {
+            id: user.id,
+            name: user.name,
+            phone: user.phone || '',
+            email: user.email || '',
+            gender: user.gender || '',
+            ageGroup: user.age_group || '',
+            maritalStatus: user.marital_status || '',
+            country: user.country || '',
+            city: user.city || '',
+            role: user.role || 'client',
+            createdAt: user.created_at,
+          },
+        });
+      }
+    }
+
+    // 2. Local Fallback
+    let profiles: any[] = [];
+    try {
+      profiles = JSON.parse(await fs.readFile(filePath, 'utf-8'));
+    } catch (e) {
+      profiles = [];
+    }
+
     const userIndex = profiles.findIndex((p: any) => {
       const pEmail = (p.email || '').trim().toLowerCase();
       if (cleanPhone && p.phone && phonesMatch(p.phone, cleanPhone)) return true;
@@ -67,7 +106,6 @@ export async function POST(request: Request) {
 
     const user = profiles[userIndex];
 
-    // Check password
     if (user.passwordHash) {
       const isMatch = verifyPassword(password, user.passwordHash);
       if (!isMatch) {
@@ -77,26 +115,26 @@ export async function POST(request: Request) {
         );
       }
     } else {
-      // Legacy user without passwordHash: initialize password on first real login
       user.passwordHash = hashPassword(password);
       profiles[userIndex] = user;
-      await writeProfiles(profiles);
+      try {
+        await fs.writeFile(filePath, JSON.stringify(profiles, null, 2), 'utf-8');
+      } catch (e) {}
     }
 
-    // Return safe user object
     return NextResponse.json({
       success: true,
       user: {
         id: user.id,
         name: user.name,
-        phone: user.phone,
-        email: user.email,
+        phone: user.phone || '',
+        email: user.email || '',
         gender: user.gender || '',
         ageGroup: user.ageGroup || '',
         maritalStatus: user.maritalStatus || '',
         country: user.country || '',
         city: user.city || '',
-        provider: user.provider || 'credentials',
+        role: user.role || 'client',
         createdAt: user.createdAt,
       },
     });

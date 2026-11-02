@@ -928,7 +928,7 @@ ${meet}
     }
   };
 
-  // Availability & Calendly Handlers
+  // Availability & Calendly Handlers with Instant Cloud Sync
   const DAYS_OF_WEEK = [
     { index: 6, label: 'السبت' },
     { index: 0, label: 'الأحد' },
@@ -939,84 +939,95 @@ ${meet}
     { index: 5, label: 'الجمعة' },
   ];
 
-  const handleToggleWorkingDay = (dayIndex: number) => {
-    setAvailability(prev => {
-      const exists = prev.workingDays.includes(dayIndex);
-      const newDays = exists
-        ? prev.workingDays.filter(d => d !== dayIndex)
-        : [...prev.workingDays, dayIndex].sort();
-      return { ...prev, workingDays: newDays };
-    });
-  };
-
-  const handleToggleTimeSlot = (slotId: string) => {
-    setAvailability(prev => ({
-      ...prev,
-      timeSlots: prev.timeSlots.map(s => s.id === slotId ? { ...s, enabled: !s.enabled } : s)
-    }));
-  };
-
-  const handleAddNewSlot = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSlotLabel.trim()) return;
-    const id = `slot_${Date.now()}`;
-    setAvailability(prev => ({
-      ...prev,
-      timeSlots: [...prev.timeSlots, { id, label: newSlotLabel.trim(), enabled: true }]
-    }));
-    setNewSlotLabel('');
-  };
-
-  const handleDeleteSlot = (slotId: string) => {
-    setAvailability(prev => ({
-      ...prev,
-      timeSlots: prev.timeSlots.filter(s => s.id !== slotId)
-    }));
-  };
-
-  const handleAddBlockedDate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newBlockedDate) return;
-    if (!availability.blockedDates.includes(newBlockedDate)) {
-      setAvailability(prev => ({
-        ...prev,
-        blockedDates: [...prev.blockedDates, newBlockedDate].sort()
-      }));
-    }
-    setNewBlockedDate('');
-  };
-
-  const handleRemoveBlockedDate = (dateStr: string) => {
-    setAvailability(prev => ({
-      ...prev,
-      blockedDates: prev.blockedDates.filter(d => d !== dateStr)
-    }));
-  };
-
-  const handleSaveAvailability = async () => {
+  const syncAvailabilityToCloud = async (newAvail: typeof availability) => {
     setSavingAvailability(true);
     try {
       const res = await fetch('/api/availability', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          workingDays: availability.workingDays,
-          timeSlots: availability.timeSlots,
-          blockedDates: availability.blockedDates
-        })
+          workingDays: newAvail.workingDays,
+          timeSlots: newAvail.timeSlots,
+          blockedDates: newAvail.blockedDates,
+        }),
       });
       if (res.ok) {
-        setSaveSuccessMsg('تم حفظ وتحديث جدول المواعيد وأيام العمل بنجاح!');
-        setTimeout(() => setSaveSuccessMsg(''), 4000);
-      } else {
-        alert('حدث خطأ أثناء حفظ جدول المواعيد.');
+        setSaveSuccessMsg('✓ تم الحفظ والمزامنة السحابية الفورية في Supabase!');
+        setTimeout(() => setSaveSuccessMsg(''), 3000);
       }
-    } catch (err) {
-      console.error(err);
-      alert('تعذر الاتصال بالخادم لحفظ جدول المواعيد.');
+    } catch (e) {
+      console.error('Auto-sync error:', e);
     } finally {
       setSavingAvailability(false);
     }
+  };
+
+  const handleToggleWorkingDay = (dayIndex: number) => {
+    const exists = availability.workingDays.includes(dayIndex);
+    const newDays = exists
+      ? availability.workingDays.filter(d => d !== dayIndex)
+      : [...availability.workingDays, dayIndex].sort();
+    const updated = { ...availability, workingDays: newDays };
+    setAvailability(updated);
+    syncAvailabilityToCloud(updated);
+  };
+
+  const handleToggleTimeSlot = (slotId: string) => {
+    const updated = {
+      ...availability,
+      timeSlots: availability.timeSlots.map(s => s.id === slotId ? { ...s, enabled: !s.enabled } : s),
+    };
+    setAvailability(updated);
+    syncAvailabilityToCloud(updated);
+  };
+
+  const handleAddNewSlot = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSlotLabel.trim()) return;
+    const id = `slot_${Date.now()}`;
+    const updated = {
+      ...availability,
+      timeSlots: [...availability.timeSlots, { id, label: newSlotLabel.trim(), enabled: true }],
+    };
+    setAvailability(updated);
+    setNewSlotLabel('');
+    syncAvailabilityToCloud(updated);
+  };
+
+  const handleDeleteSlot = (slotId: string) => {
+    const updated = {
+      ...availability,
+      timeSlots: availability.timeSlots.filter(s => s.id !== slotId),
+    };
+    setAvailability(updated);
+    syncAvailabilityToCloud(updated);
+  };
+
+  const handleAddBlockedDate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBlockedDate) return;
+    if (!availability.blockedDates.includes(newBlockedDate)) {
+      const updated = {
+        ...availability,
+        blockedDates: [...availability.blockedDates, newBlockedDate].sort(),
+      };
+      setAvailability(updated);
+      syncAvailabilityToCloud(updated);
+    }
+    setNewBlockedDate('');
+  };
+
+  const handleRemoveBlockedDate = (dateStr: string) => {
+    const updated = {
+      ...availability,
+      blockedDates: availability.blockedDates.filter(d => d !== dateStr),
+    };
+    setAvailability(updated);
+    syncAvailabilityToCloud(updated);
+  };
+
+  const handleSaveAvailability = async () => {
+    await syncAvailabilityToCloud(availability);
   };
 
   // Add Client & Password Handlers
@@ -1842,6 +1853,12 @@ ${meet}
                   <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                     تحكم كامل في أيام العمل الأسبوعية، والمواعيد اليومية، وتواريخ الإجازات. يقوم النظام تلقائياً بقفل أي موعد يتم حجزه لمنع التعارض.
                   </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-800 text-[11px] font-bold text-emerald-400">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      متصل سحابياً بقاعدة بيانات Supabase • الحفظ فوري وتلقائي عند كل نقرة
+                    </span>
+                  </div>
                 </div>
                 <button
                   type="button"

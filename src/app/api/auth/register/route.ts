@@ -2,28 +2,12 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import { hashPassword, phonesMatch, normalizePhone } from '@/lib/auth';
+import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'userProfiles.json');
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-async function readProfiles() {
-  try {
-    const data = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (err) {
-    return [];
-  }
-}
-
-async function writeProfiles(data: any[]) {
-  try {
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error writing userProfiles.json:', err);
-  }
-}
 
 export async function POST(request: Request) {
   try {
@@ -64,10 +48,76 @@ export async function POST(request: Request) {
 
     const cleanPhone = normalizePhone(phone);
     const cleanEmail = email ? email.trim().toLowerCase() : '';
+    const pwdHash = hashPassword(password);
 
-    const profiles = await readProfiles();
+    // 2. Check for duplicate account in Supabase
+    if (isSupabaseConfigured) {
+      let query = supabaseAdmin.from('profiles').select('id, phone, email');
+      if (cleanPhone && cleanEmail) {
+        query = query.or(`phone.eq.${cleanPhone},email.eq.${cleanEmail}`);
+      } else if (cleanPhone) {
+        query = query.eq('phone', cleanPhone);
+      } else {
+        query = query.eq('email', cleanEmail);
+      }
 
-    // 2. Check for duplicate account
+      const { data: existingUsers } = await query;
+      if (existingUsers && existingUsers.length > 0) {
+        return NextResponse.json(
+          {
+            error:
+              'يوجد حساب مسجل بالفعل برقم الهاتف أو البريد الإلكتروني المدخل. يرجى تسجيل الدخول مباشرة.',
+          },
+          { status: 409 }
+        );
+      }
+
+      // Insert into Supabase
+      const { data: inserted, error: insErr } = await supabaseAdmin
+        .from('profiles')
+        .insert({
+          name: name.trim(),
+          phone: cleanPhone || null,
+          email: cleanEmail || null,
+          password_hash: pwdHash,
+          role: 'client',
+          gender: gender || null,
+          age_group: ageGroup || null,
+          marital_status: maritalStatus || null,
+          country: country || null,
+          city: city || null,
+        })
+        .select()
+        .single();
+
+      if (!insErr && inserted) {
+        return NextResponse.json({
+          success: true,
+          user: {
+            id: inserted.id,
+            name: inserted.name,
+            phone: inserted.phone || '',
+            email: inserted.email || '',
+            gender: inserted.gender || '',
+            ageGroup: inserted.age_group || '',
+            maritalStatus: inserted.marital_status || '',
+            country: inserted.country || '',
+            city: inserted.city || '',
+            role: inserted.role || 'client',
+            createdAt: inserted.created_at,
+          },
+        });
+      }
+    }
+
+    // Local Fallback
+    let profiles: any[] = [];
+    try {
+      profiles = JSON.parse(await fs.readFile(filePath, 'utf-8'));
+    } catch (e) {
+      profiles = [];
+    }
+
     const existing = profiles.find((p: any) => {
       const pEmail = (p.email || '').trim().toLowerCase();
       if (cleanPhone && p.phone && phonesMatch(p.phone, cleanPhone)) return true;
@@ -85,19 +135,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Create real user profile
     const newProfile = {
       id: `user-${Date.now()}`,
       name: name.trim(),
       phone: cleanPhone || '',
       email: cleanEmail || '',
-      passwordHash: hashPassword(password),
+      passwordHash: pwdHash,
       provider: 'credentials',
       gender: gender || '',
       ageGroup: ageGroup || '',
       maritalStatus: maritalStatus || '',
       country: country || '',
       city: city || '',
+      role: 'client',
       clinicalNotes: '',
       homework: [],
       testResults: [],
@@ -105,9 +155,10 @@ export async function POST(request: Request) {
     };
 
     profiles.unshift(newProfile);
-    await writeProfiles(profiles);
+    try {
+      await fs.writeFile(filePath, JSON.stringify(profiles, null, 2), 'utf-8');
+    } catch (e) {}
 
-    // Return safe user object (omit passwordHash)
     return NextResponse.json({
       success: true,
       user: {
@@ -120,7 +171,7 @@ export async function POST(request: Request) {
         maritalStatus: newProfile.maritalStatus,
         country: newProfile.country,
         city: newProfile.city,
-        provider: newProfile.provider,
+        role: 'client',
         createdAt: newProfile.createdAt,
       },
     });

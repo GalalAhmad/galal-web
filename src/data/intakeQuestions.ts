@@ -284,3 +284,83 @@ export const intakeTracks: TrackConfig[] = [
     ],
   },
 ];
+
+
+/**
+ * Universal lookup helper for question titles and localized Arabic answers
+ */
+export function getQuestionAndAnswerLabels(trackId: string | undefined, questionId: string, answerValue: any) {
+  let foundQuestion: IntakeQuestion | undefined;
+
+  // 1. Check in specific track first
+  if (trackId) {
+    const track = intakeTracks.find((t) => t.id === trackId);
+    if (track) {
+      foundQuestion = track.questions.find((q) => q.id === questionId);
+    }
+  }
+
+  // 2. Fallback search across all tracks
+  if (!foundQuestion) {
+    for (const track of intakeTracks) {
+      const q = track.questions.find((item) => item.id === questionId);
+      if (q) {
+        foundQuestion = q;
+        break;
+      }
+    }
+  }
+
+  const questionTitle = foundQuestion ? foundQuestion.question : questionId;
+
+  const resolveLabel = (optId: string) => {
+    if (!foundQuestion?.options) return optId;
+    const opt = foundQuestion.options.find((o) => o.id === optId);
+    return opt ? opt.label : optId;
+  };
+
+  let formattedAnswer: string | string[] = answerValue;
+  if (Array.isArray(answerValue)) {
+    formattedAnswer = answerValue.map((v) => resolveLabel(String(v)));
+  } else if (typeof answerValue === 'string') {
+    formattedAnswer = resolveLabel(answerValue);
+  }
+
+  return {
+    questionTitle,
+    formattedAnswer,
+    questionSubtitle: foundQuestion?.subtitle,
+  };
+}
+
+/**
+ * Extracts a concise human-readable summary of symptoms or challenges
+ * for display directly in the booking list row.
+ */
+export function getIntakeSummaryPills(trackId: string | undefined, answers: any): string[] {
+  if (!answers || typeof answers !== 'object') return [];
+  const pills: string[] = [];
+
+  const priorityKeys = [
+    'psychological_symptoms',
+    'main_challenges',
+    'behavioral_problems',
+    'youth_challenges',
+    'emergency_nature',
+    'attendance_type',
+    'physical_symptoms'
+  ];
+
+  for (const key of priorityKeys) {
+    if (answers[key]) {
+      const { formattedAnswer } = getQuestionAndAnswerLabels(trackId, key, answers[key]);
+      if (Array.isArray(formattedAnswer)) {
+        pills.push(...formattedAnswer);
+      } else if (typeof formattedAnswer === 'string' && formattedAnswer.trim()) {
+        pills.push(formattedAnswer);
+      }
+    }
+  }
+
+  return pills.slice(0, 4); // return top 4 tags
+}

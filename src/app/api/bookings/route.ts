@@ -12,6 +12,14 @@ const profilesPath = path.join(process.cwd(), 'src', 'data', 'userProfiles.json'
 
 function toFrontendBooking(row: any) {
   if (!row) return null;
+  let parsedAnswers = row.answers;
+  if (typeof parsedAnswers === 'string') {
+    try {
+      parsedAnswers = JSON.parse(parsedAnswers);
+    } catch (e) {
+      parsedAnswers = {};
+    }
+  }
   return {
     id: row.id,
     clientName: row.client_name || row.clientName,
@@ -29,7 +37,7 @@ function toFrontendBooking(row: any) {
     fee: row.fee || '250 ر.س',
     receiptNote: row.receipt_note || row.receiptNote || '',
     receiptImage: row.receipt_image || row.receiptImage || '',
-    answers: row.answers || {},
+    answers: parsedAnswers || {},
     notes: row.notes || '',
     created_at: row.created_at || new Date().toISOString(),
   };

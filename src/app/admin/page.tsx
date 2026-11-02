@@ -49,6 +49,7 @@ import {
   UserPlus
 } from 'lucide-react';
 import { articlesData as initialArticles } from '@/data/articles';
+import { getQuestionAndAnswerLabels, getIntakeSummaryPills, intakeTracks } from '@/data/intakeQuestions';
 
 export default function AdminDashboardPage() {
   // Authentication Protection State
@@ -692,6 +693,32 @@ export default function AdminDashboardPage() {
   const confirmedBookingsCount = bookingsList.filter(b => b.status === 'confirmed').length;
   const completedBookingsCount = bookingsList.filter(b => b.status === 'completed').length;
   const cancelledBookingsCount = bookingsList.filter(b => b.status === 'cancelled').length;
+
+  // Financial & Executive KPI Calculations
+  const parseFeeNumber = (feeStr?: string) => {
+    if (!feeStr) return 250;
+    const match = String(feeStr).match(/\d+/);
+    return match ? parseInt(match[0], 10) : 250;
+  };
+
+  const confirmedRevenue = bookingsList
+    .filter(b => b.status === 'confirmed' || b.status === 'completed')
+    .reduce((sum, b) => sum + parseFeeNumber(b.fee), 0);
+
+  const pendingRevenue = bookingsList
+    .filter(b => b.status === 'pending_verification')
+    .reduce((sum, b) => sum + parseFeeNumber(b.fee), 0);
+
+  const totalBookingsValue = confirmedRevenue + pendingRevenue;
+
+  // Payment Breakdown
+  const instapayCount = bookingsList.filter(b => b.paymentMethod === 'instapay').length;
+  const vodafoneCount = bookingsList.filter(b => b.paymentMethod === 'vodafone').length;
+  const bankCount = bookingsList.filter(b => b.paymentMethod === 'bank').length;
+
+  // Today's Sessions
+  const todayIsoString = new Date().toISOString().split('T')[0];
+  const todaySessions = bookingsList.filter(b => b.slotDate === todayIsoString && b.status !== 'cancelled');
 
   const handleBookingStatus = async (id: string, newStatus: string) => {
     setBookingsList(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
@@ -1452,6 +1479,100 @@ ${meet}
                 </div>
               </div>
 
+              {/* EXECUTIVE KPI DASHBOARD & FINANCIAL MODULE */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 1. Confirmed Revenue */}
+                <div className="p-5 rounded-3xl bg-linear-to-br from-[#0F291E] to-[#0A1D15] border border-emerald-500/30 shadow-lg relative overflow-hidden">
+                  <div className="flex items-center justify-between text-xs text-emerald-400 font-bold mb-2">
+                    <span>الإيرادات المؤكدة</span>
+                    <DollarSign className="w-4 h-4" />
+                  </div>
+                  <div className="text-2xl font-black text-white">
+                    {confirmedRevenue.toLocaleString()} <span className="text-sm font-normal text-emerald-300">ر.س</span>
+                  </div>
+                  <div className="text-[11px] text-emerald-400/80 mt-1 flex items-center justify-between">
+                    <span>{confirmedBookingsCount + completedBookingsCount} جلسة مؤكدة/مكتملة</span>
+                    <span>{(confirmedRevenue * 13).toLocaleString()} ج.م تقريباً</span>
+                  </div>
+                </div>
+
+                {/* 2. Pending Verification Revenue */}
+                <div className="p-5 rounded-3xl bg-linear-to-br from-[#2D1B06] to-[#1F1303] border border-amber-500/30 shadow-lg relative overflow-hidden">
+                  <div className="flex items-center justify-between text-xs text-amber-400 font-bold mb-2">
+                    <span>بانتظار مراجعة الإيصال</span>
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div className="text-2xl font-black text-white">
+                    {pendingRevenue.toLocaleString()} <span className="text-sm font-normal text-amber-300">ر.س</span>
+                  </div>
+                  <div className="text-[11px] text-amber-400/80 mt-1 flex items-center justify-between">
+                    <span>{pendingBookingsCount} طلبات معلقة</span>
+                    <button
+                      type="button"
+                      onClick={() => setBookingStatusFilter('pending_verification')}
+                      className="font-bold text-amber-300 underline cursor-pointer hover:text-amber-200"
+                    >
+                      افحص الآن
+                    </button>
+                  </div>
+                </div>
+
+                {/* 3. Today's Sessions */}
+                <div className="p-5 rounded-3xl bg-linear-to-br from-[#0F1D38] to-[#091224] border border-[#154F9C]/40 shadow-lg relative overflow-hidden">
+                  <div className="flex items-center justify-between text-xs text-sky-400 font-bold mb-2">
+                    <span>جلسات اليوم ({todayIsoString})</span>
+                    <Video className="w-4 h-4" />
+                  </div>
+                  <div className="text-2xl font-black text-white">
+                    {todaySessions.length} <span className="text-sm font-normal text-sky-300">جلسة مجدولة</span>
+                  </div>
+                  <div className="text-[11px] text-sky-400/80 mt-1">
+                    {todaySessions.length > 0 ? (
+                      <span className="text-emerald-400 font-bold">جاهزة للانعقاد عبر Google Meet</span>
+                    ) : (
+                      <span>لا توجد جلسات محجوزة لليوم</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 4. Payment Distribution */}
+                <div className="p-5 rounded-3xl bg-[#0E1524] border border-slate-800 shadow-lg">
+                  <div className="flex items-center justify-between text-xs text-slate-400 font-bold mb-2">
+                    <span>توزيع طرق السداد</span>
+                    <Building2 className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-1.5 text-[11px]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-purple-400 font-bold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-purple-500" />
+                        <span>إنستاباي</span>
+                      </span>
+                      <span className="font-mono text-slate-300">
+                        {instapayCount} ({bookingsList.length ? Math.round((instapayCount / bookingsList.length) * 100) : 0}%)
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-red-400 font-bold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-red-500" />
+                        <span>فودافون كاش</span>
+                      </span>
+                      <span className="font-mono text-slate-300">
+                        {vodafoneCount} ({bookingsList.length ? Math.round((vodafoneCount / bookingsList.length) * 100) : 0}%)
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-emerald-400 font-bold flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <span>تحويل بنكي</span>
+                      </span>
+                      <span className="font-mono text-slate-300">
+                        {bankCount} ({bookingsList.length ? Math.round((bankCount / bookingsList.length) * 100) : 0}%)
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Status Filter Tabs */}
               <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs">
                 <button
@@ -1575,6 +1696,25 @@ ${meet}
                                   </>
                                 )}
                               </div>
+
+                              {/* Clinical Symptoms Summary Pills */}
+                              {(() => {
+                                const pills = getIntakeSummaryPills(booking.track, booking.answers);
+                                if (pills.length === 0) return null;
+                                return (
+                                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                                    <span className="text-[11px] text-slate-400 font-bold">أبرز المحاور:</span>
+                                    {pills.map((pill, pIdx) => (
+                                      <span
+                                        key={pIdx}
+                                        className="px-2 py-0.5 rounded-md bg-[#154F9C]/20 border border-[#154F9C]/40 text-sky-200 text-[11px] font-medium"
+                                      >
+                                        {pill}
+                                      </span>
+                                    ))}
+                                  </div>
+                                );
+                              })()}
                             </div>
 
                             {/* Status Selector & Actions */}
@@ -1735,56 +1875,78 @@ ${meet}
                               </div>
 
                               {/* Symptoms & Answers from Intake Form */}
-                              {booking.answers && Object.keys(booking.answers).length > 0 && (
-                                <div className="space-y-3 pt-2">
-                                  <h4 className="font-bold text-slate-300 flex items-center gap-1.5">
-                                    <Brain className="w-4 h-4 text-[#154F9C]" />
-                                    <span>الاستجابات التشخيصية والأعراض المحددة:</span>
-                                  </h4>
+                              {(() => {
+                                let parsedAns: Record<string, any> = {};
+                                if (typeof booking.answers === 'string') {
+                                  try {
+                                    parsedAns = JSON.parse(booking.answers);
+                                  } catch (e) {
+                                    parsedAns = {};
+                                  }
+                                } else if (booking.answers && typeof booking.answers === 'object') {
+                                  parsedAns = booking.answers;
+                                }
 
-                                  <div className="space-y-2">
-                                    {Object.entries(booking.answers).map(([key, val]: [string, any]) => {
-                                      if (!val || (Array.isArray(val) && val.length === 0)) return null;
+                                const entries = Object.entries(parsedAns).filter(
+                                  ([_, v]) => v !== undefined && v !== null && (Array.isArray(v) ? v.length > 0 : String(v).trim() !== '')
+                                );
 
-                                      return (
-                                        <div key={key} className="p-3 rounded-xl bg-slate-900/90 border border-slate-800/80">
-                                          <div className="text-slate-400 font-bold mb-1.5">
-                                            {key === 'psychological_symptoms' && 'الأعراض النفسية الأساسية:'}
-                                            {key === 'physical_symptoms' && 'الأعراض الجسدية المصاحبة:'}
-                                            {key === 'previous_therapy' && 'الخبرة الاستشارية السابقة:'}
-                                            {key === 'marital_crisis_nature' && 'طبيعة المشكلة الزوجية / الأسرية:'}
-                                            {key === 'crisis_duration' && 'مدة استمرار الخلاف:'}
-                                            {key === 'parenting_behaviors' && 'سلوكيات الابن التي تثير القلق:'}
-                                            {key === 'youth_challenges' && 'التحديات والمخاوف الشبابية:'}
-                                            {key === 'emergency_nature' && 'طبيعة الظرف الضاغط الطارئ:'}
-                                            {key === 'consultation_reason' && 'وصف المشكلة والهدف بكلمات المستفيد:'}
-                                            {key === 'child_age_stage' && 'المرحلة العمرية للأبناء:'}
-                                            {key === 'children_count' && 'عدد الأبناء:'}
-                                            {!['psychological_symptoms', 'physical_symptoms', 'previous_therapy', 'marital_crisis_nature', 'crisis_duration', 'parenting_behaviors', 'youth_challenges', 'emergency_nature', 'consultation_reason', 'child_age_stage', 'children_count'].includes(key) && `${key}: `}
-                                          </div>
+                                if (entries.length === 0) {
+                                  return (
+                                    <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 text-slate-500 text-xs">
+                                      لم يقم المستفيد بتعبئة استمارة تشخيصية مفصلة لهذا الحجز.
+                                    </div>
+                                  );
+                                }
 
-                                          {Array.isArray(val) ? (
-                                            <div className="flex flex-wrap gap-1.5">
-                                              {val.map((itemStr: string) => (
-                                                <span
-                                                  key={itemStr}
-                                                  className="px-2.5 py-1 rounded-lg bg-[#154F9C]/20 border border-[#154F9C]/40 text-sky-200 text-xs font-medium"
-                                                >
-                                                  {SYMPTOM_LABELS[itemStr] || itemStr}
-                                                </span>
-                                              ))}
+                                return (
+                                  <div className="space-y-3 pt-2">
+                                    <h4 className="font-bold text-slate-200 flex items-center justify-between">
+                                      <span className="flex items-center gap-1.5 text-sky-400">
+                                        <Brain className="w-4 h-4" />
+                                        <span>إجابات الاستمارة التشخيصية السريرية المعتمدة:</span>
+                                      </span>
+                                      <span className="text-[10px] text-slate-500 font-normal">
+                                        {entries.length} محاور مستوفاة
+                                      </span>
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 gap-2.5">
+                                      {entries.map(([qKey, val]) => {
+                                        const { questionTitle, formattedAnswer, questionSubtitle } = getQuestionAndAnswerLabels(booking.track, qKey, val);
+
+                                        return (
+                                          <div key={qKey} className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800/80 space-y-1.5">
+                                            <div className="text-slate-300 font-bold text-xs flex flex-wrap items-center justify-between gap-1">
+                                              <span>{questionTitle}</span>
+                                              {questionSubtitle && (
+                                                <span className="text-[10px] text-slate-500 font-normal">{questionSubtitle}</span>
+                                              )}
                                             </div>
-                                          ) : (
-                                            <p className="text-slate-200 leading-relaxed font-sans bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/50">
-                                              {SYMPTOM_LABELS[String(val)] || String(val)}
-                                            </p>
-                                          )}
-                                        </div>
-                                      );
-                                    })}
+
+                                            {Array.isArray(formattedAnswer) ? (
+                                              <div className="flex flex-wrap gap-1.5 pt-1">
+                                                {formattedAnswer.map((itemStr: string, idx: number) => (
+                                                  <span
+                                                    key={idx}
+                                                    className="px-2.5 py-1 rounded-lg bg-[#154F9C]/25 border border-[#154F9C]/40 text-sky-200 text-xs font-semibold"
+                                                  >
+                                                    {SYMPTOM_LABELS[itemStr] || itemStr}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            ) : (
+                                              <p className="text-slate-200 text-xs leading-relaxed font-sans bg-slate-950/70 p-3 rounded-xl border border-slate-800/60 whitespace-pre-line">
+                                                {SYMPTOM_LABELS[String(formattedAnswer)] || String(formattedAnswer)}
+                                              </p>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
                                   </div>
-                                </div>
-                              )}
+                                );
+                              })()}
                             </div>
                           )}
                         </div>

@@ -15,6 +15,7 @@ import {
   BookOpen,
   Brain,
   CheckCircle2,
+  Check,
   ExternalLink,
   LogOut,
   ChevronLeft,
@@ -37,8 +38,13 @@ import {
   BookmarkCheck,
   Compass,
   ArrowUpRight,
+  Smile,
+  Activity,
+  Heart,
+  Send,
   X
 } from 'lucide-react';
+import { getIntakeSummaryPills } from '@/data/intakeQuestions';
 
 // Google & Apple OAuth removed per policy
 
@@ -58,17 +64,29 @@ export default function ClientProfilePage() {
   const { user: authUser, logout, login } = useAuth();
   const [userSession, setUserSession] = useState<any>(null);
 
-  // App Tabs: consultations | courses | assessments | homework | settings
-  const [activeTab, setActiveTab] = useState<'consultations' | 'courses' | 'assessments' | 'homework' | 'settings'>('consultations');
+  // App Tabs: consultations | courses | assessments | homework | settings | consultant_hub | wellbeing
+  const [activeTab, setActiveTab] = useState<'consultations' | 'courses' | 'assessments' | 'homework' | 'settings' | 'consultant_hub' | 'wellbeing'>('consultations');
 
   // Client Data States
   const [clientBookings, setClientBookings] = useState<any[]>([]);
+  const [allConsultations, setAllConsultations] = useState<any[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [clientTests, setClientTests] = useState<any[]>([]);
   const [clientCourses, setClientCourses] = useState<any[]>([]);
   const [clientHomework, setClientHomework] = useState<any[]>([]);
   const [clientReadingPlan, setClientReadingPlan] = useState<any[]>([]);
   const [clinicalNotes, setClinicalNotes] = useState<string>('');
+
+  // Wellbeing & Daily Habits Tracker State
+  const [dailyMood, setDailyMood] = useState<{ id: string; label: string; emoji: string; insight: string } | null>(null);
+  const [habits, setHabits] = useState([
+    { id: 'quran', title: 'ورد القرآن وتدبر آيات السكينة', icon: '📖', done: false },
+    { id: 'breathing', title: 'تمرين التنفس العميق والاسترخاء (4-7-8)', icon: '🧘‍♂️', done: false },
+    { id: 'walk', title: 'المشي وتفريغ الشحنات الضاغطة', icon: '🚶‍♂️', done: false },
+    { id: 'sleep', title: 'النوم المبكر والابتعاد عن الشاشات', icon: '🌙', done: false },
+  ]);
+  const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
+  const [enrollSuccessMsg, setEnrollSuccessMsg] = useState<string>('');
 
   // Authentication UI State for non-logged-in users
   const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
@@ -88,14 +106,14 @@ export default function ClientProfilePage() {
   const [regLoading, setRegLoading] = useState(false);
   const [regError, setRegError] = useState('');
 
-
-
   // Edit Profile Info State
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
+
+  const isConsultant = userSession?.role === 'admin' || userSession?.email === 'admin@galalahmad.com';
 
   // Check login on mount and whenever authUser updates
   useEffect(() => {
@@ -105,6 +123,9 @@ export default function ClientProfilePage() {
       setEditPhone(authUser.phone || '');
       setEditEmail(authUser.email || '');
       fetchClientData(authUser);
+      if (authUser?.role === 'admin' || authUser?.email === 'admin@galalahmad.com') {
+        setActiveTab('consultant_hub');
+      }
     } else {
       setUserSession(null);
     }
@@ -115,10 +136,11 @@ export default function ClientProfilePage() {
     setLoadingBookings(true);
 
     try {
-      // 1. Fetch Bookings matching user phone or email
+      // 1. Fetch Bookings
       const bookRes = await fetch('/api/bookings', { cache: 'no-store' });
       const bookData = await bookRes.json();
       if (bookData.bookings) {
+        setAllConsultations(bookData.bookings);
         const userCleanEmail = (user.email || '').trim().toLowerCase();
 
         const matched = bookData.bookings.filter((b: any) => {
@@ -204,6 +226,56 @@ export default function ClientProfilePage() {
     } catch (e) {
       console.error(e);
     }
+  };
+
+  // Handle 1-Click Course Enrollment
+  const handleEnrollCourse = async (course: any) => {
+    if (!userSession) return;
+    setEnrollingCourseId(course.id);
+    setEnrollSuccessMsg('');
+
+    try {
+      const isAlreadyEnrolled = clientCourses.some(c => c.id === course.id);
+      if (isAlreadyEnrolled) {
+        setEnrollSuccessMsg('أنت مسجل بالفعل في هذه الدورة وموجودة في حسابك.');
+        setTimeout(() => setEnrollSuccessMsg(''), 3500);
+        setEnrollingCourseId(null);
+        return;
+      }
+
+      const newCourseEntry = {
+        id: course.id,
+        title: course.title,
+        instructor: course.instructor || 'أ. جلال أحمد',
+        progress: 0,
+        enrolledAt: new Date().toISOString(),
+      };
+
+      const updatedCourses = [...clientCourses, newCourseEntry];
+      setClientCourses(updatedCourses);
+
+      await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: userSession.phone,
+          email: userSession.email,
+          courses: updatedCourses,
+        }),
+      });
+
+      setEnrollSuccessMsg(`تم انضمامك بنجاح إلى "${course.title}"! يمكنك بدء المتابعة فوراً.`);
+      setTimeout(() => setEnrollSuccessMsg(''), 4000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setEnrollingCourseId(null);
+    }
+  };
+
+  // Toggle Daily Habit
+  const handleToggleHabit = (id: string) => {
+    setHabits(prev => prev.map(h => h.id === id ? { ...h, done: !h.done } : h));
   };
 
   // Real Login Handler
@@ -720,12 +792,40 @@ export default function ClientProfilePage() {
               </button>
             </div>
 
-            {/* Mobile App Segmented Tab Bar (5 Tabs) */}
+            {/* Mobile App Segmented Tab Bar */}
             <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold overflow-x-auto">
+              {isConsultant && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('consultant_hub')}
+                  className={`flex-1 min-w-[145px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 font-extrabold ${
+                    activeTab === 'consultant_hub'
+                      ? 'bg-[#154F9C] text-white shadow-xs'
+                      : 'text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>بوابة المستشار ({allConsultations.filter(b => b.slotDate === new Date().toISOString().split('T')[0]).length} اليوم)</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('wellbeing')}
+                className={`flex-1 min-w-[130px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeTab === 'wellbeing'
+                    ? 'bg-white dark:bg-[#161B22] text-[#154F9C] dark:text-[#60A5FA] shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Smile className="w-3.5 h-3.5 text-emerald-500" />
+                <span>المزاج والعادات 🌿</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setActiveTab('consultations')}
-                className={`flex-1 min-w-[120px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 min-w-[110px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
                   activeTab === 'consultations'
                     ? 'bg-white dark:bg-[#161B22] text-[#154F9C] dark:text-[#60A5FA] shadow-xs'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -738,7 +838,7 @@ export default function ClientProfilePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('courses')}
-                className={`flex-1 min-w-[120px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 min-w-[110px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
                   activeTab === 'courses'
                     ? 'bg-white dark:bg-[#161B22] text-[#154F9C] dark:text-[#60A5FA] shadow-xs'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -751,7 +851,7 @@ export default function ClientProfilePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('assessments')}
-                className={`flex-1 min-w-[120px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 min-w-[110px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
                   activeTab === 'assessments'
                     ? 'bg-white dark:bg-[#161B22] text-[#154F9C] dark:text-[#60A5FA] shadow-xs'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -764,7 +864,7 @@ export default function ClientProfilePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('homework')}
-                className={`flex-1 min-w-[120px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 min-w-[125px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
                   activeTab === 'homework'
                     ? 'bg-white dark:bg-[#161B22] text-[#154F9C] dark:text-[#60A5FA] shadow-xs'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -777,7 +877,7 @@ export default function ClientProfilePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('settings')}
-                className={`flex-1 min-w-[100px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 min-w-[95px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
                   activeTab === 'settings'
                     ? 'bg-white dark:bg-[#161B22] text-[#154F9C] dark:text-[#60A5FA] shadow-xs'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
@@ -787,6 +887,305 @@ export default function ClientProfilePage() {
                 <span>بياناتي</span>
               </button>
             </div>
+
+            {/* TAB 0: CONSULTANT HUB (بوابة المستشار جلال أحمد) */}
+            {activeTab === 'consultant_hub' && isConsultant && (
+              <div className="space-y-6 animate-fadeIn">
+                {/* Consultant Top Banner */}
+                <div className="p-6 rounded-3xl bg-linear-to-br from-[#0F1D38] via-[#0D182E] to-[#080F1E] border border-[#154F9C]/40 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
+                        بوابة المستشار المعتمد
+                      </span>
+                      <span className="text-xs text-slate-300">
+                        {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black">
+                      جلساتك الاستشارية اليوم والمواعيد القادمة
+                    </h2>
+                    <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+                      تحكم بمواعيدك وجلساتك من هاتفك مباشرة: دخول قاعة Google Meet بنقرة واحدة، مراسلة العميل بالواتساب، واستعراض الأعراض المسجلة في الاستمارة التشخيصية.
+                    </p>
+                  </div>
+
+                  <Link
+                    href="/admin"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#154F9C] hover:bg-[#124080] text-white text-xs font-bold transition shadow-lg shrink-0"
+                  >
+                    <span>لوحة التحكم الشاملة (Admin)</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                {/* Today's Sessions Section */}
+                <div className="space-y-3">
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Video className="w-5 h-5 text-emerald-500" />
+                    <span>جلسات اليوم ({allConsultations.filter(b => b.slotDate === new Date().toISOString().split('T')[0] && b.status !== 'cancelled').length})</span>
+                  </h3>
+
+                  {(() => {
+                    const todayIso = new Date().toISOString().split('T')[0];
+                    const todayList = allConsultations.filter(b => b.slotDate === todayIso && b.status !== 'cancelled');
+
+                    if (todayList.length === 0) {
+                      return (
+                        <div className="p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500">
+                          لا توجد جلسات استشارية مجدولة لليوم.
+                        </div>
+                      );
+                    }
+
+                    return todayList.map((b: any) => {
+                      const cleanPhone = (b.clientPhone || '').replace(/[^\d]/g, '');
+                      const pills = getIntakeSummaryPills(b.track, b.answers);
+
+                      return (
+                        <div
+                          key={b.id}
+                          className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#161B22] border-2 border-emerald-500/40 dark:border-emerald-500/30 shadow-md space-y-4"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[#154F9C] dark:text-[#60A5FA] font-bold">
+                                  {b.id}
+                                </span>
+                                <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                  {b.clientName}
+                                </span>
+                                <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#154F9C]/10 text-[#154F9C] dark:text-[#60A5FA] font-bold">
+                                  {b.trackLabel}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-1">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>الساعة {b.slotTime} (اليوم)</span>
+                              </div>
+                            </div>
+
+                            {/* Direct Actions: Google Meet & WhatsApp */}
+                            <div className="flex items-center gap-2">
+                              {b.meetLink && (
+                                <a
+                                  href={b.meetLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white text-xs font-black rounded-xl transition shadow-md"
+                                >
+                                  <Video className="w-4 h-4" />
+                                  <span>دخول القاعة (Meet)</span>
+                                </a>
+                              )}
+                              <a
+                                href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(`مرحباً أستاذ(ة) ${b.clientName}، معك المستشار جلال أحمد بخصوص جلستنا اليوم الساعة ${b.slotTime}. رابط القاعة: ${b.meetLink || ''}`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-black rounded-xl transition shadow-md"
+                              >
+                                <Phone className="w-4 h-4" />
+                                <span>واتساب المستفيد</span>
+                              </a>
+                            </div>
+                          </div>
+
+                          {/* Intake summary pills */}
+                          {pills.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
+                              <span className="text-slate-400 font-bold">ملخص الأعراض:</span>
+                              {pills.map((pill, idx) => (
+                                <span
+                                  key={idx}
+                                  className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px]"
+                                >
+                                  {pill}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+
+                {/* Upcoming Sessions Section */}
+                <div className="space-y-3 pt-4">
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-sky-500" />
+                    <span>الجلسات القادمة والمجدولة</span>
+                  </h3>
+
+                  {(() => {
+                    const todayIso = new Date().toISOString().split('T')[0];
+                    const upcomingList = allConsultations.filter(b => b.slotDate > todayIso && b.status !== 'cancelled');
+
+                    if (upcomingList.length === 0) {
+                      return (
+                        <div className="p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500">
+                          لا توجد حجوزات قادمة بعد اليوم.
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {upcomingList.map((b: any) => {
+                          const cleanPhone = (b.clientPhone || '').replace(/[^\d]/g, '');
+                          return (
+                            <div
+                              key={b.id}
+                              className="p-5 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-extrabold text-sm text-slate-900 dark:text-white">
+                                  {b.clientName}
+                                </span>
+                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">
+                                  {b.trackLabel}
+                                </span>
+                              </div>
+
+                              <div className="flex items-center gap-3 text-xs text-slate-500">
+                                <span className="flex items-center gap-1 font-bold text-slate-700 dark:text-slate-300">
+                                  <Calendar className="w-3.5 h-3.5 text-[#154F9C]" />
+                                  <span>{b.slotDate}</span>
+                                </span>
+                                <span>•</span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3.5 h-3.5" />
+                                  <span>{b.slotTime}</span>
+                                </span>
+                              </div>
+
+                              <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 text-xs">
+                                <a
+                                  href={`https://wa.me/${cleanPhone}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold flex items-center gap-1"
+                                >
+                                  <Phone className="w-3 h-3" />
+                                  <span>{b.clientPhone}</span>
+                                </a>
+                                {b.meetLink && (
+                                  <a
+                                    href={b.meetLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[#154F9C] dark:text-[#60A5FA] hover:underline font-bold"
+                                  >
+                                    رابط Meet ↗
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: WELLBEING & DAILY MOOD & HABITS (سجل المزاج والعادات) */}
+            {activeTab === 'wellbeing' && (
+              <div className="space-y-6 animate-fadeIn">
+                {/* Mood Logger Card */}
+                <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div>
+                      <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>سجل المزاج والسكينة اليومي</span>
+                        <Smile className="w-5 h-5 text-amber-500" />
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        كيف تشعر في هذه اللحظة؟ تسمية الشعور نصف التعافي والاتزان النفسي.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {[
+                      { id: 'peaceful', label: 'مطمئن ومبتهج', emoji: '😊', insight: 'الحمد لله، استثمر هذه الحالة الإيجابية في كتابة الامتنان ومشاركة المحبة مع من حولك.' },
+                      { id: 'calm', label: 'هادئ ومتزن', emoji: '😌', insight: 'حالة ممتازة من السكون الداخلي، حافظ عليها بالتنفس الواعي والابتعاد عن المشتتات.' },
+                      { id: 'neutral', label: 'مستقر وعادي', emoji: '😐', insight: 'يوم طبيعي ومستقر، خذ وقتاً صغيراً للمشي أو قراءة صفحة من القرآن لتجديد الطاقة.' },
+                      { id: 'anxious', label: 'قلق أو متوتر', emoji: '😟', insight: 'تذكر أن القلق مجرد فكرة عابرة وليس حقيقة مطلقة؛ مارس تمرين التنفس (4-7-8) الآن.' },
+                      { id: 'exhausted', label: 'حزين أو مجهد', emoji: '😔', insight: 'رفقاً بنفسك، لا بأس بالشعور بالتعب؛ امنح جسدك الراحة وتحدث مع شخص آمن.' },
+                    ].map((item) => (
+                      <button
+                        type="button"
+                        key={item.id}
+                        onClick={() => setDailyMood(item)}
+                        className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer ${
+                          dailyMood?.id === item.id
+                            ? 'border-[#4E7E76] bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 scale-105'
+                            : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 hover:border-slate-300'
+                        }`}
+                      >
+                        <span className="text-3xl">{item.emoji}</span>
+                        <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200">{item.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {dailyMood && (
+                    <div className="p-4 rounded-2xl bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 border border-[#4E7E76]/20 text-xs text-slate-800 dark:text-slate-200 leading-relaxed space-y-1 animate-fadeIn">
+                      <strong className="text-[#3D645E] dark:text-emerald-300 block">رسالة إرشادية لحالتك ({dailyMood.label}):</strong>
+                      <p>{dailyMood.insight}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Daily Habits Tracker Card */}
+                <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div>
+                      <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>متتبع العادات الإيجابية والتعافي الذاتي</span>
+                        <Activity className="w-5 h-5 text-emerald-500" />
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        عادات يومية بسيطة متوافقة مع الفطرة والقرآن لحماية طاقتك الذهنية والنفسية.
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold text-slate-500">
+                      {habits.filter(h => h.done).length} من {habits.length} منجزة
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {habits.map((habit) => (
+                      <button
+                        type="button"
+                        key={habit.id}
+                        onClick={() => handleToggleHabit(habit.id)}
+                        className={`p-4 rounded-2xl border-2 transition-all flex items-center justify-between text-right cursor-pointer ${
+                          habit.done
+                            ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{habit.icon}</span>
+                          <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{habit.title}</span>
+                        </div>
+                        <div
+                          className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 ${
+                            habit.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-600'
+                          }`}
+                        >
+                          {habit.done && <Check className="w-4 h-4" />}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* TAB 1: CONSULTATIONS & SESSIONS */}
             {activeTab === 'consultations' && (
@@ -951,6 +1350,103 @@ export default function ClientProfilePage() {
                     </div>
                   ))
                 )}
+
+                {/* 1-Click Course Discovery Catalog */}
+                <div className="pt-6 border-t border-slate-200 dark:border-slate-800 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <span>اكتشف برامج تدريبية وتأهيلية إضافية (انضمام فوري)</span>
+                      </h4>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        برامج تأصيلية تجمع بين هدايات القرآن وعلم النفس المعاصر، متاحة للانضمام المباشر بضغطة زر.
+                      </p>
+                    </div>
+                  </div>
+
+                  {enrollSuccessMsg && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-2 animate-fadeIn">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span>{enrollSuccessMsg}</span>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {[
+                      {
+                        id: 'anxiety-relief-mastery',
+                        title: 'برنامج تفكيك القلق والوساوس واستعادة الهدوء',
+                        instructor: 'أ. جلال أحمد',
+                        duration: '4 ساعات تدريبية',
+                        badge: 'برنامج علاجي ذاتي',
+                        desc: 'استراتيجيات عملية مجربة مبنية على العلاج المعرفي السلوكي وتطبيقات السكينة النفسية.',
+                      },
+                      {
+                        id: 'marital-peace-blueprint',
+                        title: 'فقه الخلافات الزوجية والأمان العاطفي المشترك',
+                        instructor: 'أ. جلال أحمد',
+                        duration: '6 ساعات تدريبية',
+                        badge: 'مسار العلاقات الزوجية',
+                        desc: 'منهج متكامل لكسر دائرة الصدام والخرس الزوجي، وإعادة بناء جسور المودة والتفاهم.',
+                      },
+                      {
+                        id: 'conscious-parenting-firm-gentle',
+                        title: 'الوالدية الواعية: فن التربية بالرفق والحزم',
+                        instructor: 'أ. جلال أحمد',
+                        duration: '3.5 ساعات تدريبية',
+                        badge: 'مسار التربية والأسرة',
+                        desc: 'كيف تفكك عناد الأطفال وسلوكياتهم المزعجة دون صراخ أو تهديد أو إيذاء نفسي.',
+                      },
+                    ].map((course) => {
+                      const isEnrolled = clientCourses.some(c => c.id === course.id);
+
+                      return (
+                        <div
+                          key={course.id}
+                          className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-col justify-between space-y-3"
+                        >
+                          <div className="space-y-2">
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#154F9C]/10 text-[#154F9C] dark:text-[#60A5FA]">
+                              {course.badge}
+                            </span>
+                            <h5 className="font-extrabold text-sm text-slate-900 dark:text-white leading-snug">
+                              {course.title}
+                            </h5>
+                            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                              {course.desc}
+                            </p>
+                          </div>
+
+                          <div className="pt-2">
+                            {isEnrolled ? (
+                              <span className="w-full py-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>مضاف لحسابك بالفعل</span>
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={enrollingCourseId === course.id}
+                                onClick={() => handleEnrollCourse(course)}
+                                className="w-full py-2.5 rounded-xl bg-[#154F9C] hover:bg-[#124080] disabled:bg-slate-400 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                              >
+                                {enrollingCourseId === course.id ? (
+                                  <span>جارٍ التسجيل...</span>
+                                ) : (
+                                  <>
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>انضم للبرنامج مجاناً الآن</span>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
 

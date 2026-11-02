@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   Phone,
   User,
+  Users,
   MapPin,
   Lock,
   Zap,
@@ -156,7 +157,7 @@ function BookingWizardContent() {
   const [maritalStatus, setMaritalStatus] = useState('أعزب');
   const [clientCity, setClientCity] = useState('');
 
-  // Auto-fill logged-in client credentials from AuthContext
+  // Demographic Auto-fill logged-in client credentials from AuthContext
   useEffect(() => {
     if (user?.name) {
       setClientName(user.name);
@@ -167,6 +168,13 @@ function BookingWizardContent() {
       if (user.country || user.city) setClientCity(user.city || user.country || '');
     }
   }, [user]);
+
+  // Auto-scroll to top smoothly whenever step or questionnaire page changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentStep, currentQuestionIndex]);
 
   // Policy Agreement
   const [agreedToPolicies, setAgreedToPolicies] = useState(false);
@@ -611,7 +619,7 @@ function BookingWizardContent() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {intakeTracks.map((track) => {
                 const isSelected = selectedTrackId === track.id;
                 const isEmergency = track.id === 'emergency';
@@ -629,72 +637,113 @@ function BookingWizardContent() {
                 return (
                   <div
                     key={track.id}
-                    onClick={() => setSelectedTrackId(track.id)}
-                    className={`cursor-pointer p-6 rounded-3xl border-2 transition-all relative ${
+                    onClick={() => {
+                      setSelectedTrackId(track.id);
+                    }}
+                    className={`cursor-pointer p-6 sm:p-7 rounded-3xl border-2 transition-all duration-200 relative flex flex-col justify-between ${
                       isSelected
                         ? isEmergency
-                          ? 'border-amber-500 bg-amber-50/40 dark:bg-amber-950/20 shadow-lg ring-2 ring-amber-500/20'
-                          : 'border-[#4E7E76] dark:border-[#5E988E] bg-[#4E7E76]/5 dark:bg-[#5E988E]/10 shadow-lg ring-2 ring-[#4E7E76]/20'
-                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#161B22] hover:border-slate-300 dark:hover:border-slate-700'
+                          ? 'border-amber-500 bg-amber-500/10 dark:bg-amber-950/30 shadow-xl ring-2 ring-amber-500/30'
+                          : 'border-[#4E7E76] dark:border-[#5E988E] bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 shadow-xl ring-2 ring-[#4E7E76]/30'
+                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#161B22] hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <div>
-                        <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
-                          {track.badge}
-                        </span>
-                        <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white mt-2">
-                          {track.title}
-                        </h3>
+                    <div>
+                      <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
+                              isEmergency
+                                ? 'bg-amber-500/20 text-amber-500'
+                                : 'bg-[#4E7E76]/15 dark:bg-[#5E988E]/20 text-[#4E7E76] dark:text-[#5E988E]'
+                            }`}
+                          >
+                            {track.id === 'psychological' && <Brain className="w-6 h-6" />}
+                            {track.id === 'marital' && <HeartHandshake className="w-6 h-6" />}
+                            {track.id === 'parenting' && <Users className="w-6 h-6" />}
+                            {track.id === 'youth' && <Compass className="w-6 h-6" />}
+                            {track.id === 'emergency' && <Zap className="w-6 h-6" />}
+                          </div>
+                          <div>
+                            <span className="text-[11px] font-extrabold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+                              {track.badge}
+                            </span>
+                            <h3 className="font-black text-lg sm:text-xl text-slate-900 dark:text-white mt-1.5">
+                              {track.title}
+                            </h3>
+                          </div>
+                        </div>
+
+                        <div
+                          className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected
+                              ? isEmergency
+                                ? 'border-amber-500 bg-amber-500 text-white'
+                                : 'border-[#4E7E76] bg-[#4E7E76] text-white'
+                              : 'border-slate-300 dark:border-slate-700'
+                          }`}
+                        >
+                          {isSelected && <Check className="w-4 h-4" />}
+                        </div>
                       </div>
 
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                          isSelected
-                            ? isEmergency
-                              ? 'border-amber-500 bg-amber-500 text-white'
-                              : 'border-[#4E7E76] bg-[#4E7E76] text-white'
-                            : 'border-slate-300 dark:border-slate-700'
-                        }`}
-                      >
-                        {isSelected && <Check className="w-3.5 h-3.5" />}
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                        {track.desc}
+                      </p>
+
+                      <div className="py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs mb-4">
+                        {settings.showPricing ? (
+                          <span className="font-bold text-slate-700 dark:text-slate-300">
+                            الرسوم: <strong className="text-[#4E7E76] dark:text-[#5E988E] text-sm">{feeDisplay}</strong>
+                          </span>
+                        ) : (
+                          <span className="font-bold text-[#4E7E76] dark:text-[#5E988E] flex items-center gap-1">
+                            <ShieldCheck className="w-4 h-4" />
+                            <span>جلسة خاصة ومباشرة عبر Google Meet</span>
+                          </span>
+                        )}
+                        <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1 font-bold">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>{track.duration}</span>
+                        </span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed min-h-[45px]">
-                      {track.desc}
-                    </p>
-
-                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                      {settings.showPricing ? (
-                        <span className="font-bold text-slate-700 dark:text-slate-300">
-                          الرسوم المعتمدة: <strong className="text-[#4E7E76] dark:text-[#5E988E] text-sm">{feeDisplay}</strong>
-                        </span>
-                      ) : (
-                        <span className="font-bold text-[#4E7E76] dark:text-[#5E988E]">
-                          جلسة استشارية متخصصة ومباشرة
-                        </span>
-                      )}
-                      <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {track.duration}
-                      </span>
-                    </div>
+                    {/* Direct 1-Click Action Button on Every Card */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTrackId(track.id);
+                        setCurrentQuestionIndex(0);
+                        setCurrentStep(2);
+                      }}
+                      className={`w-full py-3.5 px-4 rounded-2xl font-black text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer shadow-md group ${
+                        isEmergency
+                          ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                          : isSelected
+                          ? 'bg-[#4E7E76] hover:bg-[#3D645E] text-white'
+                          : 'bg-slate-900 hover:bg-[#4E7E76] text-white dark:bg-slate-800 dark:hover:bg-[#4E7E76]'
+                      }`}
+                    >
+                      <span>احجز هذه الجلسة وابدأ الاستمارة الآن</span>
+                      <ArrowLeft className="w-4 h-4 rtl:rotate-0 group-hover:-translate-x-1 transition-transform" />
+                    </button>
                   </div>
                 );
               })}
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end pt-2">
               <button
                 type="button"
                 onClick={() => {
                   setCurrentQuestionIndex(0);
                   setCurrentStep(2);
                 }}
-                className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white font-bold rounded-2xl transition shadow-md hover:shadow-lg"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white font-bold rounded-2xl transition shadow-md hover:shadow-lg cursor-pointer"
               >
-                <span>متابعة للاستمارة التشخيصية</span>
+                <span>متابعة للاستمارة التشخيصية للمسار المختار</span>
                 <ChevronLeft className="w-5 h-5" />
               </button>
             </div>
@@ -1771,10 +1820,13 @@ function BookingWizardContent() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500">حالة السداد:</span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                  تم تسجيل التحويل وإرفاق الإيصال
+                <span className="text-slate-500">حالة الطلب:</span>
+                <span className="font-bold text-amber-600 dark:text-amber-400">
+                  ⏳ بانتظار التحقق من الإيصال (مرحلة 1 من 2)
                 </span>
+              </div>
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300 leading-relaxed text-right">
+                💡 <strong>ماذا يحدث الآن؟</strong> يقوم الأستاذ جلال أحمد بمراجعة إيصال السداد واعتماد الموعد النهائي، وسيصلك إشعار فوري وتأكيد رسمي عبر الواتساب والبريد الإلكتروني برابط الجلسة وتوجيهات ما قبل اللقاء.
               </div>
             </div>
 

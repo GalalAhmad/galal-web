@@ -122,6 +122,24 @@ export async function POST(request: Request) {
       );
     }
 
+    const currentList = await readBookings();
+
+    // NexCal Anti-Double-Booking Guard (Atomic Slot Conflict Detection)
+    const isConflict = currentList.some((b: any) => {
+      if (b.status === 'cancelled') return false;
+      if (b.slotDate !== slotDate) return false;
+      const timeA = (b.slotTime || '').trim();
+      const timeB = (slotTime || '').trim();
+      return timeA === timeB || timeA.includes(timeB) || timeB.includes(timeA);
+    });
+
+    if (isConflict) {
+      return NextResponse.json(
+        { error: 'عذراً، هذا الموعد تم حجزه للتو من قِبل مستفيد آخر. يرجى اختيار موعد آخر متاح.' },
+        { status: 409 }
+      );
+    }
+
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const newBooking = {
       id: `BK-${Date.now().toString().slice(-4)}${randomSuffix}`,
@@ -146,7 +164,6 @@ export async function POST(request: Request) {
       created_at: new Date().toISOString(),
     };
 
-    const currentList = await readBookings();
     currentList.unshift(newBooking);
     await writeBookings(currentList);
 
@@ -177,7 +194,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, status, slotDate, slotTime, meetLink, notes } = body;
+    const { id, status, slotDate, slotTime, meetLink, notes, action } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'معرّف الحجز مطلوب' }, { status: 400 });
@@ -188,6 +205,33 @@ export async function PUT(request: Request) {
 
     if (idx === -1) {
       return NextResponse.json({ error: 'الحجز غير موجود' }, { status: 404 });
+    }
+
+    if (action === 'delete') {
+      currentList.splice(idx, 1);
+      await writeBookings(currentList);
+      return NextResponse.json({ success: true, message: 'تم حذف الحجز بنجاح' });
+    }
+
+    // Check conflict if date or time is changed to a new slot
+    const targetDate = slotDate !== undefined ? slotDate : currentList[idx].slotDate;
+    const targetTime = slotTime !== undefined ? slotTime : currentList[idx].slotTime;
+    if ((slotDate || slotTime) && status !== 'cancelled') {
+      const isConflict = currentList.some((b: any, bIdx: number) => {
+        if (bIdx === idx) return false;
+        if (b.status === 'cancelled') return false;
+        if (b.slotDate !== targetDate) return false;
+        const timeA = (b.slotTime || '').trim();
+        const timeB = (targetTime || '').trim();
+        return timeA === timeB || timeA.includes(timeB) || timeB.includes(timeA);
+      });
+
+      if (isConflict) {
+        return NextResponse.json(
+          { error: 'عذراً، هذا الموعد البديل محجوز بالفعل لحجز آخر. يرجى اختيار موعد شاغر.' },
+          { status: 409 }
+        );
+      }
     }
 
     if (status !== undefined) currentList[idx].status = status;
@@ -204,3 +248,5 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: 'حدث خطأ أثناء تعديل الحجز' }, { status: 500 });
   }
 }
+
+export const PATCH = PUT;

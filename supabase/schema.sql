@@ -48,6 +48,11 @@ CREATE TABLE IF NOT EXISTS public.bookings (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- فهرس منع الحجز المزدوج (Anti-Double-Booking Unique Partial Index)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_active_booking_slot
+ON public.bookings (slot_date, slot_time)
+WHERE status NOT IN ('cancelled', 'rejected');
+
 -- 3. جدول نتائج المقاييس والاختبارات النفسية (Assessments & Test Results)
 CREATE TABLE IF NOT EXISTS public.test_results (
     id TEXT PRIMARY KEY DEFAULT ('tr-' || extract(epoch from now())::bigint),

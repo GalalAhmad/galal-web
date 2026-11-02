@@ -172,6 +172,9 @@ function BookingWizardContent() {
   const [agreedToPolicies, setAgreedToPolicies] = useState(false);
 
   const now = new Date();
+  const todayIso = useMemo(() => `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`, []);
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
   const [calendarYear, setCalendarYear] = useState<number>(now.getFullYear());
   const [calendarMonth, setCalendarMonth] = useState<number>(now.getMonth());
 
@@ -305,30 +308,37 @@ function BookingWizardContent() {
     }
   }, [availabilityData, calendarData, selectedDateIso]);
 
-  // Sync selected time slot with available/unbooked slots
+  // Sync selected time slot with available/unbooked/non-expired slots
   useEffect(() => {
     const activeSlots = availabilityData.timeSlots.filter((s) => s.enabled);
     if (activeSlots.length > 0) {
+      const isSlotUsable = (s: { id: string; label: string }) => {
+        const isBooked = bookedSlotsList.some(
+          (b) => b.date === selectedDateIso && (b.time === s.label || b.time === s.id)
+        );
+        if (isBooked) return false;
+        if (selectedDateIso === todayIso) {
+          const [hStr, mStr] = s.id.split(':');
+          const slotH = parseInt(hStr, 10);
+          const slotM = parseInt(mStr || '0', 10);
+          if (!isNaN(slotH) && (slotH < currentHour || (slotH === currentHour && slotM <= currentMinute + 15))) {
+            return false;
+          }
+        }
+        return true;
+      };
+
       const isCurrentValid = activeSlots.some(
-        (s) =>
-          s.id === selectedTimeId &&
-          !bookedSlotsList.some(
-            (b) => b.date === selectedDateIso && (b.time === s.label || b.time === s.id)
-          )
+        (s) => s.id === selectedTimeId && isSlotUsable(s)
       );
       if (!isCurrentValid) {
-        const firstAvailable = activeSlots.find(
-          (s) =>
-            !bookedSlotsList.some(
-              (b) => b.date === selectedDateIso && (b.time === s.label || b.time === s.id)
-            )
-        );
+        const firstAvailable = activeSlots.find(isSlotUsable);
         if (firstAvailable) {
           setSelectedTimeId(firstAvailable.id);
         }
       }
     }
-  }, [selectedDateIso, availabilityData, bookedSlotsList, selectedTimeId]);
+  }, [selectedDateIso, availabilityData, bookedSlotsList, selectedTimeId, todayIso, currentHour, currentMinute]);
 
   // Preselect track and auto-advance to intake questions
   useEffect(() => {
@@ -431,6 +441,13 @@ function BookingWizardContent() {
 
       const data = await res.json();
       if (!res.ok || data.error) {
+        // Refresh availability on conflict or error
+        fetch('/api/availability', { cache: 'no-store' })
+          .then((r) => r.json())
+          .then((avail) => {
+            if (avail && avail.bookedSlots) setBookedSlotsList(avail.bookedSlots);
+          })
+          .catch(() => {});
         throw new Error(data.error || 'تعذر تسجيل الحجز، يرجى التحقق من البيانات.');
       }
 
@@ -1378,10 +1395,13 @@ function BookingWizardContent() {
                 </span>
               </div>
 
-              {/* Available Time Slots */}
+              {/* Available Time Slots with Timezone Header */}
               <div className="pt-2 space-y-2">
-                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 text-right">
-                  المواعيد المتاحة
+                <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <span>المواعيد المتاحة</span>
+                  <span className="text-[11px] font-normal text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                    توقيت مكة والقاهرة (GMT+3)
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1394,24 +1414,34 @@ function BookingWizardContent() {
                           b.date === selectedDateIso &&
                           (b.time === slot.label || b.time === slot.id)
                       );
+                      const [hStr, mStr] = slot.id.split(':');
+                      const slotH = parseInt(hStr, 10);
+                      const slotM = parseInt(mStr || '0', 10);
+                      let isPastTime = false;
+                      if (selectedDateIso === todayIso && !isNaN(slotH)) {
+                        if (slotH < currentHour || (slotH === currentHour && slotM <= currentMinute + 15)) {
+                          isPastTime = true;
+                        }
+                      }
+                      const isUnavailable = isBooked || isPastTime;
 
                       return (
                         <button
                           type="button"
                           key={slot.id}
-                          disabled={isBooked}
+                          disabled={isUnavailable}
                           onClick={() => setSelectedTimeId(slot.id)}
                           className={`p-3 rounded-2xl border text-center transition-all flex items-center justify-center gap-1.5 text-xs font-bold ${
-                            isBooked
+                            isUnavailable
                               ? 'border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/40 text-slate-400 dark:text-slate-600 cursor-not-allowed opacity-50'
                               : isSelected
                               ? 'border-[#10B981] bg-[#10B981]/10 text-[#047857] dark:text-[#34D399] ring-2 ring-[#10B981]/20'
                               : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300'
                           }`}
                         >
-                          <Clock className={`w-3.5 h-3.5 ${isBooked ? 'text-slate-400' : 'text-[#10B981]'}`} />
+                          <Clock className={`w-3.5 h-3.5 ${isUnavailable ? 'text-slate-400' : 'text-[#10B981]'}`} />
                           <span>
-                            {slot.label} {isBooked ? '(محجوز)' : ''}
+                            {slot.label} {isBooked ? '(محجوز)' : isPastTime ? '(انتهى)' : ''}
                           </span>
                         </button>
                       );

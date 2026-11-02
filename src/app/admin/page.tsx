@@ -105,6 +105,14 @@ export default function AdminDashboardPage() {
   const [selectedHomeworkArticle, setSelectedHomeworkArticle] = useState<Record<string, string>>({});
   const [viewingReceiptImage, setViewingReceiptImage] = useState<string | null>(null);
 
+  // Reschedule Appointment State
+  const [rescheduleBooking, setRescheduleBooking] = useState<any>(null);
+  const [rescheduleDate, setRescheduleDate] = useState<string>('');
+  const [rescheduleTime, setRescheduleTime] = useState<string>('');
+  const [isRescheduling, setIsRescheduling] = useState<boolean>(false);
+  const [rescheduleError, setRescheduleError] = useState<string>('');
+  const [rescheduleSuccessUrl, setRescheduleSuccessUrl] = useState<string | null>(null);
+
   const SYMPTOM_LABELS: Record<string, string> = {
     anxiety: 'قلق وتوتر دائم أو هلع مفاجئ',
     sadness: 'حزن وكآبة مستمرة منذ فترة',
@@ -730,6 +738,65 @@ export default function AdminDashboardPage() {
       setTimeout(() => setSaveSuccessMsg(''), 3000);
     } catch (err) {
       console.error('Failed to delete booking:', err);
+    }
+  };
+
+  const handleOpenReschedule = (booking: any) => {
+    setRescheduleBooking(booking);
+    setRescheduleDate(booking.slotDate || '');
+    setRescheduleTime(booking.slotTime || '');
+    setRescheduleError('');
+    setRescheduleSuccessUrl(null);
+  };
+
+  const handleConfirmReschedule = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rescheduleBooking || !rescheduleDate || !rescheduleTime) return;
+    setIsRescheduling(true);
+    setRescheduleError('');
+
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: rescheduleBooking.id,
+          slotDate: rescheduleDate,
+          slotTime: rescheduleTime,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'تعذر تعديل الموعد');
+      }
+
+      setBookingsList(prev =>
+        prev.map(b =>
+          b.id === rescheduleBooking.id
+            ? { ...b, slotDate: rescheduleDate, slotTime: rescheduleTime }
+            : b
+        )
+      );
+
+      const msg = `السلام عليكم أخي/أختي ${rescheduleBooking.clientName}،
+نود إبلاغكم بأنه تم اعتماد الموعد الجديد لجلستكم الاستشارية (${rescheduleBooking.trackLabel}) مع المستشار جلال أحمد:
+
+📅 الموعد الجديد: ${rescheduleDate}
+⏰ الساعة: ${rescheduleTime}
+🔗 رابط الجلسة (Google Meet): ${rescheduleBooking.meetLink || 'https://meet.google.com'}
+
+نسعد بلقائكم وتمنياتنا لكم بدوام الصحة والتوفيق.`;
+
+      const cleanPhone = (rescheduleBooking.clientPhone || '').replace(/[^\d]/g, '');
+      const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
+      setRescheduleSuccessUrl(waUrl);
+      setSaveSuccessMsg('تم تعديل موعد الجلسة بنجاح');
+      setTimeout(() => setSaveSuccessMsg(''), 4000);
+    } catch (err: any) {
+      setRescheduleError(err.message || 'حدث خطأ أثناء تعديل الموعد');
+    } finally {
+      setIsRescheduling(false);
     }
   };
 
@@ -1519,6 +1586,16 @@ ${meet}
                                 <option value="completed">🎉 تم إنجاز الجلسة</option>
                                 <option value="cancelled">❌ ملغي</option>
                               </select>
+
+                              <button
+                                type="button"
+                                onClick={() => handleOpenReschedule(booking)}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 bg-sky-950/40 hover:bg-sky-900/60 border border-sky-800/60 text-sky-300 text-xs font-bold rounded-xl transition cursor-pointer"
+                                title="تعديل تاريخ وساعة الجلسة"
+                              >
+                                <CalendarClock className="w-3.5 h-3.5" />
+                                <span>تعديل الموعد</span>
+                              </button>
 
                               <button
                                 type="button"
@@ -3754,6 +3831,120 @@ ${meet}
         </main>
 
       </div>
+
+      {/* Modal: Reschedule Appointment */}
+      {rescheduleBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn text-right">
+          <div className="max-w-md w-full bg-[#0E1524] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                <CalendarClock className="w-5 h-5 text-sky-400" />
+                <span>إعادة جدولة موعد الجلسة</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setRescheduleBooking(null)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-xs space-y-1">
+              <div className="text-white font-bold">{rescheduleBooking.clientName}</div>
+              <div className="text-slate-400">{rescheduleBooking.trackLabel}</div>
+              <div className="text-amber-400 font-mono">
+                الموعد الحالي: {rescheduleBooking.slotDate} ({rescheduleBooking.slotTime})
+              </div>
+            </div>
+
+            {rescheduleError && (
+              <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs font-bold">
+                {rescheduleError}
+              </div>
+            )}
+
+            {rescheduleSuccessUrl ? (
+              <div className="space-y-3 pt-2 text-center">
+                <div className="p-3.5 rounded-2xl bg-emerald-950/50 border border-emerald-800 text-emerald-300 text-xs font-bold">
+                  ✓ تم تحديث الموعد بنجاح! يمكنك الآن إرسال التفاصيل الجديدة للعميل عبر واتساب بنقرة واحدة:
+                </div>
+                <a
+                  href={rescheduleSuccessUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs transition flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>إرسال الموعد الجديد للعميل بالواتساب</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setRescheduleBooking(null)}
+                  className="w-full py-2.5 rounded-xl border border-slate-800 text-slate-400 hover:text-white text-xs font-bold"
+                >
+                  إغلاق
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleConfirmReschedule} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    التاريخ الجديد *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={rescheduleDate}
+                    onChange={(e) => setRescheduleDate(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    الساعة الجديدة *
+                  </label>
+                  <select
+                    required
+                    value={rescheduleTime}
+                    onChange={(e) => setRescheduleTime(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-sky-500"
+                  >
+                    <option value="">اختر موعداً متاحاً...</option>
+                    {availability.timeSlots
+                      .filter((s) => s.enabled)
+                      .map((slot) => (
+                        <option key={slot.id} value={slot.label}>
+                          {slot.label}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setRescheduleBooking(null)}
+                    className="px-4 py-2.5 rounded-xl border border-slate-800 text-slate-400 hover:text-white text-xs font-bold"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isRescheduling}
+                    className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:bg-slate-700 text-white font-extrabold text-xs transition flex items-center gap-1.5 shadow-md shadow-sky-600/20 cursor-pointer"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{isRescheduling ? 'جارٍ الحفظ...' : 'تأكيد الموعد الجديد'}</span>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Modal: Add Client Manually */}
       {showAddClientModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn text-right">

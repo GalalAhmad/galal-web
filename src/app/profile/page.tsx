@@ -45,7 +45,11 @@ import {
   Activity,
   Heart,
   Send,
-  X
+  X,
+  MessageSquare,
+  Settings,
+  Lock,
+  Flame,
 } from 'lucide-react';
 import { getIntakeSummaryPills } from '@/data/intakeQuestions';
 
@@ -67,8 +71,8 @@ export default function ClientProfilePage() {
   const { user: authUser, logout, login } = useAuth();
   const [userSession, setUserSession] = useState<any>(null);
 
-  // App Tabs: consultations | courses | assessments | homework | settings | consultant_hub | wellbeing
-  const [activeTab, setActiveTab] = useState<'consultations' | 'courses' | 'assessments' | 'homework' | 'timeline' | 'settings' | 'consultant_hub' | 'wellbeing'>('consultations');
+  // App Tabs: consultations | courses | assessments | homework | settings | consultant_hub | wellbeing | journal
+  const [activeTab, setActiveTab] = useState<'consultations' | 'courses' | 'assessments' | 'homework' | 'timeline' | 'settings' | 'consultant_hub' | 'wellbeing' | 'journal'>('consultations');
 
   // Client Data States
   const [clientBookings, setClientBookings] = useState<any[]>([]);
@@ -88,6 +92,20 @@ export default function ClientProfilePage() {
     { id: 'walk', title: 'المشي وتفريغ الشحنات الضاغطة', icon: '🚶‍♂️', done: false },
     { id: 'sleep', title: 'النوم المبكر والابتعاد عن الشاشات', icon: '🌙', done: false },
   ]);
+  const [wellbeingLogs, setWellbeingLogs] = useState<any[]>([]);
+  const [savingWellbeing, setSavingWellbeing] = useState(false);
+  const [wellbeingSavedMsg, setWellbeingSavedMsg] = useState('');
+  const [wellbeingStreak, setWellbeingStreak] = useState(0);
+
+  // Client Journal & Communication State
+  const [journalEntries, setJournalEntries] = useState<any[]>([]);
+  const [journalTitle, setJournalTitle] = useState('');
+  const [journalContent, setJournalContent] = useState('');
+  const [journalShared, setJournalShared] = useState(true);
+  const [journalMoodTag, setJournalMoodTag] = useState('ملاحظة بعد الجلسة');
+  const [savingJournal, setSavingJournal] = useState(false);
+  const [journalSuccessMsg, setJournalSuccessMsg] = useState('');
+
   const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
   const [enrollSuccessMsg, setEnrollSuccessMsg] = useState<string>('');
 
@@ -113,6 +131,12 @@ export default function ClientProfilePage() {
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editEmail, setEditEmail] = useState('');
+  const [editCity, setEditCity] = useState('');
+  const [editMaritalStatus, setEditMaritalStatus] = useState('غير محدد');
+  const [editAgeGroup, setEditAgeGroup] = useState('');
+  const [editNewPassword, setEditNewPassword] = useState('');
+  const [notifyEmailBookings, setNotifyEmailBookings] = useState(true);
+  const [shareMoodWithAdvisor, setShareMoodWithAdvisor] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
 
@@ -125,6 +149,9 @@ export default function ClientProfilePage() {
       setEditName(authUser.name || '');
       setEditPhone(authUser.phone || '');
       setEditEmail(authUser.email || '');
+      setEditCity(authUser.city || '');
+      setEditMaritalStatus(authUser.maritalStatus || 'غير محدد');
+      setEditAgeGroup(authUser.ageGroup || '');
       fetchClientData(authUser);
       if (authUser?.role === 'admin' || authUser?.email === 'admin@galalahmad.com') {
         setActiveTab('consultant_hub');
@@ -176,6 +203,53 @@ export default function ClientProfilePage() {
         if (profData.profile.clinicalNotes) {
           setClinicalNotes(profData.profile.clinicalNotes);
         }
+      }
+
+      // 3. Fetch Wellbeing Data & Streak
+      try {
+        const wbRes = await fetch(
+          `/api/user/wellbeing?phone=${encodeURIComponent(user.phone || '')}&email=${encodeURIComponent(user.email || '')}`,
+          { cache: 'no-store' }
+        );
+        const wbData = await wbRes.json();
+        if (wbData.logs) {
+          setWellbeingLogs(wbData.logs);
+          setWellbeingStreak(wbData.logs.length);
+        }
+        if (wbData.today) {
+          const MOOD_OPTIONS = [
+            { id: 'peaceful', label: 'مطمئن ومبتهج', emoji: '😊', insight: 'الحمد لله، استثمر هذه الحالة الإيجابية في كتابة الامتنان ومشاركة المحبة مع من حولك.' },
+            { id: 'calm', label: 'هادئ ومتزن', emoji: '😌', insight: 'حالة ممتازة من السكون الداخلي، حافظ عليها بالتنفس الواعي والابتعاد عن المشتتات.' },
+            { id: 'neutral', label: 'مستقر وعادي', emoji: '😐', insight: 'يوم طبيعي ومستقر، خذ وقتاً صغيراً للمشي أو قراءة صفحة من القرآن لتجديد الطاقة.' },
+            { id: 'anxious', label: 'قلق أو متوتر', emoji: '😟', insight: 'تذكر أن القلق مجرد فكرة عابرة وليس حقيقة مطلقة؛ مارس تمرين التنفس (4-7-8) الآن.' },
+            { id: 'exhausted', label: 'حزين أو مجهد', emoji: '😔', insight: 'رفقاً بنفسك، لا بأس بالشعور بالتعب؛ امنح جسدك الراحة وتحدث مع شخص آمن.' },
+          ];
+          const matched = MOOD_OPTIONS.find((m) => m.id === wbData.today.moodId);
+          if (matched) setDailyMood(matched);
+
+          if (Array.isArray(wbData.today.habits) && wbData.today.habits.length > 0) {
+            setHabits(prev => prev.map(h => ({
+              ...h,
+              done: wbData.today.habits.includes(h.id),
+            })));
+          }
+        }
+      } catch (e) {
+        console.error('Error fetching wellbeing:', e);
+      }
+
+      // 4. Fetch Client Journal & Messages
+      try {
+        const jRes = await fetch(
+          `/api/user/journal?phone=${encodeURIComponent(user.phone || '')}&email=${encodeURIComponent(user.email || '')}`,
+          { cache: 'no-store' }
+        );
+        const jData = await jRes.json();
+        if (jData.entries) {
+          setJournalEntries(jData.entries);
+        }
+      } catch (e) {
+        console.error('Error fetching journal:', e);
       }
     } catch (err) {
       console.error('Error fetching client data:', err);
@@ -303,9 +377,62 @@ export default function ClientProfilePage() {
     }
   };
 
-  // Toggle Daily Habit
-  const handleToggleHabit = (id: string) => {
-    setHabits(prev => prev.map(h => h.id === id ? { ...h, done: !h.done } : h));
+  // Select and Save Daily Mood to Supabase
+  const handleSelectMood = async (item: any) => {
+    setDailyMood(item);
+    setSavingWellbeing(true);
+    try {
+      const activeHabitIds = habits.filter(h => h.done).map(h => h.id);
+      await fetch('/api/user/wellbeing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: userSession?.phone || authUser?.phone,
+          email: userSession?.email || authUser?.email,
+          name: userSession?.name || authUser?.name,
+          moodId: item.id,
+          moodLabel: item.label,
+          moodScore: item.id === 'peaceful' ? 5 : item.id === 'calm' ? 4 : item.id === 'neutral' ? 3 : item.id === 'anxious' ? 2 : 1,
+          note: item.insight,
+          habits: activeHabitIds,
+        }),
+      });
+      setWellbeingSavedMsg(`تم توثيق حالتك المزاجية (${item.label}) في سجلك ومشاركتها في ملفك الإكلينيكي 🌿`);
+      setTimeout(() => setWellbeingSavedMsg(''), 4000);
+      fetchClientData(userSession || authUser);
+    } catch (e) {
+      console.error('Error saving mood:', e);
+    } finally {
+      setSavingWellbeing(false);
+    }
+  };
+
+  // Toggle Daily Habit and Save to Supabase
+  const handleToggleHabit = async (id: string) => {
+    const updatedHabits = habits.map(h => h.id === id ? { ...h, done: !h.done } : h);
+    setHabits(updatedHabits);
+    const activeIds = updatedHabits.filter(h => h.done).map(h => h.id);
+
+    try {
+      await fetch('/api/user/wellbeing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: userSession?.phone || authUser?.phone,
+          email: userSession?.email || authUser?.email,
+          name: userSession?.name || authUser?.name,
+          moodId: dailyMood?.id || 'neutral',
+          moodLabel: dailyMood?.label || 'مستقر وعادي',
+          moodScore: dailyMood?.id === 'peaceful' ? 5 : dailyMood?.id === 'calm' ? 4 : 3,
+          note: dailyMood?.insight || '',
+          habits: activeIds,
+        }),
+      });
+      setWellbeingSavedMsg('تم تحديث إنجاز عاداتك وحفظه في سجلك التراكمي ✓');
+      setTimeout(() => setWellbeingSavedMsg(''), 3000);
+    } catch (e) {
+      console.error('Error updating habits:', e);
+    }
   };
 
   // Real Login Handler
@@ -426,7 +553,44 @@ export default function ClientProfilePage() {
     }
   };
 
-  // Save Profile Details
+  // Save Client Journal / Reflection / Message
+  const handleSaveJournalEntry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!journalContent.trim()) return;
+    setSavingJournal(true);
+    setJournalSuccessMsg('');
+    try {
+      const res = await fetch('/api/user/journal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: userSession?.phone || authUser?.phone,
+          email: userSession?.email || authUser?.email,
+          name: userSession?.name || authUser?.name,
+          title: journalTitle.trim() || 'تدوينة إرشادية',
+          content: journalContent.trim(),
+          sharedWithAdvisor: journalShared,
+          moodTag: journalMoodTag || 'ملاحظة عامة',
+        }),
+      });
+      if (res.ok) {
+        setJournalContent('');
+        setJournalTitle('');
+        setJournalSuccessMsg(journalShared ? 'تم إرسال تدوينتك وحفظها في ملفك المشترك مع المستشار جلال أحمد ✓' : 'تم حفظ الخاطرة في مفكرتك السرية الخاصة ✓');
+        setTimeout(() => setJournalSuccessMsg(''), 5000);
+        // Refresh journal entries
+        const jRes = await fetch(`/api/user/journal?phone=${encodeURIComponent(userSession?.phone || authUser?.phone || '')}&email=${encodeURIComponent(userSession?.email || authUser?.email || '')}`);
+        const jData = await jRes.json();
+        if (jData.entries) setJournalEntries(jData.entries);
+      }
+    } catch (err) {
+      console.error('Journal submit error:', err);
+    } finally {
+      setSavingJournal(false);
+    }
+  };
+
+  // Save Comprehensive Profile Details and Preferences
   const handleSaveProfileDetails = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingProfile(true);
@@ -437,18 +601,35 @@ export default function ClientProfilePage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: userSession?.phone,
-          email: userSession?.email,
+          phone: editPhone.trim() || userSession?.phone,
+          email: editEmail.trim() || userSession?.email,
           name: editName.trim(),
+          newPassword: editNewPassword.trim() ? editNewPassword.trim() : undefined,
+          city: editCity.trim(),
+          maritalStatus: editMaritalStatus,
+          ageGroup: editAgeGroup,
+          notificationPreferences: {
+            emailBookings: notifyEmailBookings,
+            shareMood: shareMoodWithAdvisor,
+          },
         }),
       });
       const data = await res.json();
       if (data.success) {
-        const updated = { ...userSession, name: editName.trim() };
+        const updated = {
+          ...userSession,
+          name: editName.trim(),
+          phone: editPhone.trim(),
+          email: editEmail.trim(),
+          city: editCity.trim(),
+          maritalStatus: editMaritalStatus,
+          ageGroup: editAgeGroup,
+        };
         setUserSession(updated);
         localStorage.setItem('galal_user_session', JSON.stringify(updated));
-        setProfileSuccessMsg('تم تحديث البيانات بنجاح!');
-        setTimeout(() => setProfileSuccessMsg(''), 3000);
+        setEditNewPassword('');
+        setProfileSuccessMsg('تم حفظ وتحديث كافة بيانات الحساب والإعدادات بنجاح ✓');
+        setTimeout(() => setProfileSuccessMsg(''), 4000);
       }
     } catch (e) {
       console.error(e);
@@ -723,10 +904,31 @@ export default function ClientProfilePage() {
               </div>
 
               {/* Quick Actions */}
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <a
+                  href={`https://wa.me/201014876666?text=${encodeURIComponent(`السلام عليكم أستاذ جلال أحمد، أنا ${userSession.name} من المنصة الرسمية.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-extrabold rounded-xl transition shadow-xs"
+                  title="محادثة واتساب مباشرة مع المستشار"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>تواصل عبر واتساب</span>
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('journal')}
+                  className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-extrabold rounded-xl transition shadow-xs cursor-pointer"
+                  title="مفكرة الخواطر والرسائل"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>مفكرة الخواطر</span>
+                </button>
+
                 <Link
                   href="/booking"
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-xs font-bold rounded-xl transition shadow-sm"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-xs font-bold rounded-xl transition shadow-xs"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>حجز استشارة</span>
@@ -735,7 +937,7 @@ export default function ClientProfilePage() {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 transition cursor-pointer"
+                  className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 transition cursor-pointer"
                   title="تسجيل الخروج"
                 >
                   <LogOut className="w-3.5 h-3.5 text-rose-500" />
@@ -870,6 +1072,19 @@ export default function ClientProfilePage() {
               >
                 <Smile className="w-3.5 h-3.5 text-emerald-500" />
                 <span>المزاج والعادات 🌿</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('journal')}
+                className={`flex-1 min-w-[145px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeTab === 'journal'
+                    ? 'bg-white dark:bg-[#161B22] text-[#4E7E76] dark:text-[#5E988E] shadow-xs font-black'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-[#4E7E76]" />
+                <span>مفكرة الخواطر وتواصل ({journalEntries.length})</span>
               </button>
 
               <button
@@ -1167,21 +1382,55 @@ export default function ClientProfilePage() {
               </div>
             )}
 
-            {/* TAB: WELLBEING & DAILY MOOD & HABITS (سجل المزاج والعادات) */}
+            {/* TAB: WELLBEING & DAILY MOOD & HABITS (سجل المزاج والعادات التفاعلي) */}
             {activeTab === 'wellbeing' && (
               <div className="space-y-6 animate-fadeIn">
+                {/* Save Feedback Banner */}
+                {wellbeingSavedMsg && (
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 font-bold flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>{wellbeingSavedMsg}</span>
+                    </div>
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">محفوظ في السجل السحابي ✓</span>
+                  </div>
+                )}
+
+                {/* Header & Streak Card */}
+                <div className="p-6 rounded-3xl bg-linear-to-r from-[#4E7E76]/10 via-[#154F9C]/10 to-transparent border border-[#4E7E76]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                      <Flame className="w-5 h-5 text-amber-500 animate-pulse" />
+                      <span>متتبع المزاج والسكينة التفاعلي اليومي</span>
+                    </h3>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      كل اختيار تقوم به يُسجل فوراً في ملفك السريري ويظهر للمستشار جلال أحمد لمتابعة استقرارك واتزانك.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white dark:bg-[#161B22] px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 shrink-0">
+                    <span>أيام التوثيق المسجلة:</span>
+                    <span className="text-lg font-black text-[#4E7E76]">{wellbeingStreak}</span>
+                  </div>
+                </div>
+
                 {/* Mood Logger Card */}
                 <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div>
-                      <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                        <span>سجل المزاج والسكينة اليومي</span>
-                        <Smile className="w-5 h-5 text-amber-500" />
+                      <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>كيف تشعر في هذه اللحظة؟</span>
+                        <Smile className="w-4 h-4 text-amber-500" />
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        كيف تشعر في هذه اللحظة؟ تسمية الشعور نصف التعافي والاتزان النفسي.
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        اضغط على الشعور المناسب لتسجيله ومزامنته فوراً في سجلك
                       </p>
                     </div>
+                    {savingWellbeing && (
+                      <span className="text-xs text-amber-600 flex items-center gap-1 font-bold">
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>جارٍ التوثيق...</span>
+                      </span>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
@@ -1195,10 +1444,10 @@ export default function ClientProfilePage() {
                       <button
                         type="button"
                         key={item.id}
-                        onClick={() => setDailyMood(item)}
+                        onClick={() => handleSelectMood(item)}
                         className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer ${
                           dailyMood?.id === item.id
-                            ? 'border-[#4E7E76] bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 scale-105'
+                            ? 'border-[#4E7E76] bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 scale-105 shadow-sm'
                             : 'border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900 hover:border-slate-300'
                         }`}
                       >
@@ -1210,7 +1459,9 @@ export default function ClientProfilePage() {
 
                   {dailyMood && (
                     <div className="p-4 rounded-2xl bg-[#4E7E76]/10 dark:bg-[#5E988E]/15 border border-[#4E7E76]/20 text-xs text-slate-800 dark:text-slate-200 leading-relaxed space-y-1 animate-fadeIn">
-                      <strong className="text-[#3D645E] dark:text-emerald-300 block">رسالة إرشادية لحالتك ({dailyMood.label}):</strong>
+                      <strong className="text-[#3D645E] dark:text-emerald-300 block font-bold">
+                        توجيه المستشار لحالتك اليوم ({dailyMood.label}):
+                      </strong>
                       <p>{dailyMood.insight}</p>
                     </div>
                   )}
@@ -1218,19 +1469,29 @@ export default function ClientProfilePage() {
 
                 {/* Daily Habits Tracker Card */}
                 <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
-                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
                     <div>
-                      <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                        <span>متتبع العادات الإيجابية والتعافي الذاتي</span>
-                        <Activity className="w-5 h-5 text-emerald-500" />
+                      <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span>متتبع العادات الإيجابية اليومية</span>
+                        <Activity className="w-4 h-4 text-emerald-500" />
                       </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                        عادات يومية بسيطة متوافقة مع الفطرة والقرآن لحماية طاقتك الذهنية والنفسية.
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        اضغط على أي عادة لتسجيل إنجازها وحفظها في مؤشرات انتظامك
                       </p>
                     </div>
-                    <span className="text-xs font-bold text-slate-500">
-                      {habits.filter(h => h.done).length} من {habits.length} منجزة
-                    </span>
+                    <div className="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                        {habits.filter(h => h.done).length} من {habits.length} منجزة
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Habit Progress Bar */}
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div
+                      className="bg-[#4E7E76] h-full transition-all duration-500 rounded-full"
+                      style={{ width: `${(habits.filter(h => h.done).length / habits.length) * 100}%` }}
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1250,7 +1511,7 @@ export default function ClientProfilePage() {
                           <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">{habit.title}</span>
                         </div>
                         <div
-                          className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 ${
+                          className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-colors ${
                             habit.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-600'
                           }`}
                         >
@@ -1259,6 +1520,196 @@ export default function ClientProfilePage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Cumulative Mood & Wellbeing History */}
+                <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-[#154F9C]" />
+                      <span>سجل الأيام السابقة ومؤشرات المزاج التراكمية</span>
+                    </h4>
+                    <span className="text-[11px] text-slate-400">سجل {wellbeingLogs.length} تدوين سابق</span>
+                  </div>
+
+                  {wellbeingLogs.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-6 text-center">
+                      لم تقم بتسجيل حالتك لأيام سابقة بعد؛ حدد مزاجك أعلاه لحفظ أول تدوين في سجلك التراكمي!
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {wellbeingLogs.map((log: any) => (
+                        <div key={log.id} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs text-right">
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-[10px] text-slate-400">{log.date}</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                              <span>{log.moodLabel}</span>
+                              <span className="text-base">{log.moodScore >= 4 ? '😊' : log.moodScore === 3 ? '😐' : '😟'}</span>
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1 border-t border-slate-200 dark:border-slate-800">
+                            <span>العادات المنجزة:</span>
+                            <strong className="text-emerald-600">{Array.isArray(log.habits) ? log.habits.length : 0} من {habits.length}</strong>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: CLIENT JOURNAL & COUNSELOR COMMUNICATION (مفكرة الخواطر والتواصل مع المستشار) */}
+            {activeTab === 'journal' && (
+              <div className="space-y-6 animate-fadeIn">
+                {/* Fast WhatsApp Card */}
+                <div className="p-5 sm:p-6 rounded-3xl bg-linear-to-r from-emerald-500/10 via-[#4E7E76]/10 to-[#154F9C]/10 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-emerald-600" />
+                      <span>قناة التنسيق والتواصل المباشر عبر واتساب</span>
+                    </h3>
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
+                      هل لديك استفسار عاجل أو ترغب بتنسيق طارئ لموعد استشارتك؟ اضغط لبدء محادثة مباشرة مع المستشار.
+                    </p>
+                  </div>
+                  <a
+                    href={`https://wa.me/201014876666?text=${encodeURIComponent(`السلام عليكم أستاذ جلال أحمد، أنا ${userSession?.name} من المنصة الرسمية.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-extrabold transition shadow-md shrink-0"
+                  >
+                    <Phone className="w-4 h-4" />
+                    <span>محادثة واتساب فورية</span>
+                  </a>
+                </div>
+
+                {/* Compose Form */}
+                <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+                  <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4 text-[#4E7E76]" />
+                      <span>تدوين خاطرة أو رسالة للمستشار جلال أحمد</span>
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      دوّن مشاعرك وأسئلتك بحرية؛ يمكنك إتاحتها للمستشار في ملفك الإكلينيكي لمناقشتها في الجلسة.
+                    </p>
+                  </div>
+
+                  {journalSuccessMsg && (
+                    <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 text-xs text-emerald-800 dark:text-emerald-300 font-bold flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span>{journalSuccessMsg}</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSaveJournalEntry} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                          عنوان التدوينة أو الموضوع:
+                        </label>
+                        <input
+                          type="text"
+                          value={journalTitle}
+                          onChange={(e) => setJournalTitle(e.target.value)}
+                          placeholder="مثال: فكرة بعد جلسة الأمس، أو تساؤل حول مهارة جديدة..."
+                          className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                          تصنيف التدوينة:
+                        </label>
+                        <select
+                          value={journalMoodTag}
+                          onChange={(e) => setJournalMoodTag(e.target.value)}
+                          className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                        >
+                          <option value="ملاحظة بعد الجلسة">ملاحظة بعد الجلسة</option>
+                          <option value="تفريغ مشاعر وأفكار">تفريغ مشاعر وأفكار</option>
+                          <option value="استفسار للمستشار">استفسار للمستشار</option>
+                          <option value="سؤال عن الواجب">سؤال عن الواجب</option>
+                          <option value="لحظة إنجاز وامتنان">لحظة إنجاز وامتنان</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        نص الخاطرة / الرسالة:
+                      </label>
+                      <textarea
+                        required
+                        rows={4}
+                        value={journalContent}
+                        onChange={(e) => setJournalContent(e.target.value)}
+                        placeholder="اكتب هنا كل ما يدور في خاطرك بحرية وأمان تام..."
+                        className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white leading-relaxed"
+                      />
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+                      <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-700 dark:text-slate-300">
+                        <input
+                          type="checkbox"
+                          checked={journalShared}
+                          onChange={(e) => setJournalShared(e.target.checked)}
+                          className="rounded-sm text-[#4E7E76] focus:ring-[#4E7E76] w-4 h-4"
+                        />
+                        <span className="font-bold">مشاركة هذه التدوينة مع المستشار جلال أحمد في ملفي الإكلينيكي</span>
+                      </label>
+
+                      <button
+                        type="submit"
+                        disabled={savingJournal || !journalContent.trim()}
+                        className="inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-[#4E7E76] hover:bg-[#3D645E] disabled:bg-slate-300 text-white text-xs font-bold transition shadow-sm cursor-pointer"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        <span>{savingJournal ? 'جارٍ الحفظ...' : 'حفظ وإرسال التدوينة'}</span>
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Timeline of Previous Entries */}
+                <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <BookOpen className="w-4 h-4 text-[#154F9C]" />
+                      <span>سجل الخواطر والرسائل السابقة ({journalEntries.length})</span>
+                    </h4>
+                  </div>
+
+                  {journalEntries.length === 0 ? (
+                    <p className="text-xs text-slate-400 py-6 text-center">
+                      لا توجد تدوينات سابقة بعد. اكتب أول خاطرة أو رسالة للمستشار أعلاه.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {journalEntries.map((entry) => (
+                        <div key={entry.id} className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2 text-right">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-slate-900 dark:text-white">{entry.title}</span>
+                            <div className="flex items-center gap-2">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                entry.sharedWithAdvisor ? 'bg-[#4E7E76]/15 text-[#4E7E76] dark:text-[#5E988E]' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
+                              }`}>
+                                {entry.sharedWithAdvisor ? 'مشتركة مع المستشار ✓' : 'مفكرة خاصة 🔒'}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-mono">
+                                {new Date(entry.createdAt).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                            {entry.content}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -1299,8 +1750,22 @@ export default function ClientProfilePage() {
                             <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[#154F9C] dark:text-[#60A5FA] font-bold">
                               {b.id}
                             </span>
-                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
-                              {b.status === 'confirmed' ? 'جلسة مؤكدة' : 'تم استلام الحجز'}
+                            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
+                              b.status === 'confirmed'
+                                ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
+                                : b.status === 'pending_verification'
+                                ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
+                                : b.status === 'cancelled'
+                                ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                            }`}>
+                              {b.status === 'confirmed'
+                                ? 'جلسة مؤكدة ومعتمدة ✓'
+                                : b.status === 'pending_verification'
+                                ? 'بانتظار التحقق من الإيصال'
+                                : b.status === 'cancelled'
+                                ? 'جلسة ملغاة'
+                                : 'تم استلام الحجز'}
                             </span>
                           </div>
                           <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-1.5">
@@ -1308,8 +1773,8 @@ export default function ClientProfilePage() {
                           </h3>
                         </div>
 
-                        {/* Google Meet 1-Click Launch Button */}
-                        {b.meetLink ? (
+                        {/* Google Meet Launch Button — Strictly enabled when confirmed */}
+                        {b.status === 'confirmed' && b.meetLink ? (
                           <a
                             href={b.meetLink}
                             target="_blank"
@@ -1317,9 +1782,14 @@ export default function ClientProfilePage() {
                             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs font-extrabold transition shadow-md hover:shadow-lg"
                           >
                             <Video className="w-4 h-4" />
-                            <span>دخول الجلسة (Google Meet)</span>
+                            <span>دخول قاعة الجلسة (Google Meet)</span>
                             <ExternalLink className="w-3 h-3" />
                           </a>
+                        ) : b.status === 'pending_verification' ? (
+                          <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 bg-amber-500/10 px-3.5 py-2 rounded-xl border border-amber-500/20 font-bold">
+                            <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                            <span>سيتم تفعيل رابط القاعة فور اعتماد الإيصال</span>
+                          </div>
                         ) : (
                           <span className="text-xs text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
                             سيصلك رابط اللقاء قبل الموعد
@@ -1767,53 +2237,144 @@ export default function ClientProfilePage() {
                   </div>
                 )}
 
-                <form onSubmit={handleSaveProfileDetails} className="space-y-4 max-w-md">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                      الاسم الكامل:
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs text-slate-900 dark:text-white"
-                    />
+                <form onSubmit={handleSaveProfileDetails} className="space-y-5 max-w-2xl text-right">
+                  {/* Basic Info */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        الاسم الكامل:
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        رقم الهاتف / الواتساب:
+                      </label>
+                      <input
+                        type="tel"
+                        dir="ltr"
+                        value={editPhone}
+                        onChange={(e) => setEditPhone(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                      />
+                      <span className="text-[10px] text-slate-400 mt-1 block">يُستخدم لتنسيق الجلسات واستقبال تذكيرات الواتساب</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        البريد الإلكتروني المعتمد:
+                      </label>
+                      <input
+                        type="email"
+                        dir="ltr"
+                        value={editEmail}
+                        onChange={(e) => setEditEmail(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                      />
+                      <span className="text-[10px] text-slate-400 mt-1 block">تصلك عليه بطاقة الموعد ورابط قاعة Google Meet</span>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        المدينة وبلد الإقامة:
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="مثال: الرياض، السعودية أو القاهرة، مصر"
+                        value={editCity}
+                        onChange={(e) => setEditCity(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        الحالة الاجتماعية:
+                      </label>
+                      <select
+                        value={editMaritalStatus}
+                        onChange={(e) => setEditMaritalStatus(e.target.value)}
+                        className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                      >
+                        <option value="غير محدد">غير محدد</option>
+                        <option value="أعزب">أعزب / عزباء</option>
+                        <option value="عاقد قران / مقبل">عاقد قران / مقبل على الزواج</option>
+                        <option value="متزوج">متزوج / متزوجة</option>
+                        <option value="منفصل / مطلق">منفصل / مطلق</option>
+                        <option value="أرمل">أرمل / أرملة</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        العمر التقريبي أو الفئة:
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="مثال: 32 سنة"
+                        value={editAgeGroup}
+                        onChange={(e) => setEditAgeGroup(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
+                      />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                      رقم الهاتف / الواتساب:
+                  {/* Notification & Privacy Preferences */}
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3">
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                      <Settings className="w-3.5 h-3.5 text-[#154F9C]" />
+                      <span>تفضيلات الإشعارات والخصوصية الإكلينيكية</span>
+                    </h4>
+
+                    <label className="flex items-center gap-2.5 cursor-pointer text-xs text-slate-700 dark:text-slate-300 select-none">
+                      <input
+                        type="checkbox"
+                        checked={notifyEmailBookings}
+                        onChange={(e) => setNotifyEmailBookings(e.target.checked)}
+                        className="rounded-sm text-[#4E7E76] focus:ring-[#4E7E76] w-4 h-4"
+                      />
+                      <span>استلام إشعارات تأكيد المواعيد ورابط الجلسات عبر البريد الإلكتروني</span>
                     </label>
-                    <input
-                      type="text"
-                      disabled
-                      dir="ltr"
-                      value={editPhone}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-500 cursor-not-allowed"
-                    />
-                    <span className="text-[10px] text-slate-400 mt-1 block">رقم الهاتف مرتبط بالحجوزات المعتمدة</span>
+
+                    <label className="flex items-center gap-2.5 cursor-pointer text-xs text-slate-700 dark:text-slate-300 select-none">
+                      <input
+                        type="checkbox"
+                        checked={shareMoodWithAdvisor}
+                        onChange={(e) => setShareMoodWithAdvisor(e.target.checked)}
+                        className="rounded-sm text-[#4E7E76] focus:ring-[#4E7E76] w-4 h-4"
+                      />
+                      <span>مشاركة مؤشرات المزاج والعادات اليومية مع المستشار جلال أحمد في الجلسات</span>
+                    </label>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                      البريد الإلكتروني:
+                  {/* Change Password */}
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                      تغيير كلمة المرور (اختياري):
                     </label>
                     <input
-                      type="email"
-                      disabled
-                      dir="ltr"
-                      value={editEmail}
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-xs text-slate-500 cursor-not-allowed"
+                      type="password"
+                      placeholder="اتركها فارغة إذا كنت لا ترغب بتغييرها"
+                      value={editNewPassword}
+                      onChange={(e) => setEditNewPassword(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
                     />
+                    <span className="text-[10px] text-slate-400 block">يجب ألا تقل عن 6 أحرف إذا أردت تحديثها</span>
                   </div>
 
                   <button
                     type="submit"
                     disabled={savingProfile}
-                    className="px-6 py-2.5 rounded-xl bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-bold transition shadow-sm"
+                    className="px-8 py-3 rounded-xl bg-[#4E7E76] hover:bg-[#3D645E] disabled:bg-slate-300 text-white text-xs font-bold transition shadow-sm cursor-pointer"
                   >
-                    {savingProfile ? 'جارٍ الحفظ...' : 'حفظ التعديلات'}
+                    {savingProfile ? 'جارٍ حفظ الإعدادات...' : 'حفظ كافة الإعدادات والبيانات ✓'}
                   </button>
                 </form>
               </div>

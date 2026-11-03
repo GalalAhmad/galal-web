@@ -31,7 +31,7 @@ function toFrontendBooking(row: any) {
     maritalStatus: row.marital_status || row.maritalStatus || 'غير محدد',
     slotDate: typeof row.slot_date === 'string' ? row.slot_date : (row.slotDate || ''),
     slotTime: row.slot_time || row.slotTime,
-    meetLink: row.meet_link || row.meetLink || 'https://meet.google.com',
+    meetLink: (row.status === 'confirmed') ? (row.meet_link || row.meetLink || '') : '',
     status: row.status || 'pending_verification',
     paymentMethod: row.payment_method || row.paymentMethod || 'instapay',
     fee: row.fee || '250 ر.س',
@@ -334,7 +334,7 @@ export async function POST(request: Request) {
     // Auto-sync client profile in Supabase & local
     await syncProfile(createdBooking.clientName, createdBooking.clientPhone, createdBooking.clientEmail);
 
-    // Send confirmation email
+    // 1. Send receipt-acknowledgment email to client
     if (createdBooking.clientEmail) {
       sendBookingConfirmationEmail({
         to: createdBooking.clientEmail,
@@ -344,7 +344,46 @@ export async function POST(request: Request) {
         slotDate: createdBooking.slotDate,
         slotTime: createdBooking.slotTime,
         meetLink: createdBooking.meetLink,
+        status: createdBooking.status,
       }).catch((err) => console.error('Email send background error:', err));
+    }
+
+    // 2. Insert in-app notification for the client
+    if (isSupabaseConfigured && supabaseAdmin) {
+      try {
+        await supabaseAdmin.from('test_results').insert({
+          id: `notif-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
+          client_name: createdBooking.clientName,
+          client_phone: createdBooking.clientPhone || '',
+          client_email: createdBooking.clientEmail || '',
+          test_id: 'user_notification',
+          test_title: `تم استلام طلب حجزك (${createdBooking.id}) 🌿`,
+          score: 0,
+          score_percent: 0,
+          level: 'unread',
+          description: `تم تسجيل موعد استشارتك (${createdBooking.trackLabel}) بتاريخ ${createdBooking.slotDate} (${createdBooking.slotTime}) بنجاح وهو قيد مراجعة إيصال السداد واعتماد الموعد.`,
+          recommendation: '/profile',
+          created_at: new Date().toISOString(),
+        });
+
+        // 3. Insert notification for the admin
+        await supabaseAdmin.from('test_results').insert({
+          id: `notif-admin-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
+          client_name: 'إشعار الإدارة',
+          client_phone: 'admin',
+          client_email: 'galalahmad1201@gmail.com',
+          test_id: 'user_notification',
+          test_title: `حجز جديد بانتظار الاعتماد: ${createdBooking.clientName}`,
+          score: 0,
+          score_percent: 0,
+          level: 'unread',
+          description: `طلب جديد (${createdBooking.trackLabel}) - موعد: ${createdBooking.slotDate} (${createdBooking.slotTime}). اضغط لمراجعة إيصال السداد واعتماد الموعد.`,
+          recommendation: '/admin',
+          created_at: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error('In-app notification insert error:', err);
+      }
     }
 
     return NextResponse.json({ success: true, booking: createdBooking });
@@ -412,6 +451,43 @@ export async function PUT(request: Request) {
 
       if (!error && data) {
         const updated = toFrontendBooking(data);
+
+        // Send official confirmation email and Meet room upon confirmation
+        if (status === 'confirmed' && updated?.clientEmail) {
+          sendBookingConfirmationEmail({
+            to: updated.clientEmail,
+            clientName: updated.clientName,
+            bookingId: updated.id,
+            trackLabel: updated.trackLabel,
+            slotDate: updated.slotDate,
+            slotTime: updated.slotTime,
+            meetLink: updated.meetLink || 'https://meet.google.com',
+            status: 'confirmed',
+          }).catch((err) => console.error('Confirmed email dispatch error:', err));
+        }
+
+        // Send in-app notification to client upon confirmation
+        if (status === 'confirmed' && isSupabaseConfigured && supabaseAdmin) {
+          try {
+            await supabaseAdmin.from('test_results').insert({
+              id: `notif-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
+              client_name: updated?.clientName || 'مستفيد',
+              client_phone: updated?.clientPhone || '',
+              client_email: updated?.clientEmail || '',
+              test_id: 'user_notification',
+              test_title: `تم اعتماد وتأكيد موعد جلستك الاستشارية ✓`,
+              score: 0,
+              score_percent: 0,
+              level: 'unread',
+              description: `تم اعتماد وتأكيد موعدك (${updated?.trackLabel}) بتاريخ ${updated?.slotDate} (${updated?.slotTime}) ورابط قاعة Google Meet متاح الآن في ملفك الشخصي.`,
+              recommendation: '/profile',
+              created_at: new Date().toISOString(),
+            });
+          } catch (err) {
+            console.error('In-app confirmed notification error:', err);
+          }
+        }
+
         // mirror local
         try {
           const currentList = await readBookingsLocal();

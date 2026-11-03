@@ -1849,8 +1849,8 @@ function BookingWizardContent() {
               </div>
             </div>
 
-            {/* Google Meet Link Display */}
-            {submittedBooking.meetLink && (
+            {/* Status & Google Meet Link Display */}
+            {submittedBooking.status === 'confirmed' && submittedBooking.meetLink ? (
               <div className="max-w-md mx-auto p-4 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] border border-[#D6E6F8] dark:border-[#1E3A5F] text-right space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-[#154F9C] dark:text-[#60A5FA]">
@@ -1879,6 +1879,16 @@ function BookingWizardContent() {
                 </a>
                 <p className="text-[11px] text-slate-500 pt-1">
                   ✉️ تم إرسال نسخة من تفاصيل الموعد ورابط قاعة Google Meet إلى بريدك الإلكتروني ({submittedBooking.clientEmail || 'المسجل'}).
+                </p>
+              </div>
+            ) : (
+              <div className="max-w-md mx-auto p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/30 text-right space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-300">
+                  <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>رابط قاعة الجلسة: بانتظار الاعتماد المالي وتأكيد الموعد</span>
+                </div>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                  سيتم تفعيل رابط قاعة اللقاء وإرسال إشعار رسمي إلى بريدك الإلكتروني ({submittedBooking.clientEmail || 'المسجل'}) فور مراجعة المستشار لإيصال السداد واعتماد الموعد.
                 </p>
               </div>
             )}

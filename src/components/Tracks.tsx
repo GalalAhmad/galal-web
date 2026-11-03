@@ -116,7 +116,7 @@ export default function Tracks() {
 
                 <div className="pt-6 border-t border-slate-800/80 dark:border-slate-800/80 border-slate-100">
                   <a
-                    href="https://calendly.com/galal3hmad/insan"
+                    href="/booking"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-3 bg-slate-800/80 dark:bg-slate-800/80 bg-slate-100 hover:bg-accent-500 dark:hover:bg-accent-500 hover:text-white dark:hover:text-white text-slate-200 dark:text-slate-200 text-slate-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 group-hover:bg-accent-500 group-hover:text-white"

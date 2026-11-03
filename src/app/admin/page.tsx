@@ -46,10 +46,22 @@ import {
   Zap,
   Search,
   Key,
-  UserPlus
+  UserPlus,
+  Mail
 } from 'lucide-react';
 import { articlesData as initialArticles } from '@/data/articles';
 import { getQuestionAndAnswerLabels, getIntakeSummaryPills, intakeTracks } from '@/data/intakeQuestions';
+
+
+const clinicalExercises = [
+  { id: 'cbt-thought-record', title: 'سجل تفكيك الأفكار التلقائية وإعادة البناء المعرفي (CBT)', link: '/tests' },
+  { id: 'breathing-regulation', title: 'تمرين التنفس البطني والتهدئة الفسيولوجية (Diaphragmatic Breathing)', link: '/tests' },
+  { id: 'trigger-tracker', title: 'جدول رصد المحفزات الانفعالية واستجابات الجسم (Trigger & Emotion Log)', link: '/tests' },
+  { id: 'act-values-compass', title: 'تمرين بوصلة القيم وبناء المعنى الحياتي (ACT Values Compass)', link: '/aqwameyat-quran' },
+  { id: 'safe-dialogue', title: 'ميثاق الحوار الزواجي الهادئ في لحظات الغضب (Safe Dialogue Protocol)', link: '/courses/family/mithaq' },
+  { id: 'gratitude-mindfulness', title: 'مفكرة الامتنان وبصائر الرضا اليومية (Daily Gratitude Journal)', link: '/aqwameyat-quran' },
+  { id: 'behavior-as-message', title: 'استمارة رصد الدوافع والاحتياج غير المشبع خلف السلوك (Behavior As Message)', link: '/about' },
+];
 
 export default function AdminDashboardPage() {
   // Authentication Protection State
@@ -96,6 +108,10 @@ export default function AdminDashboardPage() {
   const [clientNotesInputs, setClientNotesInputs] = useState<Record<string, string>>({});
   const [newHwTitleInput, setNewHwTitleInput] = useState<Record<string, string>>({});
   const [newHwArticleSelect, setNewHwArticleSelect] = useState<Record<string, string>>({});
+  const [newHwExerciseSelect, setNewHwExerciseSelect] = useState<Record<string, string>>({});
+  const [testEmailTo, setTestEmailTo] = useState('galalahmad1201@gmail.com');
+  const [sendingTestEmail, setSendingTestEmail] = useState(false);
+  const [testEmailResult, setTestEmailResult] = useState<string | null>(null);
 
   // CRM Bookings State
   const [bookingsList, setBookingsList] = useState<any[]>([]);
@@ -897,11 +913,18 @@ ${meet}
   const handleAddClientHomework = async (clientId: string) => {
     const customTitle = newHwTitleInput[clientId] || '';
     const selectedArticleId = newHwArticleSelect[clientId] || '';
+    const selectedExerciseId = newHwExerciseSelect[clientId] || '';
     
     let title = customTitle.trim();
     let link = '';
-    
-    if (selectedArticleId) {
+
+    if (selectedExerciseId) {
+      const ex = clinicalExercises.find(e => e.id === selectedExerciseId);
+      if (ex) {
+        title = title ? `${title} (تمرين: ${ex.title})` : ex.title;
+        link = ex.link;
+      }
+    } else if (selectedArticleId) {
       const art = initialArticles.find(a => a.id === selectedArticleId);
       if (art) {
         title = title ? `${title} (مقال: ${art.title})` : `قراءة مقال: ${art.title}`;
@@ -910,7 +933,7 @@ ${meet}
     }
 
     if (!title) {
-      alert('يرجى كتابة عنوان التكليف أو اختيار مقال موصى به');
+      alert('يرجى كتابة عنوان التكليف أو اختيار تمرين مقنن من المكتبة');
       return;
     }
 
@@ -928,7 +951,8 @@ ${meet}
         setClientProfiles(prev => prev.map(p => p.id === clientId ? data.profile : p));
         setNewHwTitleInput(prev => ({ ...prev, [clientId]: '' }));
         setNewHwArticleSelect(prev => ({ ...prev, [clientId]: '' }));
-        setSaveSuccessMsg('تم إسناد التكليف للمستفيد بنجاح وسيظهر في ملفه الشخصي');
+        setNewHwExerciseSelect(prev => ({ ...prev, [clientId]: '' }));
+        setSaveSuccessMsg('تم إسناد التكليف للمستفيد بنجاح وسيظهر في ملفه الشخصي وإشعاراته');
         setTimeout(() => setSaveSuccessMsg(''), 3000);
       }
     } catch (e) {
@@ -2566,7 +2590,18 @@ ${meet}
 
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                                     <div>
-                                      <label className="block text-[11px] text-slate-400 mb-1">اختر مقالاً من مقالات الموقع:</label>
+                                      <label className="block text-[11px] text-slate-400 mb-1">اختر تمريناً مقنناً من مكتبة التمارين النفسية:</label>
+                                       <select
+                                         value={newHwExerciseSelect[client.id] || ''}
+                                         onChange={(e) => setNewHwExerciseSelect(prev => ({ ...prev, [client.id]: e.target.value }))}
+                                         className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white mb-2"
+                                       >
+                                         <option value="">-- اختر من مكتبة التمارين الإرشادية --</option>
+                                         {clinicalExercises.map(ex => (
+                                           <option key={ex.id} value={ex.id}>{ex.title}</option>
+                                         ))}
+                                       </select>
+                                       <label className="block text-[11px] text-slate-400 mb-1">أو اختر مقالاً علاجياً من مقالات الموقع:</label>
                                       <select
                                         value={newHwArticleSelect[client.id] || ''}
                                         onChange={(e) => setNewHwArticleSelect(prev => ({ ...prev, [client.id]: e.target.value }))}

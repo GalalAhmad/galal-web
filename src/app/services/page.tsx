@@ -324,48 +324,51 @@ export default function ServicesPage() {
         limit={6}
       />
 
-      {/* Booking Calendar Section (Calendly Embed) */}
+      {/* Native Direct Booking Portal Section */}
       <section id="book" className="py-12 sm:py-16 px-4 sm:px-6 max-w-5xl mx-auto w-full space-y-8">
         
         <div className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EDF7F5] dark:bg-[#112924] border border-[#D6EEEA] dark:border-[#1F4A42] text-xs font-bold text-[#4E7E76]">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>نظام الحجز الداخلي المعتمد</span>
+          </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100">
-            جدول حجز المواعيد المباشر
+            احجز موعد جلستك الاستشارية مباشرة
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-lg mx-auto">
-            اختر اليوم والوقت الملائم لك من الجدول أدناه، وسيصلك تأكيد الحجز ورابط اللقاء على Google Meet مباشرة.
+            منظومة حجز خاصة بالمنصة، مشفرة بالكامل بدون وسطاء خارجيين، مع تحديد فوري للموعد واستمارة فرز سريرية مسبقة.
           </p>
         </div>
 
-        {/* Smart Booking Banner */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-linear-to-r from-[#4E7E76]/10 via-[#4E7E76]/5 to-transparent border border-[#4E7E76]/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 text-right">
-            <div className="w-10 h-10 rounded-xl bg-[#4E7E76] text-white flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5" />
+        {/* Native Portal Card */}
+        <div className="bg-white dark:bg-[#161F2B] rounded-3xl border border-slate-200/80 dark:border-slate-800 p-6 sm:p-10 shadow-lg text-center space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-right">
+            <div className="p-4 rounded-2xl bg-[#FAFCFA] dark:bg-[#111722] border border-slate-200/70 dark:border-slate-800 space-y-2">
+              <span className="text-xs font-bold text-[#4E7E76]">الخطوة 1</span>
+              <h4 className="text-sm font-black text-slate-900 dark:text-white">اختيار المسار واليوم</h4>
+              <p className="text-xs text-slate-500 font-normal">حدد نوع الاستشارة (نفسية، أسرية، تربوية) واليوم والتوقيت المناسب من جدول المواعيد الحي.</p>
             </div>
-            <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">نظام الحجز الذكي والاستمارة التشخيصية</h4>
-              <p className="text-xs text-slate-600 dark:text-slate-400">تشخيص أولي لاحتياجك + دفع مباشر عبر InstaPay أو فودافون كاش دون انتظار</p>
+            <div className="p-4 rounded-2xl bg-[#FAFCFA] dark:bg-[#111722] border border-slate-200/70 dark:border-slate-800 space-y-2">
+              <span className="text-xs font-bold text-[#154F9C]">الخطوة 2</span>
+              <h4 className="text-sm font-black text-slate-900 dark:text-white">استمارة الفرز السريري</h4>
+              <p className="text-xs text-slate-500 font-normal">إجابة أسئلة موجزة تساعد المستشار على التحضير المسبق لجلستك واستثمار وقتها كاملاً.</p>
+            </div>
+            <div className="p-4 rounded-2xl bg-[#FAFCFA] dark:bg-[#111722] border border-slate-200/70 dark:border-slate-800 space-y-2">
+              <span className="text-xs font-bold text-[#CC4E46]">الخطوة 3</span>
+              <h4 className="text-sm font-black text-slate-900 dark:text-white">التأكيد ورابط Meet</h4>
+              <p className="text-xs text-slate-500 font-normal">تأكيد الموعد واستلام رابط قاعة اللقاء الآمنة عبر Google Meet وإشعار بريدي وفوري.</p>
             </div>
           </div>
-          <Link
-            href="/booking"
-            className="w-full sm:w-auto px-5 py-2.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-bold rounded-xl transition shadow-sm text-center shrink-0"
-          >
-            الانتقال للحجز الذكي
-          </Link>
-        </div>
 
-        {/* Embedded Calendly Frame with Arab Therapy styled wrapper */}
-        <div className="bg-white dark:bg-[#161F2B] rounded-3xl border border-slate-200/80 dark:border-slate-800 p-2 sm:p-4 shadow-lg overflow-hidden">
-          <div className="w-full min-h-[680px]">
-            <iframe
-              src="https://calendly.com/galal3hmad/insan?embed_domain=galalahmad.com&embed_type=Inline&hide_landing_page_details=1&hide_gdpr_banner=1"
-              width="100%"
-              height="680"
-              frameBorder="0"
-              title="جدول حجز الجلسات - جلال أحمد"
-              className="w-full rounded-2xl"
-            />
+          <div className="pt-2">
+            <Link
+              href="/booking"
+              className="inline-flex items-center justify-center gap-3 w-full sm:w-auto px-10 py-4 bg-[#4E7E76] hover:bg-[#3D645E] text-white text-sm font-bold rounded-2xl transition shadow-lg shadow-[#4E7E76]/25 hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Calendar className="w-5 h-5" />
+              <span>الدخول إلى نظام الحجز واختيار الموعد الآن</span>
+              <ArrowLeft className="w-4 h-4" />
+            </Link>
           </div>
         </div>
 

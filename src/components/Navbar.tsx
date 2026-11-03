@@ -1,5 +1,7 @@
 'use client';
 
+import NotificationBell from '@/components/NotificationBell';
+
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -102,6 +104,9 @@ export default function Navbar() {
               <Moon className="w-4 h-4 text-slate-700" />
             )}
           </button>
+
+          {/* جرس الإشعارات والتنبيهات اللحظية */}
+          <NotificationBell />
 
           {/* User Account / Login Button */}
           <Link

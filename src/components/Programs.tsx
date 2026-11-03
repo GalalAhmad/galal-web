@@ -213,7 +213,7 @@ export default function Programs() {
                 </button>
 
                 <a
-                  href="https://calendly.com/galal3hmad/insan"
+                  href="/booking"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full py-2.5 bg-accent-500 hover:bg-accent-600 text-white text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 text-center shadow-xs"
@@ -328,7 +328,7 @@ export default function Programs() {
             {/* Action */}
             <div className="pt-2 flex flex-col sm:flex-row gap-3">
               <a
-                href="https://calendly.com/galal3hmad/insan"
+                href="/booking"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 py-3.5 bg-accent-500 hover:bg-accent-600 text-white text-xs font-bold rounded-xl transition shadow-md flex items-center justify-center gap-2 text-center"

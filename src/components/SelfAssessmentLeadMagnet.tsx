@@ -212,7 +212,7 @@ export default function SelfAssessmentLeadMagnet() {
                 </div>
 
                 <Link
-                  href="/services#book"
+                  href="/booking"
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#CC4E46] hover:bg-[#B33D35] text-white text-xs font-bold transition shadow-md shadow-[#CC4E46]/20"
                 >
                   <Calendar className="w-4 h-4" />

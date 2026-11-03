@@ -26,7 +26,7 @@ async function writeProfilesLocal(data: any[]) {
   }
 }
 
-function parseClinicalDossier(rawNotes: string | null) {
+export function parseClinicalDossier(rawNotes: string | null) {
   let notes = rawNotes || '';
   let homework: any[] = [];
   let courses: any[] = [];

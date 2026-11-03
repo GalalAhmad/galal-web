@@ -3,6 +3,7 @@
 import AdminCalendarView from '@/components/AdminCalendarView';
 import UnifiedClientTimeline from '@/components/UnifiedClientTimeline';
 import ClinicalProgressCharts from '@/components/ClinicalProgressCharts';
+import ClinicalDossierView from '@/components/ClinicalDossierView';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -891,6 +892,46 @@ ${meet}
 أخوك/ جلال أحمد`;
     const cleanPhone = (booking.clientPhone || '').replace(/[^\d]/g, '');
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
+  // Direct handlers for ClinicalDossierView
+  const handleSaveClientNotesDirect = async (clientId: string, notesText: string) => {
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: clientId, notes: notesText }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setClientProfiles(prev => prev.map(p => p.id === clientId ? { ...p, clinicalNotes: notesText } : p));
+        setSaveSuccessMsg('تم حفظ الملاحظات الإكلينيكية بنجاح ✓');
+        setTimeout(() => setSaveSuccessMsg(''), 3000);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleAddClientHomeworkDirect = async (clientId: string, hwData: { title: string; link?: string }) => {
+    try {
+      const res = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: clientId,
+          homework: hwData,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.profile) {
+        setClientProfiles(prev => prev.map(p => p.id === clientId ? data.profile : p));
+        setSaveSuccessMsg('تم إسناد التكليف للحالة بنجاح ✓');
+        setTimeout(() => setSaveSuccessMsg(''), 3000);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   // Save Private Counselor Notes for Client
@@ -2447,242 +2488,26 @@ ${meet}
                             </div>
                           </div>
 
-                          {/* Expanded Full Client Dossier */}
+                          {/* Expanded Full Clinical Dossier */}
                           {isExpanded && (
-                            <div className="p-6 border-t border-slate-800 bg-[#0A0F1A] space-y-6 animate-fadeIn">
-                              
-                              {/* 1. Psychological Assessment History */}
-                              <div className="space-y-3">
-                                <h4 className="text-xs font-black text-cyan-400 flex items-center gap-2">
-                                  <Brain className="w-4 h-4" />
-                                  <span>سجل المقاييس والاختبارات النفسية المنجزة ({testCount}):</span>
-                                </h4>
-
-                                {testCount === 0 ? (
-                                  <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-500">
-                                    لم يجرِ المستفيد أي مقاييس حتى الآن.
-                                  </div>
-                                ) : (
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    {client.testResults.map((tr: any, idx: number) => (
-                                      <div
-                                        key={tr.id || idx}
-                                        className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 text-xs"
-                                      >
-                                        <div className="flex items-center justify-between">
-                                          <strong className="font-extrabold text-white text-sm">
-                                            {tr.testTitle}
-                                          </strong>
-                                          <span className="font-mono text-cyan-400 font-bold">
-                                            {tr.scorePercent || tr.score}%
-                                          </span>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 text-[11px] text-slate-400">
-                                          <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-200 font-bold">
-                                            المستوى: {tr.level}
-                                          </span>
-                                          <span>{tr.date || 'مؤخراً'}</span>
-                                        </div>
-
-                                        {tr.desc && (
-                                          <p className="text-slate-400 leading-relaxed text-[11px]">
-                                            {tr.desc}
-                                          </p>
-                                        )}
-
-                                        {tr.recommendation && (
-                                          <div className="p-2 rounded-xl bg-amber-950/40 border border-amber-900/60 text-[10px] text-amber-200">
-                                            <strong>التوصية:</strong> {tr.recommendation}
-                                          </div>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* 2. Client Bookings & Sessions */}
-                              <div className="space-y-3 pt-2 border-t border-slate-800/80">
-                                <h4 className="text-xs font-black text-emerald-400 flex items-center gap-2">
-                                  <CalendarClock className="w-4 h-4" />
-                                  <span>جلسات واستشارات المستفيد ({matchedBookings.length}):</span>
-                                </h4>
-
-                                {matchedBookings.length === 0 ? (
-                                  <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-500">
-                                    لا توجد جلسات حجز مسجلة لهذا المستفيد بعد.
-                                  </div>
-                                ) : (
-                                  <div className="space-y-2">
-                                    {matchedBookings.map((b) => (
-                                      <div
-                                        key={b.id}
-                                        className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
-                                      >
-                                        <div className="space-y-1">
-                                          <div className="flex items-center gap-2">
-                                            <span className="font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded text-[10px]">
-                                              {b.id}
-                                            </span>
-                                            <strong className="text-white">{b.trackLabel}</strong>
-                                            <span className="text-[11px] text-emerald-400 font-bold">
-                                              ({b.slotDate} — {b.slotTime})
-                                            </span>
-                                          </div>
-                                          {b.meetLink && (
-                                            <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                                              <Video className="w-3.5 h-3.5 text-cyan-400" />
-                                              <span className="font-mono">{b.meetLink}</span>
-                                            </div>
-                                          )}
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                          {b.meetLink && (
-                                            <a
-                                              href={b.meetLink}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              className="px-3 py-1.5 rounded-xl bg-cyan-900/40 border border-cyan-700 text-cyan-300 hover:bg-cyan-800/40 transition font-bold"
-                                            >
-                                              فتح Meet
-                                            </a>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* 3. Assign Homework & Readings */}
-                              <div className="space-y-3 pt-2 border-t border-slate-800/80">
-                                <h4 className="text-xs font-black text-amber-400 flex items-center gap-2">
-                                  <BookOpen className="w-4 h-4" />
-                                  <span>التكليفات والواجبات القرائية المسندة للمستفيد:</span>
-                                </h4>
-
-                                {Array.isArray(client.homework) && client.homework.length > 0 && (
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                    {client.homework.map((hw: any, idx: number) => (
-                                      <div
-                                        key={hw.id || idx}
-                                        className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs gap-2"
-                                      >
-                                        <div className="space-y-0.5">
-                                          <span className="text-slate-200 font-bold block">{hw.title}</span>
-                                          {hw.assignedAt && (
-                                            <span className="text-[10px] text-slate-500 block">{hw.assignedAt}</span>
-                                          )}
-                                        </div>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveClientHomework(client.id, hw.id)}
-                                          className="text-rose-400 hover:text-rose-300 p-1 transition cursor-pointer"
-                                          title="حذف التكليف"
-                                        >
-                                          <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-
-                                {/* Add New Homework / Article Tool */}
-                                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-                                  <span className="text-xs font-bold text-slate-300 block">
-                                    + إضافة تكليف أو مقال علاجي موجه للمستفيد:
-                                  </span>
-
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                                    <div>
-                                      <label className="block text-[11px] text-slate-400 mb-1">اختر تمريناً مقنناً من مكتبة التمارين النفسية:</label>
-                                       <select
-                                         value={newHwExerciseSelect[client.id] || ''}
-                                         onChange={(e) => setNewHwExerciseSelect(prev => ({ ...prev, [client.id]: e.target.value }))}
-                                         className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white mb-2"
-                                       >
-                                         <option value="">-- اختر من مكتبة التمارين الإرشادية --</option>
-                                         {clinicalExercises.map(ex => (
-                                           <option key={ex.id} value={ex.id}>{ex.title}</option>
-                                         ))}
-                                       </select>
-                                       <label className="block text-[11px] text-slate-400 mb-1">أو اختر مقالاً علاجياً من مقالات الموقع:</label>
-                                      <select
-                                        value={newHwArticleSelect[client.id] || ''}
-                                        onChange={(e) => setNewHwArticleSelect(prev => ({ ...prev, [client.id]: e.target.value }))}
-                                        className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white"
-                                      >
-                                        <option value="">-- اختر مقالاً للتكليف --</option>
-                                        {initialArticles.map(a => (
-                                          <option key={a.id} value={a.id}>{a.title}</option>
-                                        ))}
-                                      </select>
-                                    </div>
-
-                                    <div>
-                                      <label className="block text-[11px] text-slate-400 mb-1">أو اكتب عنوان تكليف/تمرين مخصص:</label>
-                                      <input
-                                        type="text"
-                                        value={newHwTitleInput[client.id] || ''}
-                                        onChange={(e) => setNewHwTitleInput(prev => ({ ...prev, [client.id]: e.target.value }))}
-                                        placeholder="مثال: تمرين تفريغ الأفكار اليومي قبل النوم..."
-                                        className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder:text-slate-600"
-                                      />
-                                    </div>
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddClientHomework(client.id)}
-                                    className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
-                                  >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    <span>إسناد التكليف لحساب المستفيد الآن</span>
-                                  </button>
-                                </div>
-                              </div>
-
-                              {/* Unified Client Activity Timeline (Counselor View) */}
-                              <div className="pt-4 border-t border-slate-800/80">
-                                <UnifiedClientTimeline
-                                  bookings={matchedBookings}
-                                  testResults={client.testResults || []}
-                                  homework={client.homework}
-                                  courses={client.courses}
-                                  clinicalNotes={client.clinicalNotes}
-                                  isCounselor={true}
-                                />
-                              </div>
-
-                              {/* 4. Private Counselor Case Notes */}
-                              <div className="space-y-2 pt-2 border-t border-slate-800/80">
-                                <h4 className="text-xs font-black text-white flex items-center gap-2">
-                                  <Lock className="w-4 h-4 text-rose-400" />
-                                  <span>ملاحظات المستشار الإكلينيكية السرية (لا تظهر للمستفيد):</span>
-                                </h4>
-
-                                <textarea
-                                  rows={3}
-                                  defaultValue={client.clinicalNotes || ''}
-                                  onChange={(e) => setClientNotesInputs(prev => ({ ...prev, [client.id]: e.target.value }))}
-                                  placeholder="اكتب هنا ملاحظاتك الخاصة حول الخطة العلاجية، الأهداف السلوكية، وتطور الحالة..."
-                                  className="w-full p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-[#154F9C] leading-relaxed"
-                                />
-
-                                <div className="flex justify-end">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSaveClientNotes(client.id)}
-                                    className="px-4 py-2 rounded-xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
-                                  >
-                                    <Check className="w-3.5 h-3.5" />
-                                    <span>حفظ ملاحظات الحالة</span>
-                                  </button>
-                                </div>
-                              </div>
-
+                            <div className="p-4 sm:p-6 border-t border-slate-800 bg-[#070B14] animate-fadeIn">
+                              <ClinicalDossierView
+                                client={client}
+                                matchedBookings={matchedBookings}
+                                clinicalExercises={clinicalExercises}
+                                onSaveNotes={async (clientId, notes) => {
+                                  await handleSaveClientNotesDirect(clientId, notes);
+                                }}
+                                onAddHomework={async (clientId, hwData) => {
+                                  await handleAddClientHomeworkDirect(clientId, hwData);
+                                }}
+                                onRemoveHomework={async (clientId, hwId) => {
+                                  await handleRemoveClientHomework(clientId, hwId);
+                                }}
+                                onResetPassword={async (cl) => {
+                                  await handleResetClientPassword(cl);
+                                }}
+                              />
                             </div>
                           )}
                         </div>

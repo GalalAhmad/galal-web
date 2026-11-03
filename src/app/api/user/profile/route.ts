@@ -64,23 +64,61 @@ export async function GET(request: Request) {
           .select('id, name, phone, email, role, gender, age_group, marital_status, country, city, clinical_notes, created_at')
           .order('created_at', { ascending: false });
 
+        const { data: allTests } = await supabaseAdmin
+          .from('test_results')
+          .select('*')
+          .neq('test_id', 'user_notification')
+          .neq('test_id', 'daily_wellbeing')
+          .neq('test_id', 'client_journal')
+          .order('created_at', { ascending: false });
+
         if (dbProfiles) {
           return NextResponse.json({
             success: true,
-            profiles: dbProfiles.map((p: any) => ({
-              id: p.id,
-              name: p.name,
-              phone: p.phone || '',
-              email: p.email || '',
-              role: p.role || 'client',
-              gender: p.gender || '',
-              ageGroup: p.age_group || '',
-              maritalStatus: p.marital_status || '',
-              country: p.country || '',
-              city: p.city || '',
-              clinicalNotes: p.clinical_notes || '',
-              createdAt: p.created_at,
-            })),
+            profiles: dbProfiles.map((p: any) => {
+              const dossier = parseClinicalDossier(p.clinical_notes);
+              const cleanPPhone = (p.phone || '').replace(/[^\d]/g, '');
+              const cleanPEmail = (p.email || '').trim().toLowerCase();
+
+              const matchedTests = (allTests || []).filter((t: any) => {
+                const tPhone = (t.client_phone || '').replace(/[^\d]/g, '');
+                const tEmail = (t.client_email || '').trim().toLowerCase();
+                if (cleanPPhone && tPhone && (tPhone.includes(cleanPPhone) || cleanPPhone.includes(tPhone))) return true;
+                if (cleanPEmail && tEmail && tEmail === cleanPEmail) return true;
+                if (p.name && t.client_name && t.client_name.trim().toLowerCase() === p.name.trim().toLowerCase()) return true;
+                return false;
+              });
+
+              return {
+                id: p.id,
+                name: p.name,
+                phone: p.phone || '',
+                email: p.email || '',
+                role: p.role || 'client',
+                gender: p.gender || '',
+                ageGroup: p.age_group || '',
+                maritalStatus: p.marital_status || '',
+                country: p.country || '',
+                city: p.city || '',
+                clinicalNotes: dossier.notes,
+                homework: dossier.homework,
+                courses: dossier.courses,
+                readingPlan: dossier.readingPlan,
+                testResults: matchedTests.map((t: any) => ({
+                  id: t.id,
+                  testId: t.test_id,
+                  testTitle: t.test_title,
+                  score: t.score,
+                  scorePercent: t.score_percent,
+                  level: t.level,
+                  description: t.description,
+                  recommendation: t.recommendation,
+                  date: new Date(t.created_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }),
+                  timestamp: t.created_at,
+                })),
+                createdAt: p.created_at,
+              };
+            }),
           });
         }
       }

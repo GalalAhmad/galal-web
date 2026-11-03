@@ -1,5 +1,8 @@
 'use client';
 
+import UnifiedClientTimeline from '@/components/UnifiedClientTimeline';
+import ClinicalProgressCharts from '@/components/ClinicalProgressCharts';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -65,7 +68,7 @@ export default function ClientProfilePage() {
   const [userSession, setUserSession] = useState<any>(null);
 
   // App Tabs: consultations | courses | assessments | homework | settings | consultant_hub | wellbeing
-  const [activeTab, setActiveTab] = useState<'consultations' | 'courses' | 'assessments' | 'homework' | 'settings' | 'consultant_hub' | 'wellbeing'>('consultations');
+  const [activeTab, setActiveTab] = useState<'consultations' | 'courses' | 'assessments' | 'homework' | 'timeline' | 'settings' | 'consultant_hub' | 'wellbeing'>('consultations');
 
   // Client Data States
   const [clientBookings, setClientBookings] = useState<any[]>([]);
@@ -180,6 +183,40 @@ export default function ClientProfilePage() {
       setLoadingBookings(false);
     }
   };
+
+  // Multi-stage Homework Status & Client Response Handler
+  const handleUpdateHomeworkStatus = async (hwId: string, newStatus: string, clientNotes?: string) => {
+    try {
+      setClientHomework(prev => prev.map(hw => {
+        if (hw.id === hwId) {
+          return {
+            ...hw,
+            status: newStatus,
+            completed: newStatus === 'completed',
+            clientNotes: clientNotes !== undefined ? clientNotes : hw.clientNotes,
+          };
+        }
+        return hw;
+      }));
+
+      await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: userSession?.phone || authUser?.phone,
+          email: userSession?.email || authUser?.email,
+          updateHomeworkId: hwId,
+          updateHomeworkStatus: newStatus,
+          clientNotes,
+        }),
+      });
+    } catch (err) {
+      console.error('Error updating homework status:', err);
+    }
+  };
+
+  const [emailNotifEnabled, setEmailNotifEnabled] = useState(true);
+  const [inAppNotifEnabled, setInAppNotifEnabled] = useState(true);
 
   // Toggle Homework Completion Status
   const handleToggleHomework = async (hwId: string) => {
@@ -785,6 +822,17 @@ export default function ClientProfilePage() {
               </button>
             </div>
 
+            {/* Crisis & Communication Boundaries Banner */}
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-3 text-right">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+              <div className="space-y-0.5">
+                <strong className="block font-bold">تنويه هام بشأن حدود التواصل والطوارئ:</strong>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
+                  هذه المنصة وقنوات المراسلة مخصصة للجلسات الاستشارية المجدولة والواجبات الإرشادية، وليست قناة للاستجابة الفورية للأزمات الحادة أو الطوارئ الطبية. إذا كنت تمر بضيق حاد، يرجى التوجه فوراً لأقرب طوارئ أو الاتصال بخطوط المساندة المجانية (مصر: <strong>16328</strong> • السعودية: <strong>920033360</strong>).
+                </p>
+              </div>
+            </div>
+
             {/* Mobile App Segmented Tab Bar */}
             <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold overflow-x-auto">
               {isConsultant && (
@@ -865,6 +913,19 @@ export default function ClientProfilePage() {
               >
                 <BookOpen className="w-3.5 h-3.5" />
                 <span>التكليفات والقراءة</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('timeline')}
+                className={`flex-1 min-w-[130px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeTab === 'timeline'
+                    ? 'bg-white dark:bg-[#161B22] text-[#4E7E76] dark:text-[#5E988E] shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5 text-[#4E7E76]" />
+                <span>السجل الزمني 📜</span>
               </button>
 
               <button
@@ -1081,6 +1142,19 @@ export default function ClientProfilePage() {
                     );
                   })()}
                 </div>
+              </div>
+            )}
+
+            {/* TAB: UNIFIED CLIENT ACTIVITY TIMELINE */}
+            {activeTab === 'timeline' && (
+              <div className="space-y-6 animate-fadeIn">
+                <UnifiedClientTimeline
+                  bookings={clientBookings}
+                  testResults={clientTests}
+                  homework={clientHomework}
+                  courses={clientCourses}
+                  onUpdateHomeworkStatus={handleUpdateHomeworkStatus}
+                />
               </div>
             )}
 

@@ -1,5 +1,9 @@
 'use client';
 
+import AdminCalendarView from '@/components/AdminCalendarView';
+import UnifiedClientTimeline from '@/components/UnifiedClientTimeline';
+import ClinicalProgressCharts from '@/components/ClinicalProgressCharts';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
@@ -2029,6 +2033,9 @@ ${meet}
           {/* TAB 0.3: AVAILABILITY & CALENDLY SCHEDULING SYSTEM */}
           {activeTab === 'availability' && (
             <div className="space-y-6 animate-fadeIn">
+              {/* Interactive FullCalendar View */}
+              <AdminCalendarView bookings={bookingsList} />
+
               {/* Header Card */}
               <div className="p-6 rounded-3xl bg-[#0E1524] border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -2635,6 +2642,18 @@ ${meet}
                                     <span>إسناد التكليف لحساب المستفيد الآن</span>
                                   </button>
                                 </div>
+                              </div>
+
+                              {/* Unified Client Activity Timeline (Counselor View) */}
+                              <div className="pt-4 border-t border-slate-800/80">
+                                <UnifiedClientTimeline
+                                  bookings={matchedBookings}
+                                  testResults={client.testResults || []}
+                                  homework={client.homework}
+                                  courses={client.courses}
+                                  clinicalNotes={client.clinicalNotes}
+                                  isCounselor={true}
+                                />
                               </div>
 
                               {/* 4. Private Counselor Case Notes */}

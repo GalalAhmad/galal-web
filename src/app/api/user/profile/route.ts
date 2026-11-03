@@ -327,6 +327,10 @@ export async function PUT(request: Request) {
       toggleReadingPlanId,
       courses,
       readingPlan,
+      updateHomeworkId,
+      updateHomeworkStatus,
+      clientNotes,
+      notificationPreferences,
     } = body;
 
     const cleanPhone = phone ? normalizePhone(phone) : '';
@@ -361,8 +365,24 @@ export async function PUT(request: Request) {
 
       if (toggleHomeworkId) {
         updatedHomework = updatedHomework.map((h: any) =>
-          h.id === toggleHomeworkId ? { ...h, completed: !h.completed } : h
+          h.id === toggleHomeworkId ? { ...h, completed: !h.completed, status: !h.completed ? 'completed' : 'assigned' } : h
         );
+      }
+
+      if (updateHomeworkId) {
+        updatedHomework = updatedHomework.map((h: any) => {
+          if (h.id === updateHomeworkId) {
+            const nextStatus = updateHomeworkStatus || (h.completed ? 'assigned' : 'completed');
+            return {
+              ...h,
+              status: nextStatus,
+              completed: nextStatus === 'completed',
+              clientNotes: clientNotes !== undefined ? clientNotes : h.clientNotes,
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          return h;
+        });
       }
 
       if (removeHomeworkId) {
@@ -447,8 +467,26 @@ export async function PUT(request: Request) {
     }
     if (toggleHomeworkId) {
       profile.homework = profile.homework.map((h: any) =>
-        h.id === toggleHomeworkId ? { ...h, completed: !h.completed } : h
+        h.id === toggleHomeworkId ? { ...h, completed: !h.completed, status: !h.completed ? 'completed' : 'assigned' } : h
       );
+    }
+    if (updateHomeworkId) {
+      profile.homework = profile.homework.map((h: any) => {
+        if (h.id === updateHomeworkId) {
+          const nextStatus = updateHomeworkStatus || (h.completed ? 'assigned' : 'completed');
+          return {
+            ...h,
+            status: nextStatus,
+            completed: nextStatus === 'completed',
+            clientNotes: clientNotes !== undefined ? clientNotes : h.clientNotes,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return h;
+      });
+    }
+    if (notificationPreferences) {
+      profile.notificationPreferences = notificationPreferences;
     }
     if (removeHomeworkId) {
       profile.homework = profile.homework.filter((h: any) => h.id !== removeHomeworkId);

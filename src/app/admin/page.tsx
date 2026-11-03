@@ -4,6 +4,7 @@ import AdminCalendarView from '@/components/AdminCalendarView';
 import UnifiedClientTimeline from '@/components/UnifiedClientTimeline';
 import ClinicalProgressCharts from '@/components/ClinicalProgressCharts';
 import ClinicalDossierView from '@/components/ClinicalDossierView';
+import AdminBookingsView from '@/components/AdminBookingsView';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -744,12 +745,16 @@ export default function AdminDashboardPage() {
   const handleBookingStatus = async (id: string, newStatus: string) => {
     setBookingsList(prev => prev.map(b => b.id === id ? { ...b, status: newStatus } : b));
     try {
-      await fetch('/api/bookings', {
-        method: 'PATCH',
+      const res = await fetch('/api/bookings', {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus }),
       });
-      setSaveSuccessMsg(`تم تحديث حالة الحجز إلى: ${newStatus === 'confirmed' ? 'مؤكد ومجدول' : newStatus === 'completed' ? 'مكتمل بنجاح' : newStatus === 'cancelled' ? 'ملغي' : 'قيد المراجعة'}`);
+      const data = await res.json();
+      if (data.booking) {
+        setBookingsList(prev => prev.map(b => b.id === id ? { ...b, ...data.booking } : b));
+      }
+      setSaveSuccessMsg(`تم اعتماد وتحديث حالة الحجز إلى: ${newStatus === 'confirmed' ? 'مؤكد ومجدول ✓' : newStatus === 'completed' ? 'مكتمل بنجاح' : newStatus === 'cancelled' ? 'ملغي' : 'قيد المراجعة'}`);
       setTimeout(() => setSaveSuccessMsg(''), 4000);
     } catch (err) {
       console.error('Failed to update booking status:', err);
@@ -1359,7 +1364,7 @@ ${meet}
           >
             <div className="flex items-center gap-2.5">
               <Calendar className="w-4 h-4 text-amber-400" />
-              <span>جدول المواعيد وأيام الحجز (كالندي)</span>
+              <span>جدول المواعيد وأيام الحجز المتاحة</span>
             </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-amber-300">
               {availability.workingDays.length} أيام
@@ -1522,553 +1527,37 @@ ${meet}
             </div>
           )}
 
-          {/* TAB 0: MINI-CRM FOR CLIENT CASES & CONSULTATIONS */}
+          {/* TAB 0: MODERN BOOKINGS & SESSIONS MANAGEMENT */}
           {activeTab === 'crm' && (
-            <div className="space-y-5">
-              {/* CRM Header */}
-              <div className="p-5 rounded-3xl bg-[#0E1524] border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-base font-bold text-white flex items-center gap-2">
-                    <CalendarClock className="w-5 h-5 text-emerald-400" />
-                    <span>إدارة الحالات والجلسات الاستشارية (Mini-CRM)</span>
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-1">
-                    متابعة طلبات الحجز المباشرة، فحص الاستمارات التشخيصية، التحقق من إيصالات السداد، وتزويد المستفيد برابط الجلسة والمهمات القرائية عبر واتساب.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
-                    إجمالي الجلسات: <strong className="text-white">{bookingsList.length}</strong>
-                  </span>
-                  {pendingBookingsCount > 0 && (
-                    <span className="px-3 py-1.5 rounded-xl bg-amber-950/60 border border-amber-800/80 text-amber-300 font-bold">
-                      {pendingBookingsCount} بانتظار التأكيد
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* EXECUTIVE KPI DASHBOARD & FINANCIAL MODULE */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* 1. Confirmed Revenue */}
-                <div className="p-5 rounded-3xl bg-linear-to-br from-[#0F291E] to-[#0A1D15] border border-emerald-500/30 shadow-lg relative overflow-hidden">
-                  <div className="flex items-center justify-between text-xs text-emerald-400 font-bold mb-2">
-                    <span>الإيرادات المؤكدة</span>
-                    <DollarSign className="w-4 h-4" />
-                  </div>
-                  <div className="text-2xl font-black text-white">
-                    {confirmedRevenue.toLocaleString()} <span className="text-sm font-normal text-emerald-300">ر.س</span>
-                  </div>
-                  <div className="text-[11px] text-emerald-400/80 mt-1 flex items-center justify-between">
-                    <span>{confirmedBookingsCount + completedBookingsCount} جلسة مؤكدة/مكتملة</span>
-                    <span>{(confirmedRevenue * 13).toLocaleString()} ج.م تقريباً</span>
-                  </div>
-                </div>
-
-                {/* 2. Pending Verification Revenue */}
-                <div className="p-5 rounded-3xl bg-linear-to-br from-[#2D1B06] to-[#1F1303] border border-amber-500/30 shadow-lg relative overflow-hidden">
-                  <div className="flex items-center justify-between text-xs text-amber-400 font-bold mb-2">
-                    <span>بانتظار مراجعة الإيصال</span>
-                    <Clock className="w-4 h-4" />
-                  </div>
-                  <div className="text-2xl font-black text-white">
-                    {pendingRevenue.toLocaleString()} <span className="text-sm font-normal text-amber-300">ر.س</span>
-                  </div>
-                  <div className="text-[11px] text-amber-400/80 mt-1 flex items-center justify-between">
-                    <span>{pendingBookingsCount} طلبات معلقة</span>
-                    <button
-                      type="button"
-                      onClick={() => setBookingStatusFilter('pending_verification')}
-                      className="font-bold text-amber-300 underline cursor-pointer hover:text-amber-200"
-                    >
-                      افحص الآن
-                    </button>
-                  </div>
-                </div>
-
-                {/* 3. Today's Sessions */}
-                <div className="p-5 rounded-3xl bg-linear-to-br from-[#0F1D38] to-[#091224] border border-[#154F9C]/40 shadow-lg relative overflow-hidden">
-                  <div className="flex items-center justify-between text-xs text-sky-400 font-bold mb-2">
-                    <span>جلسات اليوم ({todayIsoString})</span>
-                    <Video className="w-4 h-4" />
-                  </div>
-                  <div className="text-2xl font-black text-white">
-                    {todaySessions.length} <span className="text-sm font-normal text-sky-300">جلسة مجدولة</span>
-                  </div>
-                  <div className="text-[11px] text-sky-400/80 mt-1">
-                    {todaySessions.length > 0 ? (
-                      <span className="text-emerald-400 font-bold">جاهزة للانعقاد عبر Google Meet</span>
-                    ) : (
-                      <span>لا توجد جلسات محجوزة لليوم</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* 4. Payment Distribution */}
-                <div className="p-5 rounded-3xl bg-[#0E1524] border border-slate-800 shadow-lg">
-                  <div className="flex items-center justify-between text-xs text-slate-400 font-bold mb-2">
-                    <span>توزيع طرق السداد</span>
-                    <Building2 className="w-4 h-4" />
-                  </div>
-                  <div className="space-y-1.5 text-[11px]">
-                    <div className="flex items-center justify-between">
-                      <span className="text-purple-400 font-bold flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-purple-500" />
-                        <span>إنستاباي</span>
-                      </span>
-                      <span className="font-mono text-slate-300">
-                        {instapayCount} ({bookingsList.length ? Math.round((instapayCount / bookingsList.length) * 100) : 0}%)
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-red-400 font-bold flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-red-500" />
-                        <span>فودافون كاش</span>
-                      </span>
-                      <span className="font-mono text-slate-300">
-                        {vodafoneCount} ({bookingsList.length ? Math.round((vodafoneCount / bookingsList.length) * 100) : 0}%)
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-emerald-400 font-bold flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span>تحويل بنكي</span>
-                      </span>
-                      <span className="font-mono text-slate-300">
-                        {bankCount} ({bookingsList.length ? Math.round((bankCount / bookingsList.length) * 100) : 0}%)
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Filter Tabs */}
-              <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setBookingStatusFilter('all')}
-                  className={`px-3 py-1.5 rounded-xl transition font-bold ${
-                    bookingStatusFilter === 'all'
-                      ? 'bg-[#154F9C] text-white shadow-xs'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  الكل ({bookingsList.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBookingStatusFilter('pending_verification')}
-                  className={`px-3 py-1.5 rounded-xl transition font-bold ${
-                    bookingStatusFilter === 'pending_verification'
-                      ? 'bg-amber-600 text-white shadow-xs'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  بانتظار التحقق من الإيصال ({pendingBookingsCount})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBookingStatusFilter('confirmed')}
-                  className={`px-3 py-1.5 rounded-xl transition font-bold ${
-                    bookingStatusFilter === 'confirmed'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  مؤكد ومجدول ({confirmedBookingsCount})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBookingStatusFilter('completed')}
-                  className={`px-3 py-1.5 rounded-xl transition font-bold ${
-                    bookingStatusFilter === 'completed'
-                      ? 'bg-blue-600 text-white shadow-xs'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  مكتمل ({completedBookingsCount})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBookingStatusFilter('cancelled')}
-                  className={`px-3 py-1.5 rounded-xl transition font-bold ${
-                    bookingStatusFilter === 'cancelled'
-                      ? 'bg-rose-600 text-white shadow-xs'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  ملغي ({cancelledBookingsCount})
-                </button>
-              </div>
-
-              {/* Bookings List */}
-              {loadingBookings ? (
-                <div className="p-12 text-center text-xs text-slate-500">جارٍ تحميل بيانات الحالات...</div>
-              ) : bookingsList.filter(b => bookingStatusFilter === 'all' ? true : b.status === bookingStatusFilter).length === 0 ? (
-                <div className="p-12 text-center rounded-3xl bg-slate-900/50 border border-slate-800 text-slate-400 text-xs">
-                  لا توجد طلبات جلسات ضمن هذا التصنيف حالياً.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {bookingsList
-                    .filter(b => bookingStatusFilter === 'all' ? true : b.status === bookingStatusFilter)
-                    .map((booking) => {
-                      const isExpanded = expandedBookingId === booking.id;
-                      const cleanPhone = (booking.clientPhone || '').replace(/[^\d]/g, '');
-
-                      return (
-                        <div
-                          key={booking.id}
-                          className={`rounded-3xl border transition-all ${
-                            booking.status === 'pending_verification'
-                              ? 'bg-[#10192A] border-amber-500/40 shadow-md shadow-amber-950/20'
-                              : booking.status === 'confirmed'
-                              ? 'bg-[#0E1524] border-emerald-500/30'
-                              : 'bg-[#0E1524] border-slate-800'
-                          }`}
-                        >
-                          {/* Card Main Header */}
-                          <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="space-y-1.5">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-mono text-xs font-bold text-slate-400 bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800">
-                                  {booking.id}
-                                </span>
-                                <h3 className="font-extrabold text-white text-base">
-                                  {booking.clientName}
-                                </h3>
-                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#154F9C]/30 text-sky-300 border border-[#154F9C]/40 font-bold">
-                                  {booking.trackLabel}
-                                </span>
-                              </div>
-
-                              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                                <span className="flex items-center gap-1 text-emerald-400 font-bold">
-                                  <Clock className="w-3.5 h-3.5" />
-                                  <span>{booking.slotDate} — الساعة {booking.slotTime}</span>
-                                </span>
-                                <span>•</span>
-                                <a
-                                  href={`https://wa.me/${cleanPhone}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-slate-300 hover:text-emerald-400 transition"
-                                  dir="ltr"
-                                >
-                                  <PhoneCall className="w-3.5 h-3.5 text-emerald-500" />
-                                  <span>{booking.clientPhone}</span>
-                                </a>
-                                {booking.clientCity && (
-                                  <>
-                                    <span>•</span>
-                                    <span>{booking.clientCity}</span>
-                                  </>
-                                )}
-                              </div>
-
-                              {/* Clinical Symptoms Summary Pills */}
-                              {(() => {
-                                const pills = getIntakeSummaryPills(booking.track, booking.answers);
-                                if (pills.length === 0) return null;
-                                return (
-                                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                                    <span className="text-[11px] text-slate-400 font-bold">أبرز المحاور:</span>
-                                    {pills.map((pill, pIdx) => (
-                                      <span
-                                        key={pIdx}
-                                        className="px-2 py-0.5 rounded-md bg-[#154F9C]/20 border border-[#154F9C]/40 text-sky-200 text-[11px] font-medium"
-                                      >
-                                        {pill}
-                                      </span>
-                                    ))}
-                                  </div>
-                                );
-                              })()}
-                            </div>
-
-                            {/* Status Selector & Actions */}
-                            <div className="flex flex-wrap items-center gap-2">
-                              <select
-                                value={booking.status}
-                                onChange={(e) => handleBookingStatus(booking.id, e.target.value)}
-                                className={`text-xs font-bold px-3 py-2 rounded-xl border focus:outline-hidden cursor-pointer ${
-                                  booking.status === 'pending_verification'
-                                    ? 'bg-amber-950/60 border-amber-700 text-amber-300'
-                                    : booking.status === 'confirmed'
-                                    ? 'bg-emerald-950/60 border-emerald-700 text-emerald-300'
-                                    : booking.status === 'completed'
-                                    ? 'bg-blue-950/60 border-blue-700 text-blue-300'
-                                    : 'bg-rose-950/60 border-rose-700 text-rose-300'
-                                }`}
-                              >
-                                <option value="pending_verification">⏳ بانتظار التحقق من التحويل</option>
-                                <option value="confirmed">✅ مؤكد ومجدول</option>
-                                <option value="completed">🎉 تم إنجاز الجلسة</option>
-                                <option value="cancelled">❌ ملغي</option>
-                              </select>
-
-                              <button
-                                type="button"
-                                onClick={() => handleOpenReschedule(booking)}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 bg-sky-950/40 hover:bg-sky-900/60 border border-sky-800/60 text-sky-300 text-xs font-bold rounded-xl transition cursor-pointer"
-                                title="تعديل تاريخ وساعة الجلسة"
-                              >
-                                <CalendarClock className="w-3.5 h-3.5" />
-                                <span>تعديل الموعد</span>
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => setExpandedBookingId(isExpanded ? null : booking.id)}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition"
-                              >
-                                <span>{isExpanded ? 'إخفاء الملف' : 'الملف والأعراض'}</span>
-                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteBooking(booking.id)}
-                                className="p-2 text-slate-500 hover:text-rose-400 hover:bg-slate-800/80 rounded-xl transition"
-                                title="حذف الحجز نهائياً"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Quick Clinical WhatsApp Dispatch Bar */}
-                          <div className="px-5 py-3.5 bg-slate-950/50 border-t border-slate-800/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
-                            {/* Google Meet Field & WhatsApp Send */}
-                            <div className="flex-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                              <div className="flex items-center gap-2 flex-1">
-                                <span className="text-slate-400 font-bold shrink-0">رابط الجلسة:</span>
-                                <input
-                                  type="text"
-                                  value={meetLinkInput[booking.id] !== undefined ? meetLinkInput[booking.id] : (booking.meetLink || '')}
-                                  onChange={(e) => setMeetLinkInput({ ...meetLinkInput, [booking.id]: e.target.value })}
-                                  placeholder="https://meet.google.com/..."
-                                  className="w-full px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono text-xs"
-                                  dir="ltr"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => handleUpdateBookingMeetLink(booking.id)}
-                                  className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[11px] font-bold"
-                                  title="حفظ الرابط في السجل"
-                                >
-                                  حفظ
-                                </button>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => openWhatsAppWithMeetLink(booking)}
-                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition shrink-0"
-                              >
-                                <Send className="w-3 h-3" />
-                                <span>إرسال الرابط والتأكيد بالواتساب</span>
-                              </button>
-                            </div>
-
-                            {/* Additional Actions: Homework & Review */}
-                            <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-slate-800">
-                              <select
-                                value={selectedHomeworkArticle[booking.id] || ''}
-                                onChange={(e) => setSelectedHomeworkArticle({ ...selectedHomeworkArticle, [booking.id]: e.target.value })}
-                                className="px-2.5 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 text-[11px] max-w-[140px] truncate"
-                              >
-                                <option value="">اختر مقالاً كواجب...</option>
-                                {articles.map((art) => (
-                                  <option key={art.id} value={art.id}>{art.title}</option>
-                                ))}
-                              </select>
-
-                              <button
-                                type="button"
-                                disabled={!selectedHomeworkArticle[booking.id]}
-                                onClick={() => openWhatsAppWithHomework(booking)}
-                                className="p-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-300 rounded-lg transition"
-                                title="إرسال المقال كواجب علاجي للمستفيد عبر واتساب"
-                              >
-                                <BookOpen className="w-3.5 h-3.5 text-sky-400" />
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={() => openWhatsAppReviewRequest(booking)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-lg text-[11px] font-bold transition"
-                                title="إرسال طلب كتابة رأي وتقييم عبر واتساب"
-                              >
-                                <Star className="w-3 h-3" />
-                                <span>طلب تقييم</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Expandable Clinical Intake Details */}
-                          {isExpanded && (
-                            <div className="p-5 bg-slate-950/70 border-t border-slate-800 space-y-4 text-xs animate-fadeIn">
-                              {/* Clinical & Demographic Highlights */}
-                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                                  <span className="text-slate-500 block mb-1">العمر والحالة:</span>
-                                  <span className="text-white font-bold">{booking.age ? `${booking.age} سنة` : 'غير محدد'} • {booking.maritalStatus || 'غير محدد'}</span>
-                                </div>
-                                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                                  <span className="text-slate-500 block mb-1">رسوم الجلسة:</span>
-                                  <span className="text-emerald-400 font-bold">{booking.fee || '250 ر.س'}</span>
-                                </div>
-                                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800">
-                                  <span className="text-slate-500 block mb-1">وسيلة السداد:</span>
-                                  <span className="text-white font-bold">
-                                    {booking.paymentMethod === 'instapay' ? 'إنستاباي (InstaPay)' : booking.paymentMethod === 'vodafone' ? 'فودافون كاش' : 'تحويل بنكي دولي'}
-                                  </span>
-                                </div>
-                                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                                  <div>
-                                    <span className="text-slate-500 block mb-1">إيصال السداد:</span>
-                                    <span className="text-slate-300">{booking.receiptNote || (booking.receiptImage ? 'صورة مرفقة' : 'لا يوجد ملاحظة')}</span>
-                                  </div>
-                                  {booking.receiptImage && (
-                                    <button
-                                      type="button"
-                                      onClick={() => setViewingReceiptImage(booking.receiptImage)}
-                                      className="p-1.5 rounded-lg bg-emerald-950/60 border border-emerald-800 text-emerald-300 hover:bg-emerald-900 transition flex items-center gap-1 font-bold"
-                                    >
-                                      <ImageIcon className="w-3.5 h-3.5" />
-                                      <span>معاينة</span>
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Symptoms & Answers from Intake Form */}
-                              {(() => {
-                                let parsedAns: Record<string, any> = {};
-                                if (typeof booking.answers === 'string') {
-                                  try {
-                                    parsedAns = JSON.parse(booking.answers);
-                                  } catch (e) {
-                                    parsedAns = {};
-                                  }
-                                } else if (booking.answers && typeof booking.answers === 'object') {
-                                  parsedAns = booking.answers;
-                                }
-
-                                const entries = Object.entries(parsedAns).filter(
-                                  ([_, v]) => v !== undefined && v !== null && (Array.isArray(v) ? v.length > 0 : String(v).trim() !== '')
-                                );
-
-                                if (entries.length === 0) {
-                                  return (
-                                    <div className="p-4 rounded-2xl bg-slate-900/50 border border-slate-800 text-slate-500 text-xs">
-                                      لم يقم المستفيد بتعبئة استمارة تشخيصية مفصلة لهذا الحجز.
-                                    </div>
-                                  );
-                                }
-
-                                return (
-                                  <div className="space-y-3 pt-2">
-                                    <h4 className="font-bold text-slate-200 flex items-center justify-between">
-                                      <span className="flex items-center gap-1.5 text-sky-400">
-                                        <Brain className="w-4 h-4" />
-                                        <span>إجابات الاستمارة التشخيصية السريرية المعتمدة:</span>
-                                      </span>
-                                      <span className="text-[10px] text-slate-500 font-normal">
-                                        {entries.length} محاور مستوفاة
-                                      </span>
-                                    </h4>
-
-                                    <div className="grid grid-cols-1 gap-2.5">
-                                      {entries.map(([qKey, val]) => {
-                                        const { questionTitle, formattedAnswer, questionSubtitle } = getQuestionAndAnswerLabels(booking.track, qKey, val);
-
-                                        return (
-                                          <div key={qKey} className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800/80 space-y-1.5">
-                                            <div className="text-slate-300 font-bold text-xs flex flex-wrap items-center justify-between gap-1">
-                                              <span>{questionTitle}</span>
-                                              {questionSubtitle && (
-                                                <span className="text-[10px] text-slate-500 font-normal">{questionSubtitle}</span>
-                                              )}
-                                            </div>
-
-                                            {Array.isArray(formattedAnswer) ? (
-                                              <div className="flex flex-wrap gap-1.5 pt-1">
-                                                {formattedAnswer.map((itemStr: string, idx: number) => (
-                                                  <span
-                                                    key={idx}
-                                                    className="px-2.5 py-1 rounded-lg bg-[#154F9C]/25 border border-[#154F9C]/40 text-sky-200 text-xs font-semibold"
-                                                  >
-                                                    {SYMPTOM_LABELS[itemStr] || itemStr}
-                                                  </span>
-                                                ))}
-                                              </div>
-                                            ) : (
-                                              <p className="text-slate-200 text-xs leading-relaxed font-sans bg-slate-950/70 p-3 rounded-xl border border-slate-800/60 whitespace-pre-line">
-                                                {SYMPTOM_LABELS[String(formattedAnswer)] || String(formattedAnswer)}
-                                              </p>
-                                            )}
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-                                );
-                              })()}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
-              )}
-
-              {/* Receipt Image Modal */}
-              {viewingReceiptImage && (
-                <div
-                  className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-fadeIn"
-                  onClick={() => setViewingReceiptImage(null)}
-                >
-                  <div
-                    className="relative max-w-2xl w-full bg-slate-900 border border-slate-700 rounded-3xl p-4 shadow-2xl space-y-3"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                      <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4 text-emerald-400" />
-                        <span>معاينة إيصال التحويل والسداد</span>
-                      </h4>
-                      <button
-                        type="button"
-                        onClick={() => setViewingReceiptImage(null)}
-                        className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    <div className="max-h-[75vh] overflow-auto rounded-2xl flex items-center justify-center bg-black/40 p-2">
-                      <img
-                        src={viewingReceiptImage}
-                        alt="إيصال السداد"
-                        className="max-w-full max-h-[70vh] rounded-xl object-contain shadow-md"
-                      />
-                    </div>
-
-                    <div className="flex justify-end pt-2">
-                      <button
-                        type="button"
-                        onClick={() => setViewingReceiptImage(null)}
-                        className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition"
-                      >
-                        إغلاق النافذة
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            <AdminBookingsView
+              bookings={bookingsList}
+              onUpdateStatus={async (id, newStatus) => {
+                await handleBookingStatus(id, newStatus);
+              }}
+              onUpdateMeetLink={async (id, link) => {
+                setMeetLinkInput(prev => ({ ...prev, [id]: link }));
+                setBookingsList(prev => prev.map(b => b.id === id ? { ...b, meetLink: link } : b));
+                try {
+                  await fetch('/api/bookings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, meetLink: link }),
+                  });
+                  setSaveSuccessMsg('تم حفظ وتحديث رابط الجلسة بنجاح ✓');
+                  setTimeout(() => setSaveSuccessMsg(''), 3000);
+                } catch (e) {
+                  console.error(e);
+                }
+              }}
+              onReschedule={(booking) => handleOpenReschedule(booking)}
+              onDelete={async (id) => {
+                await handleDeleteBooking(id);
+              }}
+              articles={articles}
+              onOpenSendEmail={(email, name) => {
+                setActiveTab('clients');
+              }}
+            />
           )}
 
           {/* TAB 0.3: AVAILABILITY & CALENDLY SCHEDULING SYSTEM */}
@@ -2319,7 +1808,7 @@ ${meet}
               <div className="p-5 rounded-2xl bg-[#154F9C]/10 border border-[#154F9C]/30 flex items-start gap-3.5">
                 <ShieldCheck className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
                 <div className="text-xs space-y-1">
-                  <h4 className="font-bold text-white">كيف يعمل نظام منع التعارض (Smart Calendly Engine)؟</h4>
+                  <h4 className="font-bold text-white">كيف يعمل نظام منع التعارض الذكي؟</h4>
                   <p className="text-slate-300 leading-relaxed">
                     بمجرد أن يختار العميل يوماً ووقتاً ويؤكد حجزه، يقوم النظام تلقائياً بتسجيل الموعد وإغلاقه أمام الزوار الآخرين لنفس التاريخ، مما يمنع الحجز المزدوج نهائياً وبدقة تامة.
                   </p>

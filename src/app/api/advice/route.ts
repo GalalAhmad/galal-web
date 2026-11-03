@@ -141,7 +141,7 @@ export async function POST(request: Request) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'onboarding@resend.dev',
+            from: process.env.RESEND_FROM_EMAIL || 'المستشار جلال أحمد <appointments@galalahmad.com>',
             to: 'galalahmad1201@gmail.com',
             subject: `رسالة جديدة في صندوق النصيحة 📬 (${cleanEmail ? cleanEmail : 'زائر مجهول'})`,
             html: `

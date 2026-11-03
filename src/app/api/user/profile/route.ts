@@ -26,6 +26,26 @@ async function writeProfilesLocal(data: any[]) {
   }
 }
 
+function parseClinicalDossier(rawNotes: string | null) {
+  let notes = rawNotes || '';
+  let homework: any[] = [];
+  let courses: any[] = [];
+  let readingPlan: any[] = [];
+
+  if (rawNotes && typeof rawNotes === 'string' && rawNotes.trim().startsWith('{')) {
+    try {
+      const parsed = JSON.parse(rawNotes);
+      notes = parsed.notes !== undefined ? parsed.notes : '';
+      homework = Array.isArray(parsed.homework) ? parsed.homework : [];
+      courses = Array.isArray(parsed.courses) ? parsed.courses : [];
+      readingPlan = Array.isArray(parsed.readingPlan) ? parsed.readingPlan : [];
+    } catch (e) {
+      notes = rawNotes;
+    }
+  }
+  return { notes, homework, courses, readingPlan };
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -94,6 +114,7 @@ export async function GET(request: Request) {
         }
 
         const { data: userTests } = await testQuery;
+        const dossier = parseClinicalDossier(p.clinical_notes);
 
         const formattedProfile = {
           id: p.id,
@@ -106,8 +127,10 @@ export async function GET(request: Request) {
           country: p.country || '',
           city: p.city || '',
           role: p.role || 'client',
-          clinicalNotes: p.clinical_notes || '',
-          homework: [],
+          clinicalNotes: dossier.notes,
+          homework: dossier.homework,
+          courses: dossier.courses,
+          readingPlan: dossier.readingPlan,
           testResults: (userTests || []).map((t: any) => ({
             id: t.id,
             testId: t.test_id,
@@ -290,24 +313,89 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, phone, email, notes, name, newPassword } = body;
+    const {
+      id,
+      phone,
+      email,
+      notes,
+      name,
+      newPassword,
+      homework,
+      newHomework,
+      removeHomeworkId,
+      toggleHomeworkId,
+      toggleReadingPlanId,
+      courses,
+      readingPlan,
+    } = body;
 
     const cleanPhone = phone ? normalizePhone(phone) : '';
     const cleanEmail = email ? email.trim().toLowerCase() : '';
 
     if (isSupabaseConfigured) {
-      const updateData: any = { updated_at: new Date().toISOString() };
+      // 1. Fetch existing profile to merge and preserve dossier
+      let fetchQuery = supabaseAdmin.from('profiles').select('*');
+      if (id) fetchQuery = fetchQuery.eq('id', id);
+      else if (cleanPhone) fetchQuery = fetchQuery.eq('phone', cleanPhone);
+      else if (cleanEmail) fetchQuery = fetchQuery.eq('email', cleanEmail);
+
+      const { data: existing } = await fetchQuery.maybeSingle();
+
+      const dossier = parseClinicalDossier(existing?.clinical_notes || null);
+      let updatedNotes = notes !== undefined ? notes : dossier.notes;
+      let updatedHomework = Array.isArray(homework) ? [...homework] : [...dossier.homework];
+      let updatedCourses = Array.isArray(courses) ? [...courses] : [...dossier.courses];
+      let updatedReadingPlan = Array.isArray(readingPlan) ? [...readingPlan] : [...dossier.readingPlan];
+
+      const incomingHw = newHomework || (!Array.isArray(homework) && homework && typeof homework === 'object' ? homework : null);
+      if (incomingHw && incomingHw.title) {
+        const hwItem = {
+          id: `hw-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+          title: incomingHw.title,
+          link: incomingHw.link || '',
+          completed: false,
+          assignedAt: new Date().toISOString().split('T')[0],
+        };
+        updatedHomework.unshift(hwItem);
+      }
+
+      if (toggleHomeworkId) {
+        updatedHomework = updatedHomework.map((h: any) =>
+          h.id === toggleHomeworkId ? { ...h, completed: !h.completed } : h
+        );
+      }
+
+      if (removeHomeworkId) {
+        updatedHomework = updatedHomework.filter((h: any) => h.id !== removeHomeworkId);
+      }
+
+      if (toggleReadingPlanId) {
+        updatedReadingPlan = updatedReadingPlan.map((rp: any) =>
+          rp.id === toggleReadingPlanId ? { ...rp, completed: !rp.completed } : rp
+        );
+      }
+
+      const serializedNotes = JSON.stringify({
+        notes: updatedNotes,
+        homework: updatedHomework,
+        courses: updatedCourses,
+        readingPlan: updatedReadingPlan,
+      });
+
+      const updateData: any = {
+        updated_at: new Date().toISOString(),
+        clinical_notes: serializedNotes,
+      };
       if (name) updateData.name = name;
-      if (notes !== undefined) updateData.clinical_notes = notes;
       if (newPassword) updateData.password_hash = hashPassword(newPassword);
 
-      let query = supabaseAdmin.from('profiles').update(updateData);
-      if (id) query = query.eq('id', id);
-      else if (cleanPhone) query = query.eq('phone', cleanPhone);
-      else if (cleanEmail) query = query.eq('email', cleanEmail);
+      let updateQuery = supabaseAdmin.from('profiles').update(updateData);
+      if (id) updateQuery = updateQuery.eq('id', id);
+      else if (cleanPhone) updateQuery = updateQuery.eq('phone', cleanPhone);
+      else if (cleanEmail) updateQuery = updateQuery.eq('email', cleanEmail);
 
-      const { data } = await query.select().maybeSingle();
-      if (data) {
+      const { data, error } = await updateQuery.select().maybeSingle();
+      if (!error && data) {
         return NextResponse.json({
           success: true,
           profile: {
@@ -315,10 +403,15 @@ export async function PUT(request: Request) {
             name: data.name,
             phone: data.phone,
             email: data.email,
-            clinicalNotes: data.clinical_notes,
+            clinicalNotes: updatedNotes,
+            homework: updatedHomework,
+            courses: updatedCourses,
+            readingPlan: updatedReadingPlan,
             role: data.role,
           },
         });
+      } else if (error) {
+        console.error('Supabase profile update error:', error);
       }
     }
 
@@ -340,6 +433,28 @@ export async function PUT(request: Request) {
     if (name) profile.name = name;
     if (notes !== undefined) profile.clinicalNotes = notes;
     if (newPassword) profile.passwordHash = hashPassword(newPassword);
+
+    if (!Array.isArray(profile.homework)) profile.homework = [];
+    const localIncomingHw = newHomework || (!Array.isArray(homework) && homework && typeof homework === 'object' ? homework : null);
+    if (localIncomingHw && localIncomingHw.title) {
+      profile.homework.unshift({
+        id: `hw-${Date.now()}`,
+        title: localIncomingHw.title,
+        link: localIncomingHw.link || '',
+        completed: false,
+        assignedAt: new Date().toISOString().split('T')[0],
+      });
+    }
+    if (toggleHomeworkId) {
+      profile.homework = profile.homework.map((h: any) =>
+        h.id === toggleHomeworkId ? { ...h, completed: !h.completed } : h
+      );
+    }
+    if (removeHomeworkId) {
+      profile.homework = profile.homework.filter((h: any) => h.id !== removeHomeworkId);
+    }
+    if (courses) profile.courses = courses;
+    if (readingPlan) profile.readingPlan = readingPlan;
 
     profiles[idx] = profile;
     await writeProfilesLocal(profiles);

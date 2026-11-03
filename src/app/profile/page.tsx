@@ -136,26 +136,19 @@ export default function ClientProfilePage() {
     setLoadingBookings(true);
 
     try {
-      // 1. Fetch Bookings
-      const bookRes = await fetch('/api/bookings', { cache: 'no-store' });
+      // 1. Fetch Bookings securely with identity params
+      const isConsultantUser = user?.role === 'admin' || user?.email === 'admin@galalahmad.com';
+      const bookingUrl = isConsultantUser
+        ? '/api/bookings?admin=true'
+        : `/api/bookings?phone=${encodeURIComponent(user?.phone || '')}&email=${encodeURIComponent(user?.email || '')}`;
+
+      const bookRes = await fetch(bookingUrl, { cache: 'no-store' });
       const bookData = await bookRes.json();
       if (bookData.bookings) {
-        setAllConsultations(bookData.bookings);
-        const userCleanEmail = (user.email || '').trim().toLowerCase();
-
-        const matched = bookData.bookings.filter((b: any) => {
-          if (user.phone && phonesMatch(b.clientPhone, user.phone)) {
-            return true;
-          }
-          if (userCleanEmail && b.clientEmail && userCleanEmail === (b.clientEmail || '').trim().toLowerCase()) {
-            return true;
-          }
-          if (user.name && b.clientName && b.clientName.trim().toLowerCase() === user.name.trim().toLowerCase()) {
-            return true;
-          }
-          return false;
-        });
-        setClientBookings(matched);
+        if (isConsultantUser) {
+          setAllConsultations(bookData.bookings);
+        }
+        setClientBookings(bookData.bookings);
       }
 
       // 2. Fetch User Profile & Test Results & Courses & Homework

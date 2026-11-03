@@ -197,6 +197,17 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
               <span>عدد الأسئلة: {test.questions.length} أسئلة</span>
             </span>
           </div>
+
+          {/* Scientific & Ethical Disclaimer Banner */}
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-200 leading-relaxed flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <strong className="block font-bold">تنبيه علمي وأخلاقي هام:</strong>
+              <p className="text-[11px] opacity-90">
+                هذا المقياس أداة فحص واستكشاف ذاتي للمتابعة ورفع الوعي، ولا يُعد بديلاً عن التقييم الإكلينيكي الشامل أو تشخيصاً طبياً نهائياً. إذا كانت لديك مشاعر ضاغطة أو أزمة ملحة، ننصح دائماً بالتحدث إلى مختص معتمد.
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* AUTH GUARD: If user is not logged in, prompt them to login to take test & save result */}
@@ -357,6 +368,19 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
                     </Link>
                   </div>
                 ) : null}
+
+                {/* Crisis & Safety Helpline Banner */}
+                <div className="p-4 rounded-2xl bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-800 dark:text-rose-300 flex items-start gap-3 text-right">
+                  <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <strong className="block font-black text-rose-900 dark:text-rose-200">
+                      مسار الأمان والاستجابة السريعة:
+                    </strong>
+                    <p className="text-[11px] leading-relaxed">
+                      إذا كنت تشعر بضيق حاد، أو تراودك أفكار لإيذاء نفسك أو التخلص من الحياة، فلست وحدك. يرجى التوجه فوراً لأقرب طوارئ صحية أو التواصل مع الخطوط الساخنة المعتمدة للدعم النفسي في بلدك (مصر: 16328 • السعودية: 920033360 • أو الاتصال برقم الطوارئ المحلي).
+                    </p>
+                  </div>
+                </div>
 
                 {/* CTAs */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">

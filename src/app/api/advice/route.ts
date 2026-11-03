@@ -17,15 +17,20 @@ async function readAdvice() {
 }
 
 async function writeAdvice(data: any[]) {
-  try {
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error writing advice.json:', err);
-  }
+  // Explicit throw: never swallow error to avoid false success reporting
+  await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
+
+    // Privacy Guard: Only admin can view submitted confidential advice messages
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'غير مصرح بالوصول لصندوق الاستشارات' }, { status: 403 });
+    }
+
     const localData = await readAdvice();
     return NextResponse.json({ success: true, advice: localData });
   } catch (error) {
@@ -40,7 +45,7 @@ export async function POST(request: Request) {
 
     if (!message || message.trim().length < 5) {
       return NextResponse.json(
-        { error: 'يرجى كتابة رسالة لا تقل عن 5 أحرف' },
+        { error: 'يرجى كتابة رسالة واضحة لا تقل عن 5 أحرف' },
         { status: 400 }
       );
     }
@@ -55,12 +60,16 @@ export async function POST(request: Request) {
 
     const currentList = await readAdvice();
     currentList.unshift(newMessage);
+    // Explicit error check: Only return success if storage write confirmed
     await writeAdvice(currentList);
 
     return NextResponse.json({ success: true, item: newMessage });
   } catch (error) {
-    console.error('Advice submit error:', error);
-    return NextResponse.json({ error: 'Failed to submit advice' }, { status: 500 });
+    console.error('Advice submit storage error');
+    return NextResponse.json(
+      { error: 'تعذر حفظ الرسالة حالياً، يرجى المحاولة بعد قليل أو التواصل عبر الواتساب.' },
+      { status: 500 }
+    );
   }
 }
 
@@ -68,9 +77,14 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
+
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'غير مصرح بالحذف' }, { status: 403 });
+    }
 
     if (!id) {
-      return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+      return NextResponse.json({ error: 'معرّف الرسالة مطلوب' }, { status: 400 });
     }
 
     const currentList = await readAdvice();
@@ -85,6 +99,13 @@ export async function DELETE(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
+
+    if (!isAdmin) {
+      return NextResponse.json({ error: 'غير مصرح بتعديل الحالة' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { id, status } = body;
 

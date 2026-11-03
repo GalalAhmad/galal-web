@@ -303,7 +303,7 @@ export default function AdminDashboardPage() {
         setVideosList(vidData.videos);
       }
 
-      const advRes = await fetch('/api/advice', { cache: 'no-store' });
+      const advRes = await fetch('/api/advice?admin=true', { cache: 'no-store' });
       const advData = await advRes.json();
       if (advData.advice) {
         setAdviceList(advData.advice);
@@ -315,7 +315,7 @@ export default function AdminDashboardPage() {
         setFaqsList(faqData.faqs);
       }
 
-      const bookRes = await fetch('/api/bookings', { cache: 'no-store' });
+      const bookRes = await fetch('/api/bookings?admin=true', { cache: 'no-store' });
       const bookData = await bookRes.json();
       if (bookData.bookings) {
         setBookingsList(bookData.bookings);
@@ -488,7 +488,7 @@ export default function AdminDashboardPage() {
   const handleAdviceStatus = async (id: string, newStatus: string) => {
     setAdviceList(prev => prev.map(item => item.id === id ? { ...item, status: newStatus } : item));
     try {
-      await fetch('/api/advice', {
+      await fetch('/api/advice?admin=true', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status: newStatus }),
@@ -502,7 +502,7 @@ export default function AdminDashboardPage() {
     if (!confirm('هل أنت متأكد من حذف هذه الرسالة من صندوق النصيحة؟')) return;
     setAdviceList(prev => prev.filter(item => item.id !== id));
     try {
-      await fetch(`/api/advice?id=${id}`, { method: 'DELETE' });
+      await fetch(`/api/advice?id=${id}&admin=true`, { method: 'DELETE' });
     } catch (err) {
       console.error(err);
     }

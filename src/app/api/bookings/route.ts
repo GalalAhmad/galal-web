@@ -121,13 +121,42 @@ async function syncProfile(name: string, phone: string, email?: string) {
   } catch (e) {}
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const phone = searchParams.get('phone');
+    const email = searchParams.get('email');
+    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
+
+    const cleanPhone = phone ? phone.replace(/[^\d]/g, '') : '';
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+
+    // Privacy guard: Unauthenticated visitors must never receive full booking database
+    if (!isAdmin && !cleanPhone && !cleanEmail) {
+      return NextResponse.json(
+        { success: true, bookings: [] },
+        { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+      );
+    }
+
     if (isSupabaseConfigured) {
-      const { data, error } = await supabaseAdmin
+      let query = supabaseAdmin
         .from('bookings')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // If not admin, restrict to owner's phone or email only
+      if (!isAdmin) {
+        if (cleanPhone && cleanEmail) {
+          query = query.or(`client_phone.eq.${cleanPhone},client_email.eq.${cleanEmail}`);
+        } else if (cleanPhone) {
+          query = query.eq('client_phone', cleanPhone);
+        } else if (cleanEmail) {
+          query = query.eq('client_email', cleanEmail);
+        }
+      }
+
+      const { data, error } = await query;
 
       if (!error && Array.isArray(data)) {
         const formatted = data.map(toFrontendBooking);
@@ -135,15 +164,31 @@ export async function GET() {
           { success: true, bookings: formatted },
           { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
         );
+      } else if (error) {
+        console.error('Supabase GET bookings error:', error);
+        return NextResponse.json({ error: 'تعذر استرجاع الحجوزات من قاعدة البيانات' }, { status: 500 });
       }
     }
 
+    // Local Fallback (only if Supabase is unconfigured)
     const localData = await readBookingsLocal();
+    let filtered = localData;
+    if (!isAdmin) {
+      filtered = localData.filter((b: any) => {
+        const bPhone = (b.clientPhone || '').replace(/[^\d]/g, '');
+        const bEmail = (b.clientEmail || '').trim().toLowerCase();
+        if (cleanPhone && (bPhone === cleanPhone || bPhone.slice(-8) === cleanPhone.slice(-8))) return true;
+        if (cleanEmail && bEmail === cleanEmail) return true;
+        return false;
+      });
+    }
+
     return NextResponse.json(
-      { success: true, bookings: localData },
+      { success: true, bookings: filtered },
       { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
     );
   } catch (error) {
+    console.error('Error in GET bookings:', error);
     return NextResponse.json({ error: 'Failed to read bookings' }, { status: 500 });
   }
 }
@@ -214,11 +259,12 @@ export async function POST(request: Request) {
 
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const bookingId = `BK-${Date.now().toString().slice(-4)}${randomSuffix}`;
-    const meetLink = `https://meet.google.com/galal-${Math.random().toString(36).substring(2, 7)}`;
+    // Meet link is generated and issued upon confirmation, not arbitrarily beforehand
+    const initialMeetLink = '';
 
     let createdBooking: any = null;
 
-    // 2. Insert into Supabase
+    // 2. Insert into Supabase (Single Source of Truth)
     if (isSupabaseConfigured) {
       const { data, error } = await supabaseAdmin
         .from('bookings')
@@ -233,7 +279,7 @@ export async function POST(request: Request) {
           marital_status: maritalStatus || 'غير محدد',
           slot_date: slotDate,
           slot_time: slotTime,
-          meet_link: meetLink,
+          meet_link: initialMeetLink,
           status: 'pending_verification',
           payment_method: paymentMethod || 'instapay',
           fee: fee || '250 ر.س',
@@ -244,14 +290,18 @@ export async function POST(request: Request) {
         .select()
         .single();
 
-      if (!error && data) {
-        createdBooking = toFrontendBooking(data);
-      } else {
+      if (error) {
         console.error('Supabase booking insert error:', error);
+        return NextResponse.json(
+          { error: 'تعذر تسجيل الحجز في قاعدة البيانات السحابية، يرجى مراجعة الاتصال والمحاولة ثانية.' },
+          { status: 500 }
+        );
       }
-    }
 
-    if (!createdBooking) {
+      if (data) {
+        createdBooking = toFrontendBooking(data);
+      }
+    } else {
       createdBooking = {
         id: bookingId,
         clientName: clientName.trim(),
@@ -269,7 +319,7 @@ export async function POST(request: Request) {
         receiptImage: receiptImage || '',
         fee: fee || '250 ر.س',
         status: 'pending_verification',
-        meetLink,
+        meetLink: initialMeetLink,
         created_at: new Date().toISOString(),
       };
     }

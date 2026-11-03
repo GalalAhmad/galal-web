@@ -81,34 +81,44 @@ export default function AboutPage() {
                   <span className="block text-[#4E7E76] dark:text-[#5E988E]">والوعي بداية كل اتزان»</span>
                 </h1>
                 <p className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 leading-relaxed">
-                  جـلال أحـمد — باحث ومستشار في الصحة النفسية والإرشاد الأسري والتربوي، ومطور برامج بناء الإنسان وتأهيل القيادات التعليمية.
+                  جـلال أحـمد | مستشار نفسي وتربوي، ومختص في الإرشاد الأسري والبرامج التعليمية
                 </p>
               </div>
 
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
-                أجمع في مسيرتي بين أكثر من 18 عاماً من الممارسة القيادية والميدانية في إدارة وتطوير المؤسسات والمدارس الكبرى، والتأهيل الأكاديمي والعيادي في علم النفس، مع الارتكاز الأصيل على هداية القرآن وبصيرة الفطرة الإنسانية.
+                أعمل في مجالات الإرشاد النفسي والتربوي والأسري، وأصمم برامج تساعد الأفراد والأسر والمؤسسات التعليمية على تنمية الوعي والمهارات النفسية والتربوية، مع الجمع بين التأصيل القيمي المستند لهدايات القرآن والتطبيقات العملية المعاصرة، وخبرة تمتد لأكثر من 18 عاماً في القيادة والتأهيل الميداني.
               </p>
 
-              {/* الشارات الرسمية المعتمدة */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <div className="inline-flex items-center gap-2.5 p-3.5 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 text-xs shadow-2xs">
-                  <ShieldCheck className="w-5 h-5 text-[#4E7E76] shrink-0" />
-                  <div>
-                    <strong className="text-slate-900 dark:text-slate-100 font-bold">تصنيف الهيئة السعودية للتخصصات الصحية</strong>
-                    <span className="block text-[11px] text-slate-500 mt-0.5 font-normal">
-                      أخصائي مساعد علم نفس | علاج وتأهيل (2025)
-                    </span>
+              {/* الشارات والاعتمادات الرسمية مفصولة بدقة */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <div className="p-3.5 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 text-xs shadow-2xs">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ShieldCheck className="w-4 h-4 text-[#4E7E76] shrink-0" />
+                    <strong className="text-slate-900 dark:text-slate-100 font-bold">التصنيف المهني الرسمي</strong>
                   </div>
+                  <span className="block text-[11px] text-slate-500 font-normal leading-tight">
+                    الهيئة السعودية للتخصصات الصحية — أخصائي مساعد علم نفس | علاج وتأهيل (2025)
+                  </span>
                 </div>
 
-                <div className="inline-flex items-center gap-2.5 p-3.5 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 text-xs shadow-2xs">
-                  <GraduationCap className="w-5 h-5 text-[#CC4E46] shrink-0" />
-                  <div>
-                    <strong className="text-slate-900 dark:text-slate-100 font-bold">ماجستير علم النفس والخبرة الإكلينيكية</strong>
-                    <span className="block text-[11px] text-slate-500 mt-0.5 font-normal">
-                      أكثر من 18 عاماً في الاستشارة والقيادة التربوية
-                    </span>
+                <div className="p-3.5 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 text-xs shadow-2xs">
+                  <div className="flex items-center gap-2 mb-1">
+                    <GraduationCap className="w-4 h-4 text-[#154F9C] shrink-0" />
+                    <strong className="text-slate-900 dark:text-slate-100 font-bold">التأهيل الأكاديمي</strong>
                   </div>
+                  <span className="block text-[11px] text-slate-500 font-normal leading-tight">
+                    ماجستير علم النفس، وبحوث التأصيل السلوكي والمعرفي ومشروع أقومية القرآن
+                  </span>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 text-xs shadow-2xs">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Award className="w-4 h-4 text-[#CC4E46] shrink-0" />
+                    <strong className="text-slate-900 dark:text-slate-100 font-bold">الخبرة الميدانية</strong>
+                  </div>
+                  <span className="block text-[11px] text-slate-500 font-normal leading-tight">
+                    أكثر من 18 عاماً في القيادة التربوية وإدارة وتطوير الصروح والمدارس الكبرى
+                  </span>
                 </div>
               </div>
 

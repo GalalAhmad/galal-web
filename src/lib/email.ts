@@ -3,7 +3,7 @@
  * تدعم مزود Resend المعتمد مع قوالب HTML أنيقة وتنبيهات فورية للمستشار والعملاء
  */
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'المستشار جلال أحمد <onboarding@resend.dev>';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'المستشار جلال أحمد <appointments@galalahmad.com>';
 const CONSULTANT_EMAIL = 'galalahmad1201@gmail.com';
 
 interface SendBookingEmailParams {
@@ -123,6 +123,7 @@ export async function sendBookingConfirmationEmail(params: SendBookingEmailParam
   return await dispatchEmail(to, subject, htmlContent);
 }
 
+
 export async function sendHomeworkNotificationEmail(params: {
   to: string;
   clientName: string;
@@ -163,6 +164,69 @@ export async function sendHomeworkNotificationEmail(params: {
           </p>
         </div>
         <div class="footer">
+          <p>© 2026 المستشار جلال أحمد — جميع الحقوق محفوظة</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return await dispatchEmail(to, subject, htmlContent);
+}
+
+
+export async function sendAdvisorCustomEmail(params: {
+  to: string;
+  clientName: string;
+  subject: string;
+  message: string;
+  actionUrl?: string;
+  actionText?: string;
+}): Promise<{ success: boolean; id?: string }> {
+  const { to, clientName, subject, message, actionUrl, actionText } = params;
+  
+  const formattedMessage = (message || '').replace(/\n/g, '<br/>');
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head><meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F8FAFC; color: #1E293B; margin: 0; padding: 20px; line-height: 1.7; text-align: right; }
+        .container { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; border: 1px solid #E2E8F0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .header { background: #4E7E76; padding: 28px 24px; text-align: center; color: #FFFFFF; }
+        .header h2 { margin: 0 0 6px 0; font-size: 20px; font-weight: 800; }
+        .header p { margin: 0; font-size: 12px; opacity: 0.9; }
+        .content { padding: 32px 24px; }
+        .message-card { background: #F8FAFC; border-right: 4px solid #4E7E76; padding: 20px; border-radius: 14px; margin: 20px 0; font-size: 14px; color: #334155; }
+        .btn-action { display: inline-block; background: #154F9C; color: #FFFFFF !important; text-decoration: none; padding: 12px 28px; border-radius: 9999px; font-weight: bold; font-size: 13px; text-align: center; margin-top: 15px; }
+        .footer { background: #F8FAFC; padding: 20px; text-align: center; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2>المستشار جـلال أحـمد</h2>
+          <p>رسالة مباشرة وتواصل مهني خاص</p>
+        </div>
+        <div class="content">
+          <p style="font-size: 15px; font-weight: bold; color: #0F172A; margin-top: 0;">أهلاً بك أ. ${clientName || 'العميل الفاضل'} 🌿</p>
+          <div class="message-card">
+            ${formattedMessage}
+          </div>
+          ${actionUrl ? `
+            <div style="text-align: center; margin-top: 25px;">
+              <a href="${actionUrl}" target="_blank" class="btn-action">
+                ${actionText || 'الانتقال إلى المنصة'}
+              </a>
+            </div>
+          ` : ''}
+          <p style="font-size: 12px; color: #64748B; margin-top: 24px; border-top: 1px solid #F1F5F9; padding-top: 16px;">
+            هذه الرسالة مرسلة مباشرة من منصة المستشار جلال أحمد الرسمية. يمكنك الرد على هذه الرسالة أو التواصل عبر الواتساب في أي وقت.
+          </p>
+        </div>
+        <div class="footer">
+          <p>للتواصل والاستفسار: واتساب رسمي <strong>+20 101 487 6666</strong></p>
           <p>© 2026 المستشار جلال أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>

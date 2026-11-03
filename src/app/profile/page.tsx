@@ -825,11 +825,20 @@ export default function ClientProfilePage() {
             {/* Crisis & Communication Boundaries Banner */}
             <div className="p-3.5 sm:p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-3 text-right">
               <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <strong className="block font-bold">تنويه هام بشأن حدود التواصل والطوارئ:</strong>
                 <p className="text-[11px] text-slate-600 dark:text-slate-400 font-normal leading-relaxed">
-                  هذه المنصة وقنوات المراسلة مخصصة للجلسات الاستشارية المجدولة والواجبات الإرشادية، وليست قناة للاستجابة الفورية للأزمات الحادة أو الطوارئ الطبية. إذا كنت تمر بضيق حاد، يرجى التوجه فوراً لأقرب طوارئ أو الاتصال بخطوط المساندة المجانية (مصر: <strong>16328</strong> • السعودية: <strong>920033360</strong>).
+                  هذه المنصة مخصصة للجلسات الاستشارية المجدولة والواجبات الإرشادية، وليست قناة للاستجابة الفورية للأزمات الحادة أو الطوارئ الطبية. في حال الطوارئ، يرجى التوجه فوراً لأقرب مشفى أو الاتصال بخطوط المساندة المجانية:
                 </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-700 dark:text-slate-300 font-medium pt-0.5">
+                  <span>🇪🇬 مصر: <strong className="font-mono text-amber-900 dark:text-amber-200">16328</strong></span>
+                  <span>•</span>
+                  <span>🇸🇦 السعودية: <strong className="font-mono text-amber-900 dark:text-amber-200">920033360</strong></span>
+                  <span>•</span>
+                  <span>🇯🇴 الأردن: <strong className="font-mono text-amber-900 dark:text-amber-200">110</strong> / <strong className="font-mono text-amber-900 dark:text-amber-200">065530837</strong></span>
+                  <span>•</span>
+                  <span>🇦🇪 الإمارات: <strong className="font-mono text-amber-900 dark:text-amber-200">800-4673</strong> (800-HOPE)</span>
+                </div>
               </div>
             </div>
 

@@ -372,13 +372,22 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
                 {/* Crisis & Safety Helpline Banner */}
                 <div className="p-4 rounded-2xl bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-xs text-rose-800 dark:text-rose-300 flex items-start gap-3 text-right">
                   <ShieldAlert className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <strong className="block font-black text-rose-900 dark:text-rose-200">
                       مسار الأمان والاستجابة السريعة:
                     </strong>
                     <p className="text-[11px] leading-relaxed">
-                      إذا كنت تشعر بضيق حاد، أو تراودك أفكار لإيذاء نفسك أو التخلص من الحياة، فلست وحدك. يرجى التوجه فوراً لأقرب طوارئ صحية أو التواصل مع الخطوط الساخنة المعتمدة للدعم النفسي في بلدك (مصر: 16328 • السعودية: 920033360 • أو الاتصال برقم الطوارئ المحلي).
+                      إذا كنت تشعر بضيق حاد، أو تراودك أفكار لإيذاء نفسك أو التخلص من الحياة، فلست وحدك. يرجى التوجه فوراً لأقرب طوارئ صحية أو التواصل مع الخطوط الساخنة المعتمدة للدعم والمساندة النفسية:
                     </p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold text-rose-900 dark:text-rose-200 pt-0.5">
+                      <span>🇪🇬 مصر: 16328</span>
+                      <span>•</span>
+                      <span>🇸🇦 السعودية: 920033360</span>
+                      <span>•</span>
+                      <span>🇯🇴 الأردن: 110 / 065530837</span>
+                      <span>•</span>
+                      <span>🇦🇪 الإمارات: 800-4673 (800-HOPE)</span>
+                    </div>
                   </div>
                 </div>
 

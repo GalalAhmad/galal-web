@@ -1307,6 +1307,25 @@ function BookingWizardContent() {
                   تُعقد الجلسات عبر Google Meet. يرجى التواجد في مكان هادئ قبل الموعد بـ 5 دقائق. في حال التأخير لأكثر من 15 دقيقة دون إخطار، تُحتسب الجلسة حرصاً على جدول المواعيد.
                 </p>
               </div>
+
+              <div className="p-4 rounded-2xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200/80 dark:border-rose-900/40 space-y-1.5">
+                <div className="flex items-center gap-2 text-rose-800 dark:text-rose-300 font-bold text-sm">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>4. حدود الخدمة وتوجيه الطوارئ والأزمات الحادة</span>
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pr-6">
+                  جلسات المنصة مخصصة للدعم النفسي والأسري وليست بديلاً عن التدخل الطبي الطارئ. في حال الأزمات الحادة يرجى الاتصال فوراً بخطوط المساندة المجانية:
+                </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-rose-900 dark:text-rose-200 font-medium pr-6 pt-1">
+                  <span>🇪🇬 مصر: <strong>16328</strong></span>
+                  <span>•</span>
+                  <span>🇸🇦 السعودية: <strong>920033360</strong></span>
+                  <span>•</span>
+                  <span>🇯🇴 الأردن: <strong>110</strong> / <strong>065530837</strong></span>
+                  <span>•</span>
+                  <span>🇦🇪 الإمارات: <strong>800-4673</strong> (800-HOPE)</span>
+                </div>
+              </div>
             </div>
 
             <div className="pt-2">

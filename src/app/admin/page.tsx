@@ -5,11 +5,13 @@ import UnifiedClientTimeline from '@/components/UnifiedClientTimeline';
 import ClinicalProgressCharts from '@/components/ClinicalProgressCharts';
 import ClinicalDossierView from '@/components/ClinicalDossierView';
 import AdminBookingsView from '@/components/AdminBookingsView';
+import AdminCoursesView from '@/components/AdminCoursesView';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
-  Building2, 
+  Building2,
+  GraduationCap, 
   Star, 
   DollarSign, 
   Compass, 
@@ -76,7 +78,7 @@ export default function AdminDashboardPage() {
   const [inputPassword, setInputPassword] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
 
-  const [activeTab, setActiveTab] = useState<'crm' | 'availability' | 'clients' | 'inquiries' | 'advice' | 'feedback' | 'faqs' | 'pricing' | 'tracks' | 'videos' | 'articles' | 'settings'>('crm');
+  const [activeTab, setActiveTab] = useState<'crm' | 'availability' | 'clients' | 'courses' | 'inquiries' | 'advice' | 'feedback' | 'faqs' | 'pricing' | 'tracks' | 'videos' | 'articles' | 'settings'>('crm');
 
   // Availability & Scheduling State (Calendly System)
   const [availability, setAvailability] = useState<{
@@ -468,6 +470,22 @@ export default function AdminDashboardPage() {
   };
 
   // Save Settings
+  const handleUpdateSettingsDirect = async (partialSettings: any) => {
+    try {
+      const updated = { ...settings, ...partialSettings };
+      setSettings(updated);
+      await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+      setSaveSuccessMsg('تم حفظ وتحديث إعدادات الأكاديمية بنجاح ✓');
+      setTimeout(() => setSaveSuccessMsg(''), 3000);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingSettings(true);
@@ -1387,6 +1405,22 @@ ${meet}
             </span>
           </button>
 
+          {/* COURSES & ACADEMY MANAGEMENT TAB BUTTON */}
+          <button
+            onClick={() => setActiveTab('courses')}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition text-right cursor-pointer ${
+              activeTab === 'courses' ? 'bg-[#154F9C] text-white shadow-md' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <GraduationCap className="w-4 h-4 text-emerald-400" />
+              <span>أكاديمية الكورسات والمسارات</span>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-emerald-300">
+              {clientProfiles.reduce((acc, p) => acc + (Array.isArray(p.courses) ? p.courses.length : 0), 0)} مشترك
+            </span>
+          </button>
+
           <button
             onClick={() => setActiveTab('inquiries')}
             className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition text-right cursor-pointer ${
@@ -2005,6 +2039,22 @@ ${meet}
                 </div>
               )}
             </div>
+          )}
+
+          
+
+          {/* TAB: COURSES & ACADEMY MANAGEMENT */}
+          {activeTab === 'courses' && (
+            <AdminCoursesView
+              clientProfiles={clientProfiles}
+              siteSettings={settings}
+              onUpdateSettings={async (newSet) => {
+                await handleUpdateSettingsDirect(newSet);
+              }}
+              onRefreshData={async () => {
+                await fetchData();
+              }}
+            />
           )}
 
           {/* TAB 1: INQUIRIES & INSTITUTIONAL LEADS */}

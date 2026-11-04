@@ -39,8 +39,8 @@ export default function StickyBottomBar() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Don't render inside admin dashboard to prevent overlay on admin controls
-  if (pathname.startsWith('/admin')) {
+  // Don't render inside admin dashboard or inside course learning pages to prevent overlay on controls
+  if (pathname.startsWith('/admin') || pathname.startsWith('/courses/')) {
     return null;
   }
 

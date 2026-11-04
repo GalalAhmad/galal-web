@@ -933,10 +933,10 @@ export default function ClientProfilePage() {
                   type="button"
                   onClick={() => setActiveTab('journal')}
                   className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-extrabold rounded-xl transition shadow-xs cursor-pointer"
-                  title="مفكرة الخواطر والرسائل"
+                  title="مراسلة المستشار جلال أحمد وتدوين الخواطر الإرشادية"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
-                  <span>مفكرة الخواطر</span>
+                  <span>مراسلة المستشار والخواطر</span>
                 </button>
 
                 <Link
@@ -1097,7 +1097,7 @@ export default function ClientProfilePage() {
                 }`}
               >
                 <MessageSquare className="w-3.5 h-3.5 text-[#4E7E76]" />
-                <span>مفكرة الخواطر وتواصل ({journalEntries.length})</span>
+                <span>مراسلة المستشار والخواطر ({journalEntries.length})</span>
               </button>
 
               <button

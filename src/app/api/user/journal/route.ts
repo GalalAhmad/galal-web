@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
+import { sendClientJournalNotificationEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -25,15 +26,15 @@ export async function GET(req: NextRequest) {
       .eq('test_id', 'client_journal')
       .order('created_at', { ascending: false });
 
-    if (!isAdmin) {
-      if (phone && email) {
-        query = query.or(`client_phone.eq.${phone},client_email.eq.${email}`);
-      } else if (phone) {
-        query = query.eq('client_phone', phone);
-      } else if (email) {
-        query = query.eq('client_email', email);
-      }
-    } else {
+    if (phone && email) {
+      query = query.or(`client_phone.eq.${phone},client_email.eq.${email}`);
+    } else if (phone) {
+      query = query.eq('client_phone', phone);
+    } else if (email) {
+      query = query.eq('client_email', email);
+    }
+
+    if (isAdmin) {
       // If admin, only show shared entries
       query = query.eq('level', 'shared');
     }
@@ -97,7 +98,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // If shared with advisor, create an admin alert notification
+    // If shared with advisor, create an admin alert notification & send direct email
     if (isShared) {
       try {
         await supabaseAdmin.from('test_results').insert({
@@ -114,6 +115,16 @@ export async function POST(req: NextRequest) {
           recommendation: '/admin',
           created_at: new Date().toISOString(),
         });
+
+        // Instant email alert to consultant
+        sendClientJournalNotificationEmail({
+          clientName: name || 'مستفيد المنصة',
+          clientPhone: phone || '',
+          clientEmail: email || '',
+          title: title || 'تدوينة وتواصل إرشادي',
+          content: content.trim(),
+          moodTag: moodTag || 'ملاحظة ومصارحة',
+        }).catch((e) => console.error('Journal email dispatch error:', e));
       } catch (notifErr) {
         console.error('Journal admin notification error:', notifErr);
       }

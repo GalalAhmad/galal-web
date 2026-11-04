@@ -54,16 +54,18 @@ export default function CourseDetailClientView({ course }: CourseDetailClientVie
   // If in player mode, render CoursePlayerView directly
   if (viewMode === 'player') {
     return (
-      <div>
-        <div className="bg-[#0E1524] px-4 py-2 border-b border-slate-800 flex items-center justify-between">
+      <div className="min-h-screen bg-[#FDFCF9]">
+        <div className="bg-white/95 dark:bg-[#0E1524]/95 backdrop-blur-md px-4 sm:px-6 py-2.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shadow-xs sticky top-0 z-50">
           <button
             type="button"
             onClick={() => setViewMode('overview')}
-            className="text-xs text-slate-300 hover:text-white flex items-center gap-1 font-bold cursor-pointer"
+            className="text-xs text-[#154F9C] dark:text-sky-400 hover:underline flex items-center gap-1.5 font-bold cursor-pointer transition"
           >
-            <span>← العودة لصفحة تفاصيل الدورة</span>
+            <span>← العودة لصفحة تفاصيل الدورة والمنهج</span>
           </button>
-          <span className="text-xs text-sky-400 font-mono">وضع مشغل الدروس والتفاعل المباشر</span>
+          <span className="text-xs text-[#4E7E76] dark:text-emerald-400 font-bold bg-[#EBF5F3] dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-[#D5EBE6] dark:border-emerald-800">
+            مشغل المحطات والتطبيق العملي
+          </span>
         </div>
         <CoursePlayerView course={course} />
       </div>

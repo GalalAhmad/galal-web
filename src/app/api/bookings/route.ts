@@ -220,6 +220,55 @@ export async function POST(request: Request) {
       );
     }
 
+    // Receipt Validation (Size < 5MB and allowed mime types)
+    if (receiptImage && typeof receiptImage === 'string') {
+      if (receiptImage.length > 7.5 * 1024 * 1024) {
+        return NextResponse.json(
+          { error: 'حجم إيصال السداد المرفق كبير جداً. يرجى إرفاق صورة أصغر من 5 ميجابايت لتسريع الاعتماد.' },
+          { status: 400 }
+        );
+      }
+      if (receiptImage.startsWith('data:')) {
+        const isAllowedMime = 
+          receiptImage.startsWith('data:image/jpeg') ||
+          receiptImage.startsWith('data:image/jpg') ||
+          receiptImage.startsWith('data:image/png') ||
+          receiptImage.startsWith('data:image/webp') ||
+          receiptImage.startsWith('data:application/pdf');
+        if (!isAllowedMime) {
+          return NextResponse.json(
+            { error: 'صيغة ملف الإيصال غير مدعومة. يرجى إرفاق صورة (JPG, PNG, WEBP) أو ملف PDF.' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    // Idempotency / Double-Submit Protection: Check if same client booked same slot in last 3 minutes
+    const cleanPhoneDigits = clientPhone.replace(/[^\d]/g, '');
+    if (isSupabaseConfigured && supabaseAdmin) {
+      const { data: recentDup } = await supabaseAdmin
+        .from('bookings')
+        .select('*')
+        .eq('slot_date', slotDate)
+        .eq('slot_time', slotTime)
+        .neq('status', 'cancelled')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (recentDup && recentDup.length > 0) {
+        const existing = recentDup[0];
+        const existPhone = (existing.client_phone || '').replace(/[^\d]/g, '');
+        if (existPhone === cleanPhoneDigits || (cleanPhoneDigits.length >= 8 && existPhone.endsWith(cleanPhoneDigits.slice(-8)))) {
+          return NextResponse.json({
+            success: true,
+            booking: toFrontendBooking(existing),
+            message: 'تم استلام هذا الحجز مسبقاً وتأكيده في النظام',
+          });
+        }
+      }
+    }
+
     // 1. Conflict check on Supabase
     if (isSupabaseConfigured) {
       const { data: conflicts } = await supabaseAdmin
@@ -485,6 +534,28 @@ export async function PUT(request: Request) {
             });
           } catch (err) {
             console.error('In-app confirmed notification error:', err);
+          }
+        }
+
+        // Audit Log Entry
+        if (isSupabaseConfigured && supabaseAdmin) {
+          try {
+            await supabaseAdmin.from('test_results').insert({
+              id: `audit-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`,
+              client_name: 'سجل النظام (Audit Log)',
+              client_phone: 'admin',
+              client_email: 'audit@galalahmad.com',
+              test_id: 'audit_log',
+              test_title: `تعديل حالة الحجز ${id} إلى: ${status || 'تحديث بيانات'}`,
+              score: 0,
+              score_percent: 0,
+              level: status || 'updated',
+              description: `تم تحديث الحجز ${id} بواسطة الإدارة. رابط اللقاء: ${meetLink || 'بدون تعديل'}. الموعد: ${slotDate || 'نفس الموعد'} ${slotTime || ''}`,
+              recommendation: id,
+              created_at: new Date().toISOString(),
+            });
+          } catch (auditErr) {
+            console.error('Audit log insert error:', auditErr);
           }
         }
 

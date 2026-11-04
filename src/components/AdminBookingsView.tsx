@@ -61,6 +61,8 @@ export default function AdminBookingsView({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending_verification' | 'confirmed' | 'completed' | 'cancelled'>('all');
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'upcoming' | 'past'>('all');
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<'all' | 'instapay' | 'vodafone' | 'alrajhi' | 'cliq' | 'bank_transfer'>('all');
+  const [showFinanceDetail, setShowFinanceDetail] = useState<boolean>(true);
 
   // UI state
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
@@ -98,6 +100,36 @@ export default function AdminBookingsView({
     [pendingList]
   );
 
+  // Payment Methods Financial Breakdown
+  const paymentStats = useMemo(() => {
+    const stats: Record<string, { label: string; count: number; confirmedSum: number; pendingSum: number; color: string; country: string }> = {
+      instapay: { label: 'إنستاباي (InstaPay)', count: 0, confirmedSum: 0, pendingSum: 0, color: 'text-purple-400 bg-purple-500/10 border-purple-500/30', country: '🇪🇬 مصر' },
+      vodafone: { label: 'فودافون كاش (Vodafone Cash)', count: 0, confirmedSum: 0, pendingSum: 0, color: 'text-rose-400 bg-rose-500/10 border-rose-500/30', country: '🇪🇬 مصر' },
+      alrajhi: { label: 'الراجحي / بنك سعودي', count: 0, confirmedSum: 0, pendingSum: 0, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30', country: '🇸🇦 السعودية' },
+      cliq: { label: 'كليك (CliQ)', count: 0, confirmedSum: 0, pendingSum: 0, color: 'text-amber-400 bg-amber-500/10 border-amber-500/30', country: '🇯🇴 الأردن' },
+      bank_transfer: { label: 'تحويل بنكي عام / دولي', count: 0, confirmedSum: 0, pendingSum: 0, color: 'text-sky-400 bg-sky-500/10 border-sky-500/30', country: '🇦🇪 الإمارات / دولي' },
+    };
+
+    bookings.forEach((b) => {
+      const pm = (b.paymentMethod || 'instapay').toLowerCase();
+      let key = 'bank_transfer';
+      if (pm.includes('insta')) key = 'instapay';
+      else if (pm.includes('voda')) key = 'vodafone';
+      else if (pm.includes('rajhi') || pm.includes('saudi') || pm.includes('ksa')) key = 'alrajhi';
+      else if (pm.includes('cliq') || pm.includes('jordan')) key = 'cliq';
+
+      stats[key].count += 1;
+      const feeVal = parseFeeNumber(b.fee);
+      if (b.status === 'confirmed' || b.status === 'completed') {
+        stats[key].confirmedSum += feeVal;
+      } else if (b.status === 'pending_verification') {
+        stats[key].pendingSum += feeVal;
+      }
+    });
+
+    return stats;
+  }, [bookings]);
+
   // Filtered Bookings for the List View
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
@@ -109,7 +141,17 @@ export default function AdminBookingsView({
       if (dateFilter === 'upcoming' && b.slotDate < todayIso) return false;
       if (dateFilter === 'past' && b.slotDate >= todayIso) return false;
 
-      // 3. Search Query
+      // 3. Payment Method Filter
+      if (paymentMethodFilter !== 'all') {
+        const pm = (b.paymentMethod || '').toLowerCase();
+        if (paymentMethodFilter === 'instapay' && !pm.includes('insta')) return false;
+        if (paymentMethodFilter === 'vodafone' && !pm.includes('voda')) return false;
+        if (paymentMethodFilter === 'alrajhi' && !(pm.includes('rajhi') || pm.includes('saudi') || pm.includes('ksa'))) return false;
+        if (paymentMethodFilter === 'cliq' && !(pm.includes('cliq') || pm.includes('jordan'))) return false;
+        if (paymentMethodFilter === 'bank_transfer' && !(pm.includes('bank') || pm.includes('transfer'))) return false;
+      }
+
+      // 4. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const name = (b.clientName || '').toLowerCase();
@@ -124,7 +166,7 @@ export default function AdminBookingsView({
 
       return true;
     });
-  }, [bookings, statusFilter, dateFilter, searchQuery, todayIso]);
+  }, [bookings, statusFilter, dateFilter, paymentMethodFilter, searchQuery, todayIso]);
 
   // Handle 1-Click Confirmation
   const handleFastConfirm = async (booking: any) => {
@@ -349,6 +391,87 @@ ${meet}
             <span className="text-slate-400">ملغية: {cancelledList.length}</span>
           </div>
         </div>
+      </div>
+
+      {/* 2.5 Financial Breakdown & Payment Channels Ledger (مصر، السعودية، الأردن، الإمارات) */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-[#0E1524] border border-slate-800 shadow-md space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-emerald-400" />
+            <h3 className="text-xs sm:text-sm font-black text-white">
+              السجل المحاسبي وقنوات التحصيل الإقليمية (مصر • السعودية • الأردن • الإمارات)
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowFinanceDetail(!showFinanceDetail)}
+            className="text-xs text-sky-400 hover:text-sky-300 font-bold flex items-center gap-1 cursor-pointer"
+          >
+            <span>{showFinanceDetail ? 'إخفاء التفاصيل' : 'عرض التفاصيل'}</span>
+            {showFinanceDetail ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+
+        {showFinanceDetail && (
+          <div className="space-y-3 animate-fadeIn">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              {Object.entries(paymentStats).map(([key, st]) => {
+                const isSelected = paymentMethodFilter === key;
+                return (
+                  <div
+                    key={key}
+                    onClick={() => setPaymentMethodFilter(isSelected ? 'all' : (key as any))}
+                    className={`p-3.5 rounded-2xl border transition cursor-pointer text-right flex flex-col justify-between ${
+                      isSelected
+                        ? 'border-[#154F9C] bg-[#154F9C]/15 ring-2 ring-[#154F9C]/30'
+                        : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between text-[11px] mb-1">
+                        <span className="font-bold text-slate-300">{st.country}</span>
+                        <span className="px-1.5 py-0.5 rounded-md text-[10px] font-mono bg-slate-800 text-slate-400">
+                          {st.count} حجز
+                        </span>
+                      </div>
+                      <div className="text-xs font-black text-white truncate" title={st.label}>
+                        {st.label}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 pt-2 border-t border-slate-800/80 text-[11px] space-y-0.5 font-mono">
+                      <div className="flex items-center justify-between text-emerald-400 font-bold">
+                        <span className="font-sans font-medium text-[10px] text-slate-400">محصل:</span>
+                        <span>{st.confirmedSum.toLocaleString()} ر.س</span>
+                      </div>
+                      {st.pendingSum > 0 && (
+                        <div className="flex items-center justify-between text-amber-400">
+                          <span className="font-sans font-medium text-[10px] text-slate-400">معلق:</span>
+                          <span>{st.pendingSum.toLocaleString()} ر.س</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {paymentMethodFilter !== 'all' && (
+              <div className="flex items-center justify-between bg-slate-900 px-3.5 py-2 rounded-xl text-xs">
+                <span className="text-slate-300">
+                  تصفية الحجوزات المعروضة حسب وسيلة: <strong className="text-white">{paymentStats[paymentMethodFilter]?.label}</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethodFilter('all')}
+                  className="text-rose-400 hover:underline font-bold text-xs cursor-pointer"
+                >
+                  إلغاء التصفية (عرض الكل)
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 3. CALENDAR VIEW (If active) */}

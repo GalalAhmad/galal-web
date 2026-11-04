@@ -298,6 +298,66 @@ export async function sendAdviceNotificationEmail(params: {
   return await dispatchEmail(CONSULTANT_EMAIL, subject, htmlContent);
 }
 
+export async function sendClientJournalNotificationEmail(params: {
+  clientName: string;
+  clientPhone?: string;
+  clientEmail?: string;
+  title: string;
+  content: string;
+  moodTag?: string;
+}): Promise<{ success: boolean; id?: string }> {
+  const { clientName, clientPhone, clientEmail, title, content, moodTag } = params;
+  const subject = `تدوينة / رسالة جديدة من الحالة: ${clientName || 'مستفيد'} (${moodTag || 'ملاحظة إرشادية'}) 📝`;
+  const formattedContent = (content || '').replace(/\n/g, '<br/>');
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head><meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F8FAFC; color: #1E293B; margin: 0; padding: 20px; line-height: 1.7; text-align: right; }
+        .container { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; border: 1px solid #E2E8F0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .header { background: #4E7E76; padding: 28px 24px; text-align: center; color: #FFFFFF; }
+        .header h2 { margin: 0 0 6px 0; font-size: 20px; font-weight: 800; }
+        .header p { margin: 0; font-size: 12px; opacity: 0.9; }
+        .content { padding: 32px 24px; }
+        .badge { display: inline-block; background: #EDF7F5; color: #4E7E76; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 9999px; margin-bottom: 12px; }
+        .card { background: #F8FAFC; border-right: 4px solid #4E7E76; padding: 20px; border-radius: 14px; margin: 20px 0; font-size: 14px; color: #1E293B; line-height: 1.8; }
+        .footer { background: #F8FAFC; padding: 20px; text-align: center; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; }
+        .btn { display: inline-block; background: #154F9C; color: #FFFFFF !important; text-decoration: none; padding: 12px 26px; border-radius: 9999px; font-weight: bold; font-size: 13px; text-align: center; margin-top: 15px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2>المستشار جـلال أحـمد</h2>
+          <p>تنبيه إكلينيكي فوري — مفكرة الحالة والمصارحة الإرشادية</p>
+        </div>
+        <div class="content">
+          ${moodTag ? `<div class="badge">${moodTag}</div>` : ''}
+          <h3 style="font-size: 17px; color: #0F172A; margin: 0 0 10px 0;">خاطرة / رسالة جديدة من: ${clientName || 'مستفيد'}</h3>
+          <p style="font-size: 13px; color: #64748B; margin-top: 0;">
+            الهاتف: <strong dir="ltr">${clientPhone || 'غير مدون'}</strong> | البريد: <strong>${clientEmail || 'غير مدون'}</strong>
+          </p>
+          <div class="card">
+            <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: bold; color: #0F172A;">${title}</h4>
+            <div>${formattedContent}</div>
+          </div>
+          <div style="text-align: center; margin-top: 24px;">
+            <a href="https://galalahmad.com/admin" class="btn">فتح الملف الإكلينيكي للحالة في لوحة الإدارة</a>
+          </div>
+        </div>
+        <div class="footer">
+          <p>© 2026 منصة المستشار جلال أحمد الرسمية</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return await dispatchEmail(CONSULTANT_EMAIL, subject, htmlContent);
+}
+
 export async function sendNewsletterWelcomeEmail(params: {
   to: string;
   name?: string;

@@ -1,138 +1,133 @@
 [
   {
-    "id": "user-1792610001",
-    "name": "أحمد الشريف",
-    "phone": "01098765432",
-    "email": "ahmed.shareef@example.com",
-    "passwordHash": "fa1e838e0d94b84aa2e1f5819ee376cc1884c3d35b21b95954a57484305615f3",
-    "provider": "booking",
-    "clinicalNotes": "الحالة تتابع معنا، تركز على إدارة ضغوط العمل وتفكيك التشوهات المعرفية.",
+    "id": "bfd1c36f-37cb-4b0d-a2d4-31b897ffeb9a",
+    "name": "Galal",
+    "phone": "01003207974",
+    "email": "insanaraby@gmail.com",
+    "role": "client",
+    "gender": "",
+    "ageGroup": "",
+    "maritalStatus": "",
+    "country": "",
+    "city": "",
+    "clinicalNotes": "محتاج تسمع حلقات مع نفسي للدكتور عبدالرحمن ذاكر الهاشمي ",
     "homework": [
       {
-        "id": "hw-1",
-        "title": "تمرين تفريغ الأفكار اليومي قبل النوم لمدة 10 دقائق",
-        "link": "/articles#behavior-as-message",
-        "completed": true,
-        "assignedAt": "21 أكتوبر 2026"
-      },
-      {
-        "id": "hw-2",
-        "title": "قراءة مقال: السلوك كرسالة: كيف نفهم ما وراء العناد ونوبات الغضب",
-        "link": "/articles#behavior-as-message",
+        "id": "hw-1793667951194-791",
+        "title": "قراءة مقال: الوالدية الواعية: كيف نربي بالرفق والحزم معاً دون تناقض؟",
+        "link": "/articles#parenting-with-kindness-and-firmness",
         "completed": false,
-        "assignedAt": "22 أكتوبر 2026"
-      }
-    ],
-    "testResults": [
-      {
-        "id": "tr-1",
-        "testId": "depression",
-        "testTitle": "اختبار الاكتئاب (PHQ-9)",
-        "score": 11,
-        "scorePercent": 52,
-        "level": "مستوى متوسط / يستحق الانتباه",
-        "desc": "توجد بعض المؤشرات المتكررة التي قد تسبب لك استنزافاً نفسياً أو تؤثر على طاقتك وعلاقاتك.",
-        "recommendation": "يُنصح بمناقشة هذه المؤشرات في جلسة استشارية لتفكيك أسبابها قبل تراكمها.",
-        "date": "21 أكتوبر 2026"
-      },
-      {
-        "id": "tr-2",
-        "testId": "anxiety",
-        "testTitle": "اختبار القلق والتوتر (GAD-7)",
-        "score": 8,
-        "scorePercent": 38,
-        "level": "مستوى خفيف إلى معتدل",
-        "desc": "مؤشرات قلق خفيفة مرتبطة بالالتزامات اليومية وتحديات العمل.",
-        "recommendation": "ممارسة تمارين التنفس البطني العميق وإعادة تنظيم ساعات النوم.",
-        "date": "20 أكتوبر 2026"
+        "assignedAt": "2026-11-03"
       }
     ],
     "courses": [
       {
-        "id": "crs-mithaq",
-        "title": "برنامج ميثاق لبناء الأسرة والزواج",
-        "badge": "مسار تدريبي تطبيقي",
-        "progress": 65,
-        "completedModules": 4,
-        "totalModules": 6,
-        "nextSession": "الأحد القادم • 08:00 مساءً عبر زووم",
-        "link": "/courses/family/mithaq",
-        "status": "active"
+        "id": "rifq-mithaq",
+        "title": "رحلة رِفق | ميثاق — للمتزوجين",
+        "batchDate": "الدفعة المفتوحة",
+        "enrolledAt": "2026-11-04",
+        "status": "active",
+        "progress": 0,
+        "notes": ""
       }
     ],
-    "readingPlan": [
+    "readingPlan": [],
+    "testResults": [
       {
-        "id": "rp-1",
-        "title": "أقومية القرآن في بناء الإنسان والأسرة",
-        "category": "مشروع أقومية القرآن",
-        "readTime": "8 دقائق",
-        "completed": true,
-        "link": "/aqwameyat-quran"
+        "id": "tr-1793659472",
+        "testId": "depression",
+        "testTitle": "اختبار الاكتئاب",
+        "score": 17,
+        "scorePercent": 81,
+        "level": "مستوى مرتفع يستدعي الرعاية",
+        "description": "",
+        "recommendation": "يُوصى بشدة بطلب استشارة متخصصة لتقديم خطة دعم ملائمة.",
+        "date": "٣ نوفمبر ٢٠٢٦",
+        "timestamp": "2026-11-02T22:44:31.881083+00:00"
       },
       {
-        "id": "rp-2",
-        "title": "السلوك كرسالة: كيف نفهم ما وراء العناد ونوبات الغضب",
-        "category": "التربية واليافعين",
-        "readTime": "6 دقائق",
-        "completed": false,
-        "link": "/articles/behavior-as-message"
+        "id": "tr-1793667643",
+        "testId": "adhd",
+        "testTitle": "اختبار ADHD",
+        "score": 15,
+        "scorePercent": 83,
+        "level": "مستوى مرتفع يستدعي الرعاية",
+        "description": "",
+        "recommendation": "يُوصى بشدة بطلب استشارة متخصصة لتقديم خطة دعم ملائمة.",
+        "date": "٣ نوفمبر ٢٠٢٦",
+        "timestamp": "2026-11-03T01:00:42.724724+00:00"
       }
     ],
-    "createdAt": "2026-10-21T18:00:00Z"
+    "createdAt": "2026-11-02T22:43:56.522428+00:00"
   },
   {
-    "id": "user-1792610002",
-    "name": "سارة وعمر",
-    "phone": "01011223344",
-    "email": "sara.omar@example.com",
-    "passwordHash": "fa1e838e0d94b84aa2e1f5819ee376cc1884c3d35b21b95954a57484305615f3",
-    "provider": "booking",
-    "clinicalNotes": "الزوجان ملتزمان بحضور الجلسة المشتركة القادمة. تم تأكيد موعد 26 أكتوبر وإرسال رابط Google Meet.",
+    "id": "6c4a87af-2574-4d1b-a2c3-55540ebcc78c",
+    "name": "فاطمة مصطفى",
+    "phone": "01005566074",
+    "email": "fgaomsb.171985@gmail.com",
+    "role": "client",
+    "gender": "female",
+    "ageGroup": "36-45",
+    "maritalStatus": "married",
+    "country": "مصر",
+    "city": "",
+    "clinicalNotes": "حالة مستقرة، تم استعراض المشكلة وتحديد خطة التدخل.",
     "homework": [
       {
-        "id": "hw-3",
-        "title": "قراءة مقال: جسور التواصل الزواجي: من ردود الفعل العفوية إلى الإصغاء الواعي",
-        "link": "/articles#marital-communication-bridges",
-        "completed": false,
-        "assignedAt": "22 أكتوبر 2026"
-      }
-    ],
-    "testResults": [
+        "id": "hw-1793717939111-933",
+        "title": "حبيني اكتر واكتر عشان حالتك تتحسن وتكوني كويسه",
+        "link": "",
+        "completed": true,
+        "assignedAt": "2026-11-03",
+        "status": "completed"
+      },
       {
-        "id": "tr-3",
-        "testId": "marital-harmony",
-        "testTitle": "مقياس التوافق والانسجام الزواجي (DAS)",
-        "score": 28,
-        "scorePercent": 70,
-        "level": "مستوى توافق واعد مع نقاط تحتاج حواراً",
-        "desc": "توجد أرضية مودة طيبة، وتحتاج مهارات الحوار إلى تقليل الحدة عند الاختلاف.",
-        "recommendation": "جلسة مشتركة تركز على فن الحوار غير العنيف والاستماع الفعال.",
-        "date": "21 أكتوبر 2026"
+        "id": "hw-1793717875483-194",
+        "title": "مفكرة الامتنان وبصائر الرضا اليومية (Daily Gratitude Journal)",
+        "link": "/aqwameyat-quran",
+        "completed": true,
+        "assignedAt": "2026-11-03",
+        "status": "completed"
+      },
+      {
+        "id": "hw-1793667998276-585",
+        "title": "اسمعي سلسلة مع نفسي للدكتور عبدالرحمن ذاكر كل يوم حلقتين بالكتير",
+        "link": "",
+        "completed": true,
+        "assignedAt": "2026-11-03",
+        "status": "completed"
+      },
+      {
+        "id": "hw-1",
+        "title": "تمرين إعادة بناء جسور الحوار",
+        "link": "/articles/marital-communication-bridges",
+        "completed": true,
+        "assignedAt": "2026-11-03",
+        "status": "completed"
       }
     ],
     "courses": [
       {
-        "id": "crs-premarital",
-        "title": "برنامج تأهيل وتأسيس العلاقات الزوجية",
-        "badge": "مسار العلاقات الأسرية",
-        "progress": 40,
-        "completedModules": 2,
-        "totalModules": 5,
-        "nextSession": "الثلاثاء • 07:30 مساءً",
-        "link": "/courses/family/premarital",
-        "status": "active"
+        "id": "marital-peace-blueprint",
+        "title": "فقه الخلافات الزوجية",
+        "progress": 15
       }
     ],
-    "readingPlan": [
+    "readingPlan": [],
+    "testResults": [
       {
-        "id": "rp-3",
-        "title": "جسور التواصل الزواجي: من ردود الفعل العفوية إلى الإصغاء الواعي",
-        "category": "العلاقات الزوجية",
-        "readTime": "7 دقائق",
-        "completed": false,
-        "link": "/articles/marital-communication-bridges"
+        "id": "tr-1793661148",
+        "testId": "love",
+        "testTitle": "اختبار الحب",
+        "score": 10,
+        "scorePercent": 83,
+        "level": "مستوى مرتفع يستدعي الرعاية",
+        "description": "",
+        "recommendation": "يُوصى بشدة بطلب استشارة متخصصة لتقديم خطة دعم ملائمة.",
+        "date": "٣ نوفمبر ٢٠٢٦",
+        "timestamp": "2026-11-02T23:12:28.102492+00:00"
       }
     ],
-    "createdAt": "2026-10-21T18:30:00Z"
+    "createdAt": "2026-11-02T22:54:20.232525+00:00"
   }
 ]

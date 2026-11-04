@@ -6,6 +6,7 @@ import ClinicalProgressCharts from '@/components/ClinicalProgressCharts';
 import ClinicalDossierView from '@/components/ClinicalDossierView';
 import AdminBookingsView from '@/components/AdminBookingsView';
 import AdminCoursesView from '@/components/AdminCoursesView';
+import AdminNewsletterView from '@/components/AdminNewsletterView';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -78,7 +79,7 @@ export default function AdminDashboardPage() {
   const [inputPassword, setInputPassword] = useState<string>('');
   const [authError, setAuthError] = useState<string>('');
 
-  const [activeTab, setActiveTab] = useState<'crm' | 'availability' | 'clients' | 'courses' | 'inquiries' | 'advice' | 'feedback' | 'faqs' | 'pricing' | 'tracks' | 'videos' | 'articles' | 'settings'>('crm');
+  const [activeTab, setActiveTab] = useState<'crm' | 'availability' | 'clients' | 'courses' | 'inquiries' | 'advice' | 'newsletter' | 'feedback' | 'faqs' | 'pricing' | 'tracks' | 'videos' | 'articles' | 'settings'>('crm');
 
   // Availability & Scheduling State (Calendly System)
   const [availability, setAvailability] = useState<{
@@ -1456,6 +1457,21 @@ ${meet}
           </button>
 
           <button
+            onClick={() => setActiveTab('newsletter')}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition text-right cursor-pointer ${
+              activeTab === 'newsletter' ? 'bg-[#154F9C] text-white shadow-md' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Mail className="w-4 h-4 text-cyan-400" />
+              <span>النشرة البريدية والبث المباشر</span>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-cyan-300">
+              Resend
+            </span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('feedback')}
             className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold transition text-right cursor-pointer ${
               activeTab === 'feedback' ? 'bg-[#154F9C] text-white shadow-md' : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -2277,6 +2293,11 @@ ${meet}
                 </div>
               )}
             </div>
+          )}
+
+          {/* TAB 1.7: NEWSLETTER & SUBSCRIBERS BROADCAST */}
+          {activeTab === 'newsletter' && (
+            <AdminNewsletterView />
           )}
 
           {/* TAB 2: CLIENT FEEDBACK & TESTIMONIALS */}

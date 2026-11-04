@@ -43,7 +43,7 @@ export default function AdviceBoxSection() {
   };
 
   return (
-    <section className="py-14 sm:py-20 px-4 sm:px-6 bg-[#FAFCFA] dark:bg-[#0B1017] border-t border-slate-200/70 dark:border-slate-800 text-right">
+    <section id="advice" className="py-14 sm:py-20 px-4 sm:px-6 bg-[#FAFCFA] dark:bg-[#0B1017] border-t border-slate-200/70 dark:border-slate-800 text-right scroll-mt-20">
       <div className="max-w-4xl mx-auto space-y-12">
         
         {/* صندوق النصيحة */}

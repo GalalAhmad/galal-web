@@ -237,6 +237,189 @@ export async function sendAdvisorCustomEmail(params: {
   return await dispatchEmail(to, subject, htmlContent);
 }
 
+export async function sendAdviceNotificationEmail(params: {
+  message: string;
+  senderEmail?: string;
+}): Promise<{ success: boolean; id?: string }> {
+  const { message, senderEmail } = params;
+  const cleanEmail = senderEmail ? senderEmail.trim() : '';
+  const subject = `رسالة جديدة في صندوق النصيحة 📬 (${cleanEmail ? cleanEmail : 'زائر مجهول'})`;
+  const formattedMessage = (message || '').replace(/\n/g, '<br/>');
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head><meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F8FAFC; color: #1E293B; margin: 0; padding: 20px; line-height: 1.7; text-align: right; }
+        .container { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; border: 1px solid #E2E8F0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .header { background: #4E7E76; padding: 28px 24px; text-align: center; color: #FFFFFF; }
+        .header h2 { margin: 0 0 6px 0; font-size: 20px; font-weight: 800; }
+        .header p { margin: 0; font-size: 12px; opacity: 0.9; }
+        .content { padding: 32px 24px; }
+        .message-card { background: #F8FAFC; border-right: 4px solid #4E7E76; padding: 20px; border-radius: 14px; margin: 20px 0; font-size: 14px; color: #1E293B; line-height: 1.8; }
+        .footer { background: #F8FAFC; padding: 20px; text-align: center; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; }
+        .btn { display: inline-block; background: #154F9C; color: #FFFFFF !important; text-decoration: none; padding: 10px 24px; border-radius: 9999px; font-weight: bold; font-size: 13px; text-align: center; margin-top: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2>المستشار جـلال أحـمد</h2>
+          <p>تنبيه إداري فوري — صندوق النصيحة والملاحظات</p>
+        </div>
+        <div class="content">
+          <p style="font-size: 15px; font-weight: bold; color: #0F172A; margin-top: 0;">وصلت رسالة جديدة عبر صندوق النصيحة في المنصة 📬</p>
+          <p style="font-size: 13px; color: #64748B;">تاريخ ووقت الإرسال: ${new Date().toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'short' })}</p>
+          <div class="message-card">
+            ${formattedMessage}
+          </div>
+          ${cleanEmail ? `
+            <p style="font-size: 13px; color: #334155;">
+              <strong>بريد المرسل للتواصل:</strong> <a href="mailto:${cleanEmail}" style="color: #154F9C; font-weight: bold;">${cleanEmail}</a>
+            </p>
+          ` : `
+            <p style="font-size: 12px; color: #94A3B8; font-style: italic;">
+              المرسل فضّل عدم إرفاق بريده الإلكتروني (ملاحظة سرية ومجهولة).
+            </p>
+          `}
+          <div style="text-align: center; margin-top: 24px;">
+            <a href="https://galalahmad.com/admin" class="btn">الانتقال إلى لوحة الإدارة</a>
+          </div>
+        </div>
+        <div class="footer">
+          <p>© 2026 منصة المستشار جلال أحمد الرسمية</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return await dispatchEmail(CONSULTANT_EMAIL, subject, htmlContent);
+}
+
+export async function sendNewsletterWelcomeEmail(params: {
+  to: string;
+  name?: string;
+}): Promise<{ success: boolean; id?: string }> {
+  const { to, name } = params;
+  const subject = `أهلاً بك في النشرة الإرشادية والفكرية 🌿 | المستشار جـلال أحـمد`;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head><meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F8FAFC; color: #1E293B; margin: 0; padding: 20px; line-height: 1.7; text-align: right; }
+        .container { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; border: 1px solid #E2E8F0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .header { background: #4E7E76; padding: 32px 24px; text-align: center; color: #FFFFFF; }
+        .header h1 { margin: 0 0 8px 0; font-size: 22px; font-weight: 800; }
+        .header p { margin: 0; font-size: 13px; opacity: 0.9; }
+        .content { padding: 32px 24px; }
+        .card { background: #EDF7F5; border-right: 4px solid #4E7E76; padding: 20px; border-radius: 14px; margin: 20px 0; font-size: 14px; color: #1E3A34; }
+        .footer { background: #F8FAFC; padding: 20px; text-align: center; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; }
+        .btn { display: inline-block; background: #4E7E76; color: #FFFFFF !important; text-decoration: none; padding: 12px 28px; border-radius: 9999px; font-weight: bold; font-size: 13px; text-align: center; margin-top: 15px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>المستشار جـلال أحـمد</h1>
+          <p>نشرة الوعي النفسي والتربوي وبناء الإنسان والأسرة</p>
+        </div>
+        <div class="content">
+          <p style="font-size: 16px; font-weight: bold; color: #0F172A; margin-top: 0;">
+            أهلاً بك${name ? ` أ. ${name}` : ''} في مجتمعنا المعرفي 🌿
+          </p>
+          <p style="font-size: 14px; color: #334155; line-height: 1.8;">
+            تم تأكيد اشتراكك في النشرة الدورية لمنصة المستشار جلال أحمد بنجاح. ستصلك خلاصات فكرية دورية، أحدث المقالات السلوكية، وإضاءات تربوية وأسرية مستلهمة من هدايات الوحي والتأصيل النفسي العملي.
+          </p>
+          <div class="card">
+            <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: bold;">ماذا تتوقع في بريدك؟</h4>
+            <ul style="margin: 0; padding-right: 20px; font-size: 13px; line-height: 1.8;">
+              <li>مفاهيم تطبيقية لفهم السلوك وتفكيك التشوهات المعرفية.</li>
+              <li>أحدث مرئيات ومحاضرات أكاديمية البرامج واليوتيوب.</li>
+              <li>مواعيد إطلاق دفعات برامج «ميثاق» و«المقبلين على الزواج».</li>
+              <li>إرشادات نوعية لتعزيز الاتزان الفطري والمودة الأسرية.</li>
+            </ul>
+          </div>
+          <div style="text-align: center; margin-top: 24px;">
+            <a href="https://galalahmad.com/articles" class="btn">تصفح المنتدى الفكري والمقالات</a>
+          </div>
+        </div>
+        <div class="footer">
+          <p>تصلك هذه الرسالة لاشتراكك في نشرة galalahmad.com</p>
+          <p>© 2026 المستشار جلال أحمد — جميع الحقوق محفوظة</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return await dispatchEmail(to, subject, htmlContent);
+}
+
+export async function sendNewsletterBroadcastEmail(params: {
+  to: string;
+  subject: string;
+  title: string;
+  content: string;
+  actionUrl?: string;
+  actionText?: string;
+  badge?: string;
+}): Promise<{ success: boolean; id?: string }> {
+  const { to, subject, title, content, actionUrl, actionText, badge } = params;
+  const formattedContent = (content || '').replace(/\n/g, '<br/>');
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head><meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F8FAFC; color: #1E293B; margin: 0; padding: 20px; line-height: 1.7; text-align: right; }
+        .container { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; border: 1px solid #E2E8F0; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .header { background: #154F9C; padding: 30px 24px; text-align: center; color: #FFFFFF; }
+        .header h1 { margin: 0 0 6px 0; font-size: 20px; font-weight: 800; }
+        .header p { margin: 0; font-size: 12px; opacity: 0.9; }
+        .content { padding: 32px 24px; }
+        .badge { display: inline-block; background: #EDF5FD; color: #154F9C; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 9999px; margin-bottom: 12px; }
+        .card { background: #F8FAFC; border-right: 4px solid #154F9C; padding: 22px; border-radius: 14px; margin: 20px 0; font-size: 14px; color: #334155; line-height: 1.8; }
+        .footer { background: #F8FAFC; padding: 20px; text-align: center; font-size: 11px; color: #94A3B8; border-top: 1px solid #E2E8F0; }
+        .btn { display: inline-block; background: #CC4E46; color: #FFFFFF !important; text-decoration: none; padding: 14px 32px; border-radius: 9999px; font-weight: bold; font-size: 13px; text-align: center; margin-top: 15px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>المستشار جـلال أحـمد</h1>
+          <p>إشعار جديد للمشتركين في النشرة الفكرية والإرشادية</p>
+        </div>
+        <div class="content">
+          ${badge ? `<div class="badge">${badge}</div>` : ''}
+          <h2 style="font-size: 19px; color: #0F172A; margin: 0 0 16px 0; font-weight: 800;">${title}</h2>
+          <div class="card">
+            ${formattedContent}
+          </div>
+          ${actionUrl ? `
+            <div style="text-align: center; margin-top: 25px;">
+              <a href="${actionUrl}" target="_blank" class="btn">
+                ${actionText || 'قراءة المزيد / مشاهدة الآن ←'}
+              </a>
+            </div>
+          ` : ''}
+        </div>
+        <div class="footer">
+          <p>تصلك هذه الرسالة لاشتراكك في نشرة المستشار جلال أحمد الرسمية (galalahmad.com)</p>
+          <p>© 2026 المستشار جلال أحمد — جميع الحقوق محفوظة</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return await dispatchEmail(to, subject, htmlContent);
+}
+
 async function dispatchEmail(to: string, subject: string, html: string): Promise<{ success: boolean; id?: string }> {
   const resendApiKey = process.env.RESEND_API_KEY;
 

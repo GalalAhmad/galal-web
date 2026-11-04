@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
+import { sendAdviceNotificationEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -131,34 +132,13 @@ export async function POST(request: Request) {
     await writeLocalAdvice(currentList);
 
     // 3. Instant Email Notification to the Consultant via Resend
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (resendApiKey) {
-      try {
-        fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${resendApiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: process.env.RESEND_FROM_EMAIL || 'المستشار جلال أحمد <appointments@galalahmad.com>',
-            to: 'galalahmad1201@gmail.com',
-            subject: `رسالة جديدة في صندوق النصيحة 📬 (${cleanEmail ? cleanEmail : 'زائر مجهول'})`,
-            html: `
-              <div dir="rtl" style="font-family: Arial, sans-serif; padding: 24px; background-color: #FAFCFA; border: 1px solid #E2E8F0; border-radius: 16px;">
-                <h3 style="color: #4E7E76; margin-top: 0;">وصلت رسالة جديدة في صندوق النصيحة</h3>
-                <p style="font-size: 13px; color: #64748B;">تاريخ الإرسال: ${new Date().toLocaleString('ar-EG')}</p>
-                <div style="background: #FFFFFF; border-right: 4px solid #4E7E76; padding: 16px; border-radius: 8px; margin: 16px 0; font-size: 14px; line-height: 1.8; color: #1E293B;">
-                  ${cleanMessage.replace(/\n/g, '<br/>')}
-                </div>
-                ${cleanEmail ? `<p style="font-size: 13px; color: #334155;"><strong>بريد المرسل:</strong> <a href="mailto:${cleanEmail}">${cleanEmail}</a></p>` : '<p style="font-size: 12px; color: #94A3B8;">المرسل فضل عدم إرفاق بريده الإلكتروني.</p>'}
-              </div>
-            `,
-          }),
-        }).catch(() => {});
-      } catch (e) {
-        // non-blocking
-      }
+    try {
+      await sendAdviceNotificationEmail({
+        message: cleanMessage,
+        senderEmail: cleanEmail,
+      });
+    } catch (e) {
+      console.error('Advice email dispatch error:', e);
     }
 
     return NextResponse.json({ success: true, item: newItem });

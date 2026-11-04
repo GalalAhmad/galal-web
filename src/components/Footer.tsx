@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Mail, Phone, Video, Shield, Clock, Linkedin } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { siteConfig } from '@/data/siteConfig';
+import NewsletterWidget from '@/components/NewsletterWidget';
 
 export default function Footer() {
   const { theme } = useTheme();
@@ -13,6 +14,9 @@ export default function Footer() {
     <footer className="bg-slate-50 dark:bg-[#090D11] border-t border-slate-200/70 dark:border-slate-800 pt-16 pb-28 md:pb-16 px-4 sm:px-6 text-right transition-colors">
       <div className="max-w-6xl mx-auto space-y-12">
         
+        {/* النشرة البريدية والإرشادية */}
+        <NewsletterWidget source="footer" />
+
         {/* صف المحتوى الرئيسي */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           
@@ -64,6 +68,7 @@ export default function Footer() {
             <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400 font-medium">
               <li><Link href="/booking" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition font-bold text-[#CC4E46]">حجز موعد جلسة</Link></li>
               <li><Link href="/about" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">السيرة الذاتية والخبرات</Link></li>
+              <li><Link href="/about#advice" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition text-[#4E7E76] dark:text-[#5E988E] font-bold">صندوق النصيحة والملاحظات</Link></li>
               <li><Link href="/faq" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">الأسئلة الشائعة</Link></li>
               <li><Link href="/feedback" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">تقييمات وآراء المستفيدين</Link></li>
               <li><Link href="/policies" className="hover:text-[#4E7E76] dark:hover:text-[#5E988E] transition">سياسة الخصوصية والسرية</Link></li>

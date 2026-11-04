@@ -182,7 +182,7 @@ export default function CourseDetailClientView({ course }: CourseDetailClientVie
                   className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-[#154F9C] hover:bg-[#103D7A] text-white font-black text-sm transition shadow-lg shadow-[#154F9C]/20 hover:shadow-xl cursor-pointer transform hover:-translate-y-0.5"
                 >
                   <Play className="w-4 h-4 fill-white" />
-                  <span>الدخول لمشغل المحطات التفاعلي (Interactive Room)</span>
+                  <span>الدخول لمشغل المحطات التفاعلي المباشر</span>
                 </button>
 
                 <a
@@ -213,7 +213,7 @@ export default function CourseDetailClientView({ course }: CourseDetailClientVie
 
                   <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">
                     <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>تمارين تفاعلية (H5P) وتطبيقات ذاتية</span>
+                    <span>تمارين تفاعلية عيادية وتطبيقات ذاتية</span>
                   </div>
 
                   <div className="flex items-center gap-3 text-slate-700 dark:text-slate-300">

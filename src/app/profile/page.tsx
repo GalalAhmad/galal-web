@@ -141,7 +141,10 @@ export default function ClientProfilePage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
 
-  const isConsultant = userSession?.role === 'admin' || userSession?.email === 'admin@galalahmad.com';
+  const isConsultant = userSession?.role === 'admin' || 
+    userSession?.email === 'admin@galalahmad.com' ||
+    userSession?.email === 'galalahmad1201@gmail.com' ||
+    userSession?.email === 'insanaraby@gmail.com';
 
   // Check login on mount and whenever authUser updates
   useEffect(() => {
@@ -154,7 +157,7 @@ export default function ClientProfilePage() {
       setEditMaritalStatus(authUser.maritalStatus || 'غير محدد');
       setEditAgeGroup(authUser.ageGroup || '');
       fetchClientData(authUser);
-      if (authUser?.role === 'admin' || authUser?.email === 'admin@galalahmad.com') {
+      if (authUser?.role === 'admin' || authUser?.email === 'admin@galalahmad.com' || authUser?.email === 'galalahmad1201@gmail.com') {
         setActiveTab('consultant_hub');
       }
     } else {
@@ -168,7 +171,10 @@ export default function ClientProfilePage() {
 
     try {
       // 1. Fetch Bookings securely with identity params
-      const isConsultantUser = user?.role === 'admin' || user?.email === 'admin@galalahmad.com';
+      const isConsultantUser = user?.role === 'admin' || 
+        user?.email === 'admin@galalahmad.com' ||
+        user?.email === 'galalahmad1201@gmail.com' ||
+        user?.email === 'insanaraby@gmail.com';
       const bookingUrl = isConsultantUser
         ? '/api/bookings?admin=true'
         : `/api/bookings?phone=${encodeURIComponent(user?.phone || '')}&email=${encodeURIComponent(user?.email || '')}`;
@@ -178,8 +184,14 @@ export default function ClientProfilePage() {
       if (bookData.bookings) {
         if (isConsultantUser) {
           setAllConsultations(bookData.bookings);
+          const myOwn = bookData.bookings.filter((b: any) => 
+            (user?.email && (b.clientEmail || '').toLowerCase() === (user.email || '').toLowerCase()) ||
+            (user?.phone && phonesMatch(b.clientPhone, user.phone))
+          );
+          setClientBookings(myOwn);
+        } else {
+          setClientBookings(bookData.bookings);
         }
-        setClientBookings(bookData.bookings);
       }
 
       // 2. Fetch User Profile & Test Results & Courses & Homework

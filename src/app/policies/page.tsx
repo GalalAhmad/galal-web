@@ -2,8 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import NavbarClean from '@/components/NavbarClean';
-import FooterClean from '@/components/FooterClean';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import { 
   ShieldCheck, 
   FileText, 
@@ -19,8 +19,8 @@ import {
 
 export default function PoliciesPage() {
   return (
-    <main className="min-h-screen flex flex-col bg-[#0D1117] dark:bg-[#0D1117] bg-[#F8FAFC] text-slate-100 dark:text-slate-100 text-slate-900 transition-colors">
-      <NavbarClean />
+    <main className="min-h-screen flex flex-col bg-[#FAFCFA] dark:bg-[#0D1117] text-slate-900 dark:text-slate-100 transition-colors">
+      <Navbar />
 
       {/* Header */}
       <section className="relative py-16 sm:py-24 px-4 sm:px-6 overflow-hidden border-b border-slate-800/80 dark:border-slate-800/80 border-slate-200 text-right">
@@ -161,7 +161,7 @@ export default function PoliciesPage() {
         </div>
       </section>
 
-      <FooterClean />
+      <Footer />
     </main>
   );
 }

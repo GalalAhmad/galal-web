@@ -2,12 +2,25 @@ import React from 'react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import fs from 'fs/promises';
+import path from 'path';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
   initialArticles, 
   ArticleItem 
 } from '@/data/articles';
+
+async function getArticleList(): Promise<ArticleItem[]> {
+  try {
+    const filePath = path.join(process.cwd(), 'src', 'data', 'articles.json');
+    const data = await fs.readFile(filePath, 'utf-8');
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : initialArticles;
+  } catch (e) {
+    return initialArticles;
+  }
+}
 import { 
   Clock, 
   Calendar, 
@@ -31,14 +44,16 @@ interface Props {
 
 // 1. Static Generation for all articles
 export async function generateStaticParams() {
-  return initialArticles.map((article) => ({
+  const articles = await getArticleList();
+  return articles.map((article) => ({
     slug: article.id,
   }));
 }
 
 // 2. Server-side Dynamic Metadata for SEO & Googlebot
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const article = initialArticles.find((a) => a.id === params.slug);
+  const articles = await getArticleList();
+  const article = articles.find((a) => a.id === params.slug);
 
   if (!article) {
     return {
@@ -70,14 +85,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function SingleArticlePage({ params }: Props) {
-  const article = initialArticles.find((a) => a.id === params.slug);
+export default async function SingleArticlePage({ params }: Props) {
+  const articles = await getArticleList();
+  const article = articles.find((a) => a.id === params.slug);
 
   if (!article) {
     notFound();
   }
 
-  const relatedArticles = initialArticles.filter(
+  const relatedArticles = articles.filter(
     (a) => a.id !== article.id && (article.relatedArticleIds?.includes(a.id) || a.category === article.category)
   ).slice(0, 2);
 

@@ -50,6 +50,7 @@ import {
   Settings,
   Lock,
   Flame,
+  Play,
 } from 'lucide-react';
 import { getIntakeSummaryPills } from '@/data/intakeQuestions';
 
@@ -1865,11 +1866,11 @@ export default function ClientProfilePage() {
                         </div>
 
                         <Link
-                          href={crs.link || '/courses'}
-                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold transition"
+                          href={crs.slug ? `/courses/${crs.slug}?mode=player` : crs.id === 'rifq-mithaq' ? '/courses/mithaq?mode=player' : crs.id === 'rifq-premarital' ? '/courses/premarital?mode=player' : `/courses/${crs.id}?mode=player`}
+                          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-xs"
                         >
-                          <span>عرض محتوى البرنامج</span>
-                          <ArrowUpRight className="w-3.5 h-3.5" />
+                          <Play className="w-3.5 h-3.5 fill-white" />
+                          <span>دخول مشغل المحطات والدروس</span>
                         </Link>
                       </div>
 

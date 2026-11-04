@@ -1,249 +1,322 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { 
-  Heart, 
-  Building2, 
-  Compass, 
-  ArrowLeft, 
-  CheckCircle2, 
-  Sparkles, 
-  BookOpen, 
-  ShieldCheck, 
-  Users, 
-  MessageCircle,
+import {
+  Heart,
+  Compass,
+  Building2,
+  Calendar,
   Clock,
+  BookOpen,
+  CheckCircle2,
+  Sparkles,
+  Users,
+  Star,
+  Search,
+  ArrowLeft,
+  ChevronLeft,
   Layers,
-  ChevronRight,
-  HeartHandshake
+  Award,
+  Play,
+  Filter,
+  Check,
+  ShieldCheck,
+  HelpCircle,
+  MessageCircle
 } from 'lucide-react';
+import { allCoursesData, tracksData, Course } from '@/data/coursesData';
 
-export default function PathwaysPage() {
-  const tracks = [
-    {
-      id: 'family',
-      title: 'مسار الأسرة',
-      badge: 'نشط • متاح للتسجيل',
-      badgeColor: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
-      icon: Heart,
-      iconColor: 'text-[#168962] bg-[#F2FBF7] dark:bg-[#0D261E]',
-      desc: 'برامج تأهيلية وتوعوية لبناء بيوت تقوم على السكن والمودة والرحمة، تركز على مرحلتي الإعداد الزواجي وتعميق الشراكة للمتزوجين.',
-      features: [
-        'برنامج رحلة رِفق | ميثاق (للمتزوجين)',
-        'برنامج رحلة رِفق | للمقبلين على الزواج',
-        '8 محطات تدريبية وتطبيقات عملية لكل برنامج',
-        'كراسات تدريبية ومواثيق أسرية مستدامة'
-      ],
-      link: '/courses/family',
-      linkText: 'استكشف مسار الأسرة والبرامج'
-    },
-    {
-      id: 'institutions',
-      title: 'مسار المؤسسات التعليمية والتربوية',
-      badge: 'متاح للتعاقد المؤسسي',
-      badgeColor: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800',
-      icon: Building2,
-      iconColor: 'text-[#154F9C] bg-[#EDF5FD] dark:bg-[#122238]',
-      desc: 'برامج واستشارات لتطوير المدارس والبيئات التربوية، وتأهيل الكوادر التعليمية على الإدارة الصفية الإيجابية والرعاية النفسية للطلاب.',
-      features: [
-        'تأهيل المعلمين والمشرفين التربويين',
-        'بناء البيئة المدرسية الآمنة والوقاية من التنمر',
-        'تصميم الحقائب الإرشادية والمناهج المخصصة',
-        'استشارات مؤسسية مباشرة مع جلال أحمد'
-      ],
-      link: '/courses/institutions',
-      linkText: 'تفاصيل المسار والطلب المؤسسي'
-    },
-    {
-      id: 'youth',
-      title: 'مسار الشباب - المكلفين',
-      badge: 'قيد الإعداد • تسجيل مبكر',
-      badgeColor: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800',
-      icon: Compass,
-      iconColor: 'text-[#7452B8] bg-[#F5F3FF] dark:bg-[#201938]',
-      desc: 'برامج متخصصة لليافعين والشباب لبناء الوعي بالذات، وترسيخ الهوية، وتنمية الصلابة النفسية، وإدارة مرحلة التكليف والمسؤولية.',
-      features: [
-        'إدارة مرحلة الانتقال لسن التكليف الشرعي',
-        'الذكاء العاطفي وإدارة مشاعر المراهقة والشباب',
-        'بناء المناعة الفكرية ومقاومة ضغط الأقران',
-        'مجموعات تفاعلية آمنة قائمة على الحوار والتمكين'
-      ],
-      link: '/courses/youth',
-      linkText: 'تفاصيل المسار وقائمة الانتظار'
-    }
-  ];
+export default function CoursesCatalogPage() {
+  const [selectedTrack, setSelectedTrack] = useState<'all' | 'family' | 'youth' | 'institutions'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filtered courses
+  const filteredCourses = useMemo(() => {
+    return allCoursesData.filter((course) => {
+      // Track filter
+      if (selectedTrack !== 'all' && course.trackId !== selectedTrack) {
+        return false;
+      }
+
+      // Search filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const titleMatch = course.title.toLowerCase().includes(q);
+        const subMatch = course.subtitle.toLowerCase().includes(q);
+        const overviewMatch = course.overview.toLowerCase().includes(q);
+        const trackMatch = course.trackLabel.toLowerCase().includes(q);
+        if (!titleMatch && !subMatch && !overviewMatch && !trackMatch) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [selectedTrack, searchQuery]);
 
   return (
-    <main className="min-h-screen bg-[#FDFCFB] dark:bg-[#0C111C] text-slate-800 dark:text-slate-100 flex flex-col antialiased selection:bg-[#154F9C]/10 selection:text-[#154F9C]">
+    <main className="min-h-screen bg-[#FDFCFB] dark:bg-[#0A0E17] text-slate-800 dark:text-slate-100 flex flex-col antialiased selection:bg-[#154F9C]/10 selection:text-[#154F9C]">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 border-b border-slate-100 dark:border-slate-800/60 bg-gradient-to-b from-[#EDF5FD]/50 via-[#FDFCFB] to-transparent dark:from-[#122238]/20 dark:via-[#0C111C]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#154F9C]/10 border border-[#154F9C]/20 text-[#154F9C] text-xs font-semibold mb-6">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>رؤية متكاملة للبناء النفسي والتربيوي</span>
+      {/* Hero Header */}
+      <section className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 border-b border-slate-200/70 dark:border-slate-800/80 bg-linear-to-b from-[#EDF5FD]/60 via-[#FDFCFB] to-transparent dark:from-[#122238]/30 dark:via-[#0A0E17]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#154F9C]/10 dark:bg-[#154F9C]/30 text-[#154F9C] dark:text-sky-300 border border-[#154F9C]/20 text-xs font-bold shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-[#154F9C] dark:text-sky-400" />
+            <span>أكاديمية المستشار جلال أحمد للتمكين الإنساني والأسري</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight sm:leading-snug mb-5">
-            بناء وتمكين
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white leading-tight">
+            مسارات وبرامج متخصصة <br />
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-[#154F9C] via-[#4E7E76] to-[#168962]">
+              لبناء الإنسان واستقرار الأسرة
+            </span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed mb-6">
-            رحلات عملية متدرجة تجمع بين الهدي الإسلامي، وعلم النفس الأسري والتربوي، والتمارين التطبيقية التي تحدث فارقًا حقيقيًا في حياتك وعلاقاتك ومؤسستك.
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto font-medium">
+            برامج تدريبية وتطبيقية مؤصلة تجمع بين النظريات النفسية الحديثة والقيم الأصيلة، صُممت لنقل المفاهيم الإرشادية إلى ممارسات حياتية يومية مستدامة.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <a
-              href="#tracks-grid"
-              className="px-6 py-2.5 rounded-full bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#154F9C]/20 transition flex items-center gap-2"
-            >
-              <span>استكشف المسارات الثلاثة</span>
-              <ArrowLeft className="w-4 h-4 rtl:rotate-0" />
-            </a>
-
-            <a
-              href="#methodology"
-              className="px-6 py-2.5 rounded-full border border-slate-300 dark:border-slate-700 hover:border-[#154F9C] text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-semibold transition"
-            >
-              منهجية العمل والتمكين
-            </a>
+          {/* Quick Metrics Bar */}
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs text-slate-500 dark:text-slate-400">
+            <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-200">
+              <Layers className="w-4 h-4 text-[#154F9C]" />
+              <span>3 مسارات تخصصية كبرى</span>
+            </div>
+            <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-200">
+              <Users className="w-4 h-4 text-[#4E7E76]" />
+              <span>+1,850 مستفيد ومتدرب</span>
+            </div>
+            <div className="flex items-center gap-2 font-bold text-slate-700 dark:text-slate-200">
+              <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <span>4.95 تقييم المستفيدين العام</span>
+            </div>
           </div>
-
         </div>
       </section>
 
-      {/* 3 Tracks Overview */}
-      <section id="tracks-grid" className="py-14 sm:py-20 border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#0E1524]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          
-          <div className="text-center mb-12">
-            <span className="text-xs font-bold text-[#154F9C] tracking-wider uppercase mb-2 block">خريطة المسارات</span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
-              مساراتنا الثلاثة للتمكين والبناء
+      {/* Track Switcher & Search Bar */}
+      <section className="py-8 bg-white/60 dark:bg-[#0E1524]/60 border-b border-slate-200/60 dark:border-slate-800/80 sticky top-16 z-30 backdrop-blur-md">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          {/* Tracks Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+            <button
+              type="button"
+              onClick={() => setSelectedTrack('all')}
+              className={`px-4 py-2.5 rounded-2xl text-xs font-black transition shrink-0 cursor-pointer ${
+                selectedTrack === 'all'
+                  ? 'bg-[#154F9C] text-white shadow-md'
+                  : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              كافة البرامج ({allCoursesData.length})
+            </button>
+
+            {tracksData.map((tr) => (
+              <button
+                key={tr.id}
+                type="button"
+                onClick={() => setSelectedTrack(tr.id)}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-black transition shrink-0 cursor-pointer flex items-center gap-2 ${
+                  selectedTrack === tr.id
+                    ? 'bg-[#154F9C] text-white shadow-md'
+                    : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <span>{tr.title}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Search Input */}
+          <div className="relative w-full md:w-80">
+            <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="ابحث في البرامج والمحطات..."
+              className="w-full pr-10 pl-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:border-[#154F9C]"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                مسح
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Courses Grid Section */}
+      <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6 w-full flex-1">
+        {filteredCourses.length === 0 ? (
+          <div className="p-16 text-center rounded-3xl bg-white dark:bg-[#0E1524] border border-slate-200 dark:border-slate-800 space-y-3">
+            <BookOpen className="w-10 h-10 text-slate-400 mx-auto" />
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">لا توجد برامج مطابقة لبحثك</h3>
+            <p className="text-xs text-slate-500">جرب مسح البحث أو تصفح مسار آخر من الأعلى.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {filteredCourses.map((course) => (
+              <div
+                key={course.id}
+                className="rounded-3xl bg-white dark:bg-[#0E1524] border border-slate-200/80 dark:border-slate-800 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group hover:-translate-y-1 text-right"
+              >
+                {/* Card Top Banner */}
+                <div className="p-6 sm:p-7 space-y-4">
+                  {/* Badges Bar */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs px-3 py-1 rounded-full bg-[#154F9C]/10 dark:bg-[#154F9C]/30 text-[#154F9C] dark:text-sky-300 font-bold border border-[#154F9C]/20">
+                      {course.trackLabel}
+                    </span>
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-bold">
+                      {course.badge}
+                    </span>
+                  </div>
+
+                  {/* Course Title & Subtitle */}
+                  <div className="space-y-2">
+                    <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white group-hover:text-[#154F9C] dark:group-hover:text-sky-400 transition leading-snug">
+                      <Link href={`/courses/${course.slug}`}>
+                        {course.title}
+                      </Link>
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-2">
+                      {course.subtitle}
+                    </p>
+                  </div>
+
+                  {/* Duration & Rating */}
+                  <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                    <div className="flex items-center gap-1 font-bold text-amber-500">
+                      <Star className="w-3.5 h-3.5 fill-amber-500" />
+                      <span>{course.rating}</span>
+                      <span className="text-slate-400 font-normal">({course.reviewsCount})</span>
+                    </div>
+                    <span>•</span>
+                    <div className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{course.duration}</span>
+                    </div>
+                    <span>•</span>
+                    <div className="flex items-center gap-1 font-mono">
+                      <span>{course.studentsCount}+ مسجل</span>
+                    </div>
+                  </div>
+
+                  {/* Curriculum Preview Pills */}
+                  <div className="pt-2 space-y-1.5">
+                    <span className="text-[11px] font-bold text-slate-400 block">أبرز المحطات التدريبية:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {course.syllabus.slice(0, 4).map((mod) => (
+                        <span
+                          key={mod.id}
+                          className="text-[11px] px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1"
+                        >
+                          <span>{mod.icon}</span>
+                          <span>{mod.title}</span>
+                        </span>
+                      ))}
+                      {course.syllabus.length > 4 && (
+                        <span className="text-[11px] px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-900 text-slate-400 font-bold">
+                          +{course.syllabus.length - 4} محطات إضافية
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Action Footer */}
+                <div className="p-5 sm:p-6 bg-slate-50/70 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-3">
+                  <Link
+                    href={`/courses/${course.slug}?mode=player`}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition shadow-sm"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-white" />
+                    <span>مشغل المحطات</span>
+                  </Link>
+
+                  <Link
+                    href={`/courses/${course.slug}`}
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold transition"
+                  >
+                    <span>استكشف المنهج</span>
+                    <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-0" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 3 Dedicated Tracks Overview Cards */}
+        <div className="pt-16 space-y-6 text-right">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">
+              المسارات الإرشادية والتدريبية الثلاثة
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-2 max-w-xl mx-auto">
-              لكل مسار فلسفته الخاصة، ومستهدفوه، وحقائبه التدريبية المستقلة
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto">
+              اختر المسار المناسب لاحتياجك واستكشف الخطط الموجهة والبرامج المتخصصة.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {tracks.map((track) => {
-              const IconComponent = track.icon;
-              return (
-                <div
-                  key={track.id}
-                  className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-[#FDFCFB] dark:bg-[#121A2C] p-6 sm:p-7 flex flex-col justify-between hover:shadow-lg transition-all duration-200 group"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-4">
-                      <div className={`w-12 h-12 rounded-2xl ${track.iconColor} flex items-center justify-center shrink-0 shadow-xs`}>
-                        <IconComponent className="w-6 h-6" />
-                      </div>
-                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${track.badgeColor}`}>
-                        {track.badge}
-                      </span>
-                    </div>
-
-                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white mb-2">
-                      {track.title}
-                    </h3>
-
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-5">
-                      {track.desc}
-                    </p>
-
-                    <div className="space-y-2 mb-6 pt-3 border-t border-slate-100 dark:border-slate-800/80">
-                      {track.features.map((feat, fIdx) => (
-                        <div key={fIdx} className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#154F9C] shrink-0 mt-0.5" />
-                          <span>{feat}</span>
-                        </div>
-                      ))}
-                    </div>
+            {tracksData.map((track) => (
+              <div
+                key={track.id}
+                className="p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#0E1524] border border-slate-200/80 dark:border-slate-800 space-y-4 shadow-sm flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <div className={`w-12 h-12 rounded-2xl ${track.bgColor} ${track.color} flex items-center justify-center font-bold text-lg`}>
+                    {track.id === 'family' ? <Heart className="w-6 h-6" /> : track.id === 'youth' ? <Compass className="w-6 h-6" /> : <Building2 className="w-6 h-6" />}
                   </div>
 
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                    {track.title}
+                  </h3>
+
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                    {track.description}
+                  </p>
+                </div>
+
+                <div className="pt-2">
                   <Link
-                    href={track.link}
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-black/30 hover:bg-[#154F9C] hover:text-white text-slate-700 dark:text-slate-200 text-xs font-bold text-center transition flex items-center justify-center gap-1.5 group-hover:bg-[#154F9C] group-hover:text-white"
+                    href={`/courses/${track.id}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-black text-[#154F9C] dark:text-sky-400 hover:underline"
                   >
-                    <span>{track.linkText}</span>
+                    <span>تصفح برامج المسار بالتفصيل</span>
                     <ArrowLeft className="w-3.5 h-3.5 rtl:rotate-0" />
                   </Link>
                 </div>
-              );
-            })}
-          </div>
-
-        </div>
-      </section>
-
-      {/* Methodology & Supervision */}
-      <section id="methodology" className="py-14 sm:py-20 border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-[#0E1524]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">
-              منهجية العمل في مسارات بناء وتمكين
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#121A2C] border border-slate-100 dark:border-slate-800 text-center">
-              <div className="w-10 h-10 rounded-full bg-[#154F9C]/10 text-[#154F9C] flex items-center justify-center mx-auto mb-3">
-                <ShieldCheck className="w-5 h-5" />
               </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">أصالة شرعية ونفسية</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                انطلاق راسخ من هدي القرآن والسنة ومفاهيم السكن والمودة مقرونة بعلم النفس المعاصر.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#121A2C] border border-slate-100 dark:border-slate-800 text-center">
-              <div className="w-10 h-10 rounded-full bg-[#168962]/10 text-[#168962] flex items-center justify-center mx-auto mb-3">
-                <BookOpen className="w-5 h-5" />
-              </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">أدوات عملية مستدامة</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                تمارين واقعية، كراسات متدرب، ومواثيق تساعدك على التحول من المعرفة إلى الممارسة اليومية.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#121A2C] border border-slate-100 dark:border-slate-800 text-center">
-              <div className="w-10 h-10 rounded-full bg-[#7452B8]/10 text-[#7452B8] flex items-center justify-center mx-auto mb-3">
-                <Users className="w-5 h-5" />
-              </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">إشراف استشاري مباشر</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                تصميم وقيادة مباشرة من جلال أحمد، استشاري تربوي ونفسي ومعالج أسري.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
-      </section>
 
-      {/* Direct WhatsApp Assistance Box */}
-      <section className="py-14 sm:py-16 bg-[#FDFCFB] dark:bg-[#0C111C]">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#154F9C]/5 via-white to-[#168962]/5 dark:from-[#122238] dark:to-[#0D261E] border border-slate-200 dark:border-slate-800 shadow-sm">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-              هل تحتاج لمساعدة في اختيار المسار أو البرنامج المناسب لك؟
-            </h3>
-            <p className="text-xs text-slate-500 mb-5 leading-relaxed">
-              فريق المساعدة متاح للإجابة عن استفساراتك حول المواعيد، وآلية الحضور، وتفاصيل الحقائب التدريبية.
-            </p>
-            <a
-              href="https://wa.me/201014876666?text=مرحبًا، أود الاستفسار عن مسارات بناء وتمكين والبرنامج الأنسب لاحتياجي"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#168962] hover:bg-[#127251] text-white text-xs sm:text-sm font-bold shadow-md shadow-[#168962]/20 transition"
+        {/* Cross Promotion: Personal Consultations */}
+        <div className="mt-16 p-8 sm:p-12 rounded-3xl bg-linear-to-r from-[#154F9C]/10 via-[#4E7E76]/10 to-[#168962]/10 border border-[#154F9C]/20 text-center space-y-4">
+          <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+            هل تحتاج إلى خطة إرشادية فردية أو استشارة خاصة؟
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
+            بالإضافة إلى البرامج التدريبية الجماعية، يقدم المستشار جلال أحمد جلسات استشارية فردية وزوجية عبر قاعة Google Meet الآمنة لمناقشة التحديات الخاصة بمنتهى الخصوصية والسرية.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/booking"
+              className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs sm:text-sm font-extrabold shadow-md transition"
             >
-              <MessageCircle className="w-4 h-4" />
-              <span>تحدث مع المنسق عبر واتساب</span>
-            </a>
+              <span>حجز جلسة استشارية خاصة</span>
+              <ArrowLeft className="w-4 h-4 rtl:rotate-0" />
+            </Link>
           </div>
         </div>
       </section>

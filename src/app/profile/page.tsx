@@ -135,6 +135,7 @@ export default function ClientProfilePage() {
   const [editCity, setEditCity] = useState('');
   const [editMaritalStatus, setEditMaritalStatus] = useState('غير محدد');
   const [editAgeGroup, setEditAgeGroup] = useState('');
+  const [editGender, setEditGender] = useState<'male' | 'female'>('male');
   const [editNewPassword, setEditNewPassword] = useState('');
   const [notifyEmailBookings, setNotifyEmailBookings] = useState(true);
   const [shareMoodWithAdvisor, setShareMoodWithAdvisor] = useState(true);
@@ -156,6 +157,7 @@ export default function ClientProfilePage() {
       setEditCity(authUser.city || '');
       setEditMaritalStatus(authUser.maritalStatus || 'غير محدد');
       setEditAgeGroup(authUser.ageGroup || '');
+      if (authUser.gender) setEditGender(authUser.gender === 'female' || authUser.gender === 'أنثى' ? 'female' : 'male');
       fetchClientData(authUser);
       if (authUser?.role === 'admin' || authUser?.email === 'admin@galalahmad.com' || authUser?.email === 'galalahmad1201@gmail.com') {
         setActiveTab('consultant_hub');
@@ -621,6 +623,7 @@ export default function ClientProfilePage() {
           city: editCity.trim(),
           maritalStatus: editMaritalStatus,
           ageGroup: editAgeGroup,
+          gender: editGender,
           notificationPreferences: {
             emailBookings: notifyEmailBookings,
             shareMood: shareMoodWithAdvisor,
@@ -637,6 +640,7 @@ export default function ClientProfilePage() {
           city: editCity.trim(),
           maritalStatus: editMaritalStatus,
           ageGroup: editAgeGroup,
+          gender: editGender,
         };
         setUserSession(updated);
         localStorage.setItem('galal_user_session', JSON.stringify(updated));
@@ -1058,7 +1062,7 @@ export default function ClientProfilePage() {
             </div>
 
             {/* Mobile App Segmented Tab Bar */}
-            <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold overflow-x-auto">
+            <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold overflow-x-auto scrollbar-none">
               {isConsultant && (
                 <button
                   type="button"
@@ -1073,32 +1077,6 @@ export default function ClientProfilePage() {
                   <span>بوابة المستشار ({allConsultations.filter(b => b.slotDate === new Date().toISOString().split('T')[0]).length} اليوم)</span>
                 </button>
               )}
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('wellbeing')}
-                className={`flex-1 min-w-[130px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
-                  activeTab === 'wellbeing'
-                    ? 'bg-white dark:bg-[#161B22] text-[#154F9C] dark:text-[#60A5FA] shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                <Smile className="w-3.5 h-3.5 text-emerald-500" />
-                <span>المزاج والعادات 🌿</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('journal')}
-                className={`flex-1 min-w-[145px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
-                  activeTab === 'journal'
-                    ? 'bg-white dark:bg-[#161B22] text-[#4E7E76] dark:text-[#5E988E] shadow-xs font-black'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-[#4E7E76]" />
-                <span>مراسلة المستشار والخواطر ({journalEntries.length})</span>
-              </button>
 
               <button
                 type="button"
@@ -1129,14 +1107,14 @@ export default function ClientProfilePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('assessments')}
-                className={`flex-1 min-w-[110px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 min-w-[125px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
                   activeTab === 'assessments'
                     ? 'bg-white dark:bg-[#161B22] text-[#154F9C] dark:text-[#60A5FA] shadow-xs'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <Brain className="w-3.5 h-3.5" />
-                <span>مقاييسي ({clientTests.length})</span>
+                <span>المقاييس النفسية ({clientTests.length})</span>
               </button>
 
               <button
@@ -1149,7 +1127,33 @@ export default function ClientProfilePage() {
                 }`}
               >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>التكليفات والقراءة</span>
+                <span>التكليفات والقراءة ({clientHomework.length + clientReadingPlan.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('wellbeing')}
+                className={`flex-1 min-w-[130px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeTab === 'wellbeing'
+                    ? 'bg-white dark:bg-[#161B22] text-[#154F9C] dark:text-[#60A5FA] shadow-xs'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <Smile className="w-3.5 h-3.5 text-emerald-500" />
+                <span>المزاج والعادات 🌿</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab('journal')}
+                className={`flex-1 min-w-[145px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeTab === 'journal'
+                    ? 'bg-white dark:bg-[#161B22] text-[#4E7E76] dark:text-[#5E988E] shadow-xs font-black'
+                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-[#4E7E76]" />
+                <span>مراسلة المستشار والخواطر ({journalEntries.length})</span>
               </button>
 
               <button
@@ -1168,14 +1172,14 @@ export default function ClientProfilePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('settings')}
-                className={`flex-1 min-w-[95px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
+                className={`flex-1 min-w-[110px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 ${
                   activeTab === 'settings'
                     ? 'bg-white dark:bg-[#161B22] text-[#154F9C] dark:text-[#60A5FA] shadow-xs'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <User className="w-3.5 h-3.5" />
-                <span>بياناتي</span>
+                <span>إعدادات الحساب</span>
               </button>
             </div>
 
@@ -1752,83 +1756,165 @@ export default function ClientProfilePage() {
                     </Link>
                   </div>
                 ) : (
-                  clientBookings.map((b: any) => (
-                    <div
-                      key={b.id}
-                      className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[#154F9C] dark:text-[#60A5FA] font-bold">
-                              {b.id}
-                            </span>
-                            <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
-                              b.status === 'confirmed'
-                                ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
-                                : b.status === 'pending_verification'
-                                ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300'
-                                : b.status === 'cancelled'
-                                ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                            }`}>
-                              {b.status === 'confirmed'
-                                ? 'جلسة مؤكدة ومعتمدة ✓'
-                                : b.status === 'pending_verification'
-                                ? 'بانتظار التحقق من الإيصال'
-                                : b.status === 'cancelled'
-                                ? 'جلسة ملغاة'
-                                : 'تم استلام الحجز'}
-                            </span>
+                  clientBookings.map((b: any) => {
+                    const isConfirmed = b.status === 'confirmed';
+                    const isCancelled = b.status === 'cancelled';
+                    const isCompleted = b.status === 'completed';
+                    const isPending = !isConfirmed && !isCancelled && !isCompleted;
+
+                    const whatsappPendingUrl = `https://wa.me/201014876666?text=${encodeURIComponent(
+                      `السلام عليكم ورحمة الله وبركاته أستاذ جلال أحمد 🌿\nمعك ${userSession?.name || 'مستفيد'}. قمت بحجز جلسة استشارية (${b.trackLabel || 'استشارة متخصصة'}) برقم مرجعي: ${b.id}\nالموعد المحدد: ${b.slotDate} في تمام ${b.slotTime}.\nأرسل لكم هذا الإشعار لتأكيد التحقق من إيصال السداد واعتماد الموعد وتزويدي برابط الجلسة.`
+                    )}`;
+
+                    const whatsappSessionUrl = `https://wa.me/201014876666?text=${encodeURIComponent(
+                      `السلام عليكم أستاذ جلال أحمد 🌿\nمعك ${userSession?.name || 'مستفيد'} بخصوص جلستي المعتمدة (${b.trackLabel || 'استشارة'}) برقم: ${b.id} في موعد: ${b.slotDate} - ${b.slotTime}.`
+                    )}`;
+
+                    return (
+                      <div
+                        key={b.id}
+                        className={`p-6 sm:p-7 rounded-3xl border shadow-sm space-y-5 transition ${
+                          isConfirmed
+                            ? 'bg-white dark:bg-[#161B22] border-emerald-500/40'
+                            : isPending
+                            ? 'bg-amber-500/5 dark:bg-amber-950/10 border-amber-500/30'
+                            : 'bg-white dark:bg-[#161B22] border-slate-200 dark:border-slate-800'
+                        }`}
+                      >
+                        {/* Ticket Header */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-4">
+                          <div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[#154F9C] dark:text-[#60A5FA] font-bold">
+                                {b.id}
+                              </span>
+                              <span
+                                className={`text-[11px] font-bold px-3 py-1 rounded-full ${
+                                  isConfirmed
+                                    ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700'
+                                    : isPending
+                                    ? 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700'
+                                    : isCancelled
+                                    ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                                }`}
+                              >
+                                {isConfirmed
+                                  ? '🟢 جلسة مؤكدة ومعتمدة رسميًا ✓'
+                                  : isPending
+                                  ? '⏳ بانتظار التحقق من الإيصال واعتماد الموعد (مرحلة 1 من 2)'
+                                  : isCancelled
+                                  ? '🔴 جلسة ملغاة'
+                                  : '⚪ جلسة سابقة مكتملة'}
+                              </span>
+                            </div>
+
+                            <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-2">
+                              {b.trackLabel || 'استشارة نفسية وأسرية متخصصة'}
+                            </h3>
                           </div>
-                          <h3 className="text-base font-extrabold text-slate-900 dark:text-white mt-1.5">
-                            {b.trackLabel || 'استشارة متخصصة'}
-                          </h3>
+
+                          {/* Meeting Room CTA Button */}
+                          <div>
+                            {isConfirmed && b.meetLink ? (
+                              <a
+                                href={b.meetLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs font-black transition shadow-md hover:shadow-lg cursor-pointer"
+                              >
+                                <Video className="w-4 h-4" />
+                                <span>دخول قاعة الجلسة (Google Meet)</span>
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            ) : isPending ? (
+                              <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 text-xs font-bold">
+                                <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                <span>يُفعّل رابط القاعة فور اعتماد الإيصال</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                                جلسة منتهية
+                              </span>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Google Meet Launch Button — Strictly enabled when confirmed */}
-                        {b.status === 'confirmed' && b.meetLink ? (
-                          <a
-                            href={b.meetLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs font-extrabold transition shadow-md hover:shadow-lg"
-                          >
-                            <Video className="w-4 h-4" />
-                            <span>دخول قاعة الجلسة (Google Meet)</span>
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        ) : b.status === 'pending_verification' ? (
-                          <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 bg-amber-500/10 px-3.5 py-2 rounded-xl border border-amber-500/20 font-bold">
-                            <Clock className="w-4 h-4 text-amber-600 shrink-0" />
-                            <span>سيتم تفعيل رابط القاعة فور اعتماد الإيصال</span>
+                        {/* Session Metadata Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/60">
+                          <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                            <Calendar className="w-4 h-4 text-[#154F9C]" />
+                            <span>تاريخ الموعد: <strong>{b.slotDate}</strong></span>
                           </div>
-                        ) : (
-                          <span className="text-xs text-slate-400 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
-                            سيصلك رابط اللقاء قبل الموعد
-                          </span>
+                          <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                            <Clock className="w-4 h-4 text-[#154F9C]" />
+                            <span>التوقيت: <strong>{b.slotTime}</strong> (50 دقيقة)</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                            <User className="w-4 h-4 text-emerald-600" />
+                            <span>المستشار: <strong>أ. جلال أحمد</strong></span>
+                          </div>
+                        </div>
+
+                        {/* Status Notice & WhatsApp Communication Row */}
+                        {isPending && (
+                          <div className="p-4 rounded-2xl bg-amber-500/10 dark:bg-amber-950/20 border border-amber-500/30 space-y-3">
+                            <div className="flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+                              <span className="text-base shrink-0 mt-0.5">💡</span>
+                              <div>
+                                <strong className="block font-bold">ماذا يحدث الآن؟</strong>
+                                <p className="text-[11px] text-amber-800/90 dark:text-amber-300/90">
+                                  تم تسجيل حجزك مبدئياً، ويقوم المستشار جلال أحمد بمراجعة إيصال السداد واعتماد الموعد النهائي.
+                                  سيصلك تأكيد رسمي وتفعيل رابط قاعة اللقاء وإشعار فوري عبر الواتساب والبريد الإلكتروني.
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="pt-1 flex flex-wrap items-center justify-between gap-2">
+                              <a
+                                href={whatsappPendingUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-black transition shadow-xs cursor-pointer"
+                              >
+                                <Send className="w-3.5 h-3.5" />
+                                <span>إرسال إشعار السداد للمستشار عبر واتساب لتسريع الاعتماد</span>
+                              </a>
+                              <span className="text-[11px] text-slate-500">
+                                رابط القاعة مقفل حتى التحقق المالي
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {isConfirmed && (
+                          <div className="p-4 rounded-2xl bg-emerald-500/10 dark:bg-emerald-950/20 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                            <div className="flex items-center gap-2 text-emerald-900 dark:text-emerald-200 font-bold">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                              <span>الموعد مؤكد رسميًا • يرجى التواجد بالقاعة قبل الموعد بـ 5 دقائق</span>
+                            </div>
+
+                            <a
+                              href={whatsappSessionUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 font-bold transition shrink-0"
+                            >
+                              <Phone className="w-3 h-3 text-[#25D366]" />
+                              <span>تواصل مع المستشار بخصوص الجلسة</span>
+                            </a>
+                          </div>
+                        )}
+
+                        {b.notes && (
+                          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
+                            <strong className="text-slate-900 dark:text-white block mb-0.5">توجيه المستشار:</strong>
+                            <p>{b.notes}</p>
+                          </div>
                         )}
                       </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                          <Calendar className="w-4 h-4 text-[#154F9C]" />
-                          <span>تاريخ الجلسة: <strong>{b.slotDate}</strong></span>
-                        </div>
-                        <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                          <Clock className="w-4 h-4 text-[#154F9C]" />
-                          <span>الوقت: <strong>{b.slotTime}</strong> (50 دقيقة)</span>
-                        </div>
-                      </div>
-
-                      {b.notes && (
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300">
-                          <strong className="text-slate-900 dark:text-white block mb-0.5">توجيه المستشار:</strong>
-                          <p>{b.notes}</p>
-                        </div>
-                      )}
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             )}
@@ -2011,11 +2097,19 @@ export default function ClientProfilePage() {
 
             {/* TAB 3: PSYCHOLOGICAL ASSESSMENTS */}
             {activeTab === 'assessments' && (
-              <div className="space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-2">
+              <div className="space-y-6 animate-fadeIn">
+                {/* Clinical Progress & Emotional Balance Charts */}
+                <ClinicalProgressCharts
+                  testResults={clientTests}
+                  homework={clientHomework}
+                  bookings={clientBookings}
+                  isAdmin={false}
+                />
+
+                <div className="flex items-center justify-between pb-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Brain className="w-4 h-4 text-amber-500" />
-                    <span>سجل المقاييس والتقارير النفسية</span>
+                    <span>سجل المقاييس والتقارير النفسية المكتملة</span>
                   </h3>
                   <Link
                     href="/tests"
@@ -2336,6 +2430,36 @@ export default function ClientProfilePage() {
                         onChange={(e) => setEditAgeGroup(e.target.value)}
                         className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-900 dark:text-white"
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                        الجنس:
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setEditGender('male')}
+                          className={`flex-1 py-2.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
+                            editGender === 'male'
+                              ? 'bg-[#154F9C] text-white border-[#154F9C] shadow-xs'
+                              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                          }`}
+                        >
+                          ذكر
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditGender('female')}
+                          className={`flex-1 py-2.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
+                            editGender === 'female'
+                              ? 'bg-[#CC4E46] text-white border-[#CC4E46] shadow-xs'
+                              : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                          }`}
+                        >
+                          أنثى
+                        </button>
+                      </div>
                     </div>
                   </div>
 

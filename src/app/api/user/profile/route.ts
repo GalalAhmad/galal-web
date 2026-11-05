@@ -358,6 +358,10 @@ export async function PUT(request: Request) {
       notes,
       name,
       newPassword,
+      gender,
+      city,
+      maritalStatus,
+      ageGroup,
       homework,
       newHomework,
       removeHomeworkId,
@@ -446,6 +450,10 @@ export async function PUT(request: Request) {
       };
       if (name) updateData.name = name;
       if (newPassword) updateData.password_hash = hashPassword(newPassword);
+      if (gender) updateData.gender = gender;
+      if (city) updateData.city = city;
+      if (maritalStatus) updateData.marital_status = maritalStatus;
+      if (ageGroup) updateData.age_group = ageGroup;
 
       let updateQuery = supabaseAdmin.from('profiles').update(updateData);
       if (id) updateQuery = updateQuery.eq('id', id);
@@ -491,6 +499,10 @@ export async function PUT(request: Request) {
     if (name) profile.name = name;
     if (notes !== undefined) profile.clinicalNotes = notes;
     if (newPassword) profile.passwordHash = hashPassword(newPassword);
+    if (gender) profile.gender = gender;
+    if (city) profile.city = city;
+    if (maritalStatus) profile.maritalStatus = maritalStatus;
+    if (ageGroup) profile.ageGroup = ageGroup;
 
     if (!Array.isArray(profile.homework)) profile.homework = [];
     const localIncomingHw = newHomework || (!Array.isArray(homework) && homework && typeof homework === 'object' ? homework : null);

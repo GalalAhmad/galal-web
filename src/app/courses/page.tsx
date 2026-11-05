@@ -27,15 +27,32 @@ import {
   HelpCircle,
   MessageCircle
 } from 'lucide-react';
-import { allCoursesData, tracksData, Course } from '@/data/coursesData';
+import { allCoursesData, tracksData, Course, TrackInfo } from '@/data/coursesData';
 
 export default function CoursesCatalogPage() {
-  const [selectedTrack, setSelectedTrack] = useState<'all' | 'family' | 'youth' | 'institutions'>('all');
+  const [coursesList, setCoursesList] = useState<Course[]>(allCoursesData);
+  const [tracksList, setTracksList] = useState<TrackInfo[]>(tracksData);
+  const [selectedTrack, setSelectedTrack] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch dynamic courses if updated via admin
+  React.useEffect(() => {
+    fetch('/api/admin/courses')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.courses) && data.courses.length > 0) {
+          setCoursesList(data.courses);
+        }
+        if (Array.isArray(data.tracks) && data.tracks.length > 0) {
+          setTracksList(data.tracks);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Filtered courses
   const filteredCourses = useMemo(() => {
-    return allCoursesData.filter((course) => {
+    return coursesList.filter((course) => {
       // Track filter
       if (selectedTrack !== 'all' && course.trackId !== selectedTrack) {
         return false;
@@ -55,7 +72,7 @@ export default function CoursesCatalogPage() {
 
       return true;
     });
-  }, [selectedTrack, searchQuery]);
+  }, [coursesList, selectedTrack, searchQuery]);
 
   return (
     <main className="min-h-screen bg-[#FDFCFB] dark:bg-[#0A0E17] text-slate-800 dark:text-slate-100 flex flex-col antialiased selection:bg-[#154F9C]/10 selection:text-[#154F9C]">
@@ -112,10 +129,10 @@ export default function CoursesCatalogPage() {
                   : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              كافة البرامج ({allCoursesData.length})
+              كافة البرامج ({coursesList.length})
             </button>
 
-            {tracksData.map((tr) => (
+            {tracksList.map((tr) => (
               <button
                 key={tr.id}
                 type="button"

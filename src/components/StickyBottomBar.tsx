@@ -53,8 +53,8 @@ export default function StickyBottomBar() {
           : 'max-md:translate-y-0 max-md:opacity-100 max-md:pointer-events-auto translate-y-full opacity-0 pointer-events-none md:pointer-events-none'
       }`}
     >
-      {/* MOBILE NATIVE APP TAB BAR (Always Visible on Mobile md:hidden) */}
-      <div className="md:hidden bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800/90 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+      {/* MOBILE NATIVE APP TAB BAR (Always Visible on Mobile md:hidden with Safe Area Padding) */}
+      <div className="md:hidden bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800/90 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.5)] pb-[max(env(safe-area-inset-bottom),6px)]">
         <div className="px-3 py-1.5 flex items-center justify-around text-center">
           {/* Tab 1: Home */}
           <Link

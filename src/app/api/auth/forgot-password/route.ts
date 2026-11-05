@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import { hashPassword, phonesMatch, normalizePhone } from '@/lib/auth';
+import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'userProfiles.json');
 
@@ -47,9 +48,38 @@ export async function POST(request: Request) {
     const cleanInput = identifier.trim();
     const cleanPhone = normalizePhone(cleanInput);
     const cleanEmail = cleanInput.toLowerCase();
+    const newHash = hashPassword(newPassword);
 
+    let updatedInSupabase = false;
+
+    // 1. Update in Supabase if configured
+    if (isSupabaseConfigured && supabaseAdmin) {
+      try {
+        let query = supabaseAdmin.from('profiles').select('id, phone, email');
+        if (cleanPhone && cleanEmail) {
+          query = query.or(`phone.eq.${cleanPhone},email.eq.${cleanEmail}`);
+        } else if (cleanPhone) {
+          query = query.eq('phone', cleanPhone);
+        } else {
+          query = query.eq('email', cleanEmail);
+        }
+
+        const { data: matchedUsers } = await query;
+        if (matchedUsers && matchedUsers.length > 0) {
+          const uId = matchedUsers[0].id;
+          await supabaseAdmin
+            .from('profiles')
+            .update({ password_hash: newHash, updated_at: new Date().toISOString() })
+            .eq('id', uId);
+          updatedInSupabase = true;
+        }
+      } catch (sbErr) {
+        console.error('Supabase forgot password error:', sbErr);
+      }
+    }
+
+    // 2. Update / Mirror in local JSON
     const profiles = await readProfiles();
-
     const userIndex = profiles.findIndex((p: any) => {
       const pEmail = (p.email || '').trim().toLowerCase();
       if (cleanPhone && p.phone && phonesMatch(p.phone, cleanPhone)) return true;
@@ -57,16 +87,15 @@ export async function POST(request: Request) {
       return false;
     });
 
-    if (userIndex === -1) {
+    if (userIndex !== -1) {
+      profiles[userIndex].passwordHash = newHash;
+      await writeProfiles(profiles);
+    } else if (!updatedInSupabase) {
       return NextResponse.json(
         { error: 'لم يتم العثور على حساب مسجل برقم الهاتف أو البريد المدخل' },
         { status: 404 }
       );
     }
-
-    // Update password
-    profiles[userIndex].passwordHash = hashPassword(newPassword);
-    await writeProfiles(profiles);
 
     return NextResponse.json({
       success: true,

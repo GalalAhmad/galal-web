@@ -110,3 +110,35 @@ html:not(.dark) ::-webkit-scrollbar-thumb:hover {
   animation-play-state: paused;
 }
 
+/* Mobile App Splash Screen Animations */
+@keyframes zoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes progressPulse {
+  0% {
+    width: 5%;
+  }
+  50% {
+    width: 75%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-zoomIn {
+  animation: zoomIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-progress {
+  animation: progressPulse 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+

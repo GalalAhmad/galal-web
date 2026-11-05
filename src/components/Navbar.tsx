@@ -54,32 +54,32 @@ export default function Navbar() {
     <header className={`sticky top-0 z-40 bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 transition-all duration-300 shadow-xs ${
       showHeader ? 'translate-y-0' : '-translate-y-full md:translate-y-0'
     }`}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
         
         {/* الشعار المعتمد */}
         <Link href="/" className="flex items-center group shrink-0" title="جلال أحمد - الصفحة الرئيسية">
           <img 
             src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
             alt="شعار جلال أحمد" 
-            className="h-11 sm:h-12 w-auto object-contain logo-clean transition-transform group-hover:scale-105"
+            className="h-10 sm:h-11 xl:h-12 w-auto object-contain logo-clean transition-transform group-hover:scale-105 shrink-0"
           />
         </Link>
 
-        {/* روابط التنقل الرئيسية */}
-        <nav className="hidden lg:flex items-center gap-6 sm:gap-7 text-[13px] font-bold text-slate-600 dark:text-slate-300">
+        {/* روابط التنقل الرئيسية — ضمان ظهور كل عنصر على سطر واحد مستحيل ينكسر */}
+        <nav className="hidden lg:flex items-center gap-2 xl:gap-4 2xl:gap-6 text-xs xl:text-[13px] font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`transition-all py-1 relative ${
+                className={`transition-all py-1.5 px-1 relative whitespace-nowrap shrink-0 block leading-none ${
                   isActive
                     ? 'text-[#4E7E76] dark:text-[#5E988E] font-black'
                     : 'hover:text-[#4E7E76] dark:hover:text-[#5E988E]'
                 }`}
               >
-                {link.label}
+                <span>{link.label}</span>
                 {isActive && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4E7E76] dark:bg-[#5E988E] rounded-full" />
                 )}
@@ -89,12 +89,12 @@ export default function Navbar() {
         </nav>
 
         {/* أدوات التحكم وزر الحجز البارز */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 xl:gap-3 shrink-0 whitespace-nowrap">
           
           {/* تبديل المظهر */}
           <button
             onClick={toggleTheme}
-            className="p-2 sm:p-2.5 rounded-full text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
+            className="p-2 sm:p-2.5 rounded-full text-slate-500 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer shrink-0"
             title={theme === 'dark' ? 'التحويل إلى المظهر الفاتح المريح' : 'التحويل إلى المظهر الليلي'}
             aria-label="تبديل المظهر"
           >
@@ -111,26 +111,26 @@ export default function Navbar() {
           {/* User Account / Login Button */}
           <Link
             href={user?.name ? '/profile' : '/login'}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 xl:px-3.5 py-2 rounded-full text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition whitespace-nowrap shrink-0 leading-none"
             title={user?.name ? 'الملف الشخصي والمتابعة' : 'تسجيل الدخول / إنشاء حساب'}
           >
-            <User className="w-3.5 h-3.5 text-[#4E7E76] dark:text-[#5E988E]" />
-            <span>{user?.name ? user.name.split(' ')[0] : 'دخول / حسابي'}</span>
+            <User className="w-3.5 h-3.5 text-[#4E7E76] dark:text-[#5E988E] shrink-0" />
+            <span className="whitespace-nowrap">{user?.name ? user.name.split(' ')[0] : 'دخول / حسابي'}</span>
           </Link>
 
           {/* زر احجز جلسة */}
           <Link
             href="/booking"
-            className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-xs font-bold rounded-full transition shadow-sm hover:shadow"
+            className="hidden sm:inline-flex items-center gap-2 px-3.5 xl:px-5 py-2.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-xs font-bold rounded-full transition shadow-xs hover:shadow whitespace-nowrap shrink-0 leading-none"
           >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>احجز جلستك الآن</span>
+            <Calendar className="w-3.5 h-3.5 shrink-0" />
+            <span className="whitespace-nowrap">احجز جلستك الآن</span>
           </Link>
 
           {/* زر قائمة الجوال */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            className="lg:hidden p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0"
             aria-label="القائمة الرئيسية"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -160,7 +160,7 @@ export default function Navbar() {
             >
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4 text-[#4E7E76] dark:text-[#5E988E]" />
-                <span>{user?.name ? `حسابي (${user.name})` : 'بوابة المستفيد (تسجيل الدخول / إنشاء حساب)'}</span>
+                <span>{user?.name ? `ملفي الشخصي (${user.name})` : 'تسجيل الدخول / إنشاء حساب جديد'}</span>
               </div>
               <ChevronLeft className="w-4 h-4 text-slate-400 rtl:rotate-0" />
             </Link>

@@ -19,15 +19,21 @@ import {
   LogIn,
   Globe,
   Heart,
-  Calendar
+  Calendar,
+  ExternalLink,
+  KeyRound,
+  X,
+  HelpCircle
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect') || '/profile';
   const { user, login } = useAuth();
+  const { theme } = useTheme();
 
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
 
@@ -38,6 +44,16 @@ function LoginContent() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
 
+  // Forgot Password Interactive Modal State
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+  const [showForgotNewPassword, setShowForgotNewPassword] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState('');
+  const [forgotSuccess, setForgotSuccess] = useState('');
+
   // Register Form State
   const [regName, setRegName] = useState('');
   const [regPhone, setRegPhone] = useState('');
@@ -45,7 +61,7 @@ function LoginContent() {
   const [regPassword, setRegPassword] = useState('');
   const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
-  const [regGender, setRegGender] = useState('unspecified');
+  const [regGender, setRegGender] = useState('male');
   const [regAgeGroup, setRegAgeGroup] = useState('26-35');
   const [regMaritalStatus, setRegMaritalStatus] = useState('married');
   const [regCountry, setRegCountry] = useState('مصر');
@@ -60,6 +76,53 @@ function LoginContent() {
       router.push(redirectPath);
     }
   }, [user, redirectPath, router]);
+
+  // Handle Password Reset
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotError('');
+    setForgotSuccess('');
+
+    if (forgotNewPassword.length < 6) {
+      setForgotError('كلمة المرور الجديدة يجب أن لا تقل عن 6 خانات.');
+      setForgotLoading(false);
+      return;
+    }
+
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      setForgotError('كلمتا المرور غير متطابقتين.');
+      setForgotLoading(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: forgotIdentifier.trim(),
+          newPassword: forgotNewPassword.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setForgotError(data.error || 'تعذر إعادة تعيين كلمة المرور، يرجى التأكد من صحة البيانات.');
+        return;
+      }
+      setForgotSuccess('تم تعيين كلمة المرور الجديدة بنجاح! يمكنك الآن تسجيل الدخول بها.');
+      setTimeout(() => {
+        setShowForgotModal(false);
+        setActiveTab('login');
+        setLoginIdentifier(forgotIdentifier);
+        setForgotSuccess('');
+      }, 1800);
+    } catch (err) {
+      setForgotError('حدث خطأ أثناء الاتصال بالخادم. يرجى المحاولة لاحقاً.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   // Handle Standard Login
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -160,20 +223,24 @@ function LoginContent() {
       <main className="flex-1 flex items-center justify-center py-10 px-4 sm:px-6">
         <div className="w-full max-w-lg bg-white dark:bg-[#0E1524] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden animate-fadeIn">
           
-          {/* Header */}
-          <div className="p-6 sm:p-8 bg-linear-to-b from-slate-50 to-white dark:from-[#111A2E] dark:to-[#0E1524] border-b border-slate-100 dark:border-slate-800 text-center space-y-2">
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-[#4E7E76]/10 text-[#4E7E76] dark:text-[#5E988E] flex items-center justify-center shadow-inner">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
+          {/* Header with Official Logo */}
+          <div className="p-6 sm:p-8 bg-linear-to-b from-slate-50 to-white dark:from-[#111A2E] dark:to-[#0E1524] border-b border-slate-100 dark:border-slate-800 text-center space-y-3">
+            <Link href="/" className="inline-block group mb-1" title="الصفحة الرئيسية — المستشار جلال أحمد">
+              <img
+                src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
+                alt="شعار المستشار جلال أحمد"
+                className="h-14 sm:h-16 w-auto mx-auto object-contain transition-transform group-hover:scale-105"
+              />
+            </Link>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-              بوابة المستفيد الرسمية
+              {activeTab === 'login' ? 'تسجيل الدخول إلى حسابك' : 'إنشاء حساب جديد في المنصة'}
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
-              منصة سرية وآمنة لمتابعة استشاراتك النفسية والزوجية، نتائج مقاييسك، ومهامك الإرشادية.
+              بوابتك الخاصة والآمنة لمتابعة استشاراتك النفسية والزوجية، نتائج مقاييسك، ومهامك الإرشادية.
             </p>
 
             {/* Tabs Toggle */}
-            <div className="pt-4 flex rounded-2xl bg-slate-100 dark:bg-slate-900 p-1 max-w-xs mx-auto">
+            <div className="pt-2 flex rounded-2xl bg-slate-100 dark:bg-slate-900 p-1 max-w-xs mx-auto">
               <button
                 type="button"
                 onClick={() => { setActiveTab('login'); setLoginError(''); }}
@@ -236,6 +303,18 @@ function LoginContent() {
                     <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                       كلمة المرور
                     </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgotModal(true);
+                        setForgotIdentifier(loginIdentifier);
+                        setForgotError('');
+                        setForgotSuccess('');
+                      }}
+                      className="text-[11px] font-bold text-[#4E7E76] dark:text-[#5E988E] hover:underline cursor-pointer"
+                    >
+                      نسيت كلمة المرور؟
+                    </button>
                   </div>
                   <div className="relative">
                     <input
@@ -271,10 +350,33 @@ function LoginContent() {
                   )}
                 </button>
 
-                <div className="text-center pt-2">
-                  <p className="text-[11px] text-slate-500">
-                    نسيت كلمة المرور؟ يمكنك مراسلة المستشار أو المكتب عبر الواتساب لإعادة تعيينها فوراً.
-                  </p>
+                {/* Footer with Clickable Reset Password & WhatsApp Links */}
+                <div className="text-center pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                  <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
+                    <span className="text-slate-500 dark:text-slate-400">نسيت كلمة المرور؟</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgotModal(true);
+                        setForgotIdentifier(loginIdentifier);
+                        setForgotError('');
+                        setForgotSuccess('');
+                      }}
+                      className="text-[#4E7E76] dark:text-[#5E988E] font-black underline hover:text-[#3D645E] cursor-pointer"
+                    >
+                      إعادة تعيينها هنا
+                    </button>
+                    <span className="text-slate-300 dark:text-slate-700">•</span>
+                    <a
+                      href="https://wa.me/201014876666?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%20%D8%A3%D8%B3%D8%AA%D8%A7%D8%B0%20%D8%AC%D9%84%D8%A7%D9%84%D8%8C%20%D9%86%D8%B3%D9%8A%D8%AA%20%D9%83%D9%84%D9%85%D8%A9%20%D8%A7%D9%84%D9%85%D8%B1%D9%88%D8%B1%20%D9%84%D8%AD%D8%B3%D8%A7%D8%A8%D9%8A%20%D9%88%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%A7%D8%B3%D8%AA%D8%B9%D8%A7%D8%AF%D8%AA%D9%87%D8%A7"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>مراسلة الدعم عبر واتساب</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
                 </div>
               </form>
             )}
@@ -356,7 +458,6 @@ function LoginContent() {
                     >
                       <option value="male">ذكر</option>
                       <option value="female">أنثى</option>
-                      <option value="unspecified">أفضل عدم التحديد</option>
                     </select>
                   </div>
 
@@ -480,6 +581,133 @@ function LoginContent() {
           </div>
 
         </div>
+
+        {/* FORGOT PASSWORD MODAL */}
+        {showForgotModal && (
+          <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+            <div className="w-full max-w-md bg-white dark:bg-[#0E1524] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 sm:p-7 space-y-4 text-right">
+              
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-xl bg-[#4E7E76]/10 text-[#4E7E76] dark:text-[#5E988E] flex items-center justify-center">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white">
+                      استعادة كلمة المرور
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      إعادة تعيين كلمة المرور لحسابك المسجل
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(false)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {forgotError && (
+                <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{forgotError}</span>
+                </div>
+              )}
+
+              {forgotSuccess && (
+                <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{forgotSuccess}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleForgotSubmit} className="space-y-3.5">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                    رقم الهاتف أو البريد الإلكتروني المسجل:
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={forgotIdentifier}
+                    onChange={(e) => setForgotIdentifier(e.target.value)}
+                    placeholder="مثال: 01014876666 أو email@example.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161F30] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs text-right focus:outline-hidden focus:border-[#4E7E76] transition"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                    كلمة المرور الجديدة (6 خانات أو أكثر):
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showForgotNewPassword ? 'text' : 'password'}
+                      required
+                      value={forgotNewPassword}
+                      onChange={(e) => setForgotNewPassword(e.target.value)}
+                      placeholder="أدخل كلمة المرور الجديدة"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161F30] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs text-right focus:outline-hidden focus:border-[#4E7E76] transition"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotNewPassword(!showForgotNewPassword)}
+                      className="absolute left-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
+                    >
+                      {showForgotNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                    تأكيد كلمة المرور الجديدة:
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={forgotConfirmPassword}
+                    onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                    placeholder="أعد إدخال كلمة المرور للتأكيد"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#161F30] border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-xs text-right focus:outline-hidden focus:border-[#4E7E76] transition"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={forgotLoading}
+                  className="w-full py-3 rounded-full bg-[#4E7E76] hover:bg-[#3D645E] text-white font-extrabold text-xs transition flex items-center justify-center gap-2 shadow-md shadow-[#4E7E76]/20 cursor-pointer disabled:opacity-50 mt-3"
+                >
+                  {forgotLoading ? (
+                    <span className="inline-block animate-pulse">جارٍ حفظ كلمة المرور...</span>
+                  ) : (
+                    <>
+                      <KeyRound className="w-3.5 h-3.5" />
+                      <span>حفظ كلمة المرور الجديدة</span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
+                <a
+                  href="https://wa.me/201014876666?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%20%D8%A3%D8%B3%D8%AA%D8%A7%D8%B0%20%D8%AC%D9%84%D8%A7%D9%84%D8%8C%20%D9%86%D8%B3%D9%8A%D8%AA%20%D9%83%D9%84%D9%85%D8%A9%20%D8%A7%D9%84%D9%85%D8%B1%D9%88%D8%B1%20%D9%84%D8%AD%D8%B3%D8%A7%D8%A8%D9%8A%20%D9%88%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%A7%D8%B3%D8%AA%D8%B9%D8%A7%D8%AF%D8%AA%D9%87%D8%A7"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline inline-flex items-center gap-1.5"
+                >
+                  <span>أو تواصل مع الدعم الفني عبر واتساب فوراً</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+            </div>
+          </div>
+        )}
       </main>
 
       <Footer />

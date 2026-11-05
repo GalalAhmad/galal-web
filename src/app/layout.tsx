@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { AuthProvider } from '@/context/AuthContext';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
 import StickyBottomBar from '@/components/StickyBottomBar';
+import MobileAppSplash from '@/components/MobileAppSplash';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -117,6 +118,7 @@ export default function RootLayout({
       <body className="antialiased selection:bg-accent-500 selection:text-white">
         <ThemeProvider>
           <AuthProvider>
+            <MobileAppSplash />
             {children}
             <PWAInstallPrompt />
             <StickyBottomBar />

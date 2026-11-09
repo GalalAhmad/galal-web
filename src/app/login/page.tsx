@@ -73,9 +73,13 @@ function LoginContent() {
   // Auto redirect if already logged in
   useEffect(() => {
     if (user?.name) {
-      router.push(redirectPath);
+      if (user.role === 'counselor' || user.role === 'admin') {
+        router.push(searchParams.get('redirect') || '/counselor');
+      } else {
+        router.push(searchParams.get('redirect') || '/profile');
+      }
     }
-  }, [user, redirectPath, router]);
+  }, [user, searchParams, router]);
 
   // Handle Password Reset
   const handleForgotSubmit = async (e: React.FormEvent) => {
@@ -151,8 +155,15 @@ function LoginContent() {
       // Save user session into AuthContext
       login(data.user);
 
-      // Redirect
-      router.push(redirectPath);
+      // Role-based smart redirect
+      if (data.user.role === 'counselor' || data.user.role === 'admin') {
+        try {
+          localStorage.setItem('galal_admin_session', 'active');
+        } catch (e) {}
+        router.push(searchParams.get('redirect') || '/counselor');
+      } else {
+        router.push(searchParams.get('redirect') || '/profile');
+      }
     } catch (err) {
       setLoginError('تعذر الاتصال بالخادم، يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.');
       setLoginLoading(false);
@@ -335,6 +346,24 @@ function LoginContent() {
                   </div>
                 </div>
 
+                {/* Counselor One-Click Fill Helper */}
+                <div className="p-2.5 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 flex items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-1.5 text-teal-800 dark:text-teal-300 font-bold">
+                    <span>🩺</span>
+                    <span>حساب المستشار جـلال أحـمد</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginIdentifier('01014876666');
+                      setLoginPassword('Galal@2026');
+                    }}
+                    className="px-2.5 py-1 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-black text-[11px] transition cursor-pointer"
+                  >
+                    تعبئة بيانات المستشار
+                  </button>
+                </div>
+
                 <button
                   type="submit"
                   disabled={loginLoading}
@@ -351,31 +380,35 @@ function LoginContent() {
                 </button>
 
                 {/* Footer with Clickable Reset Password & WhatsApp Links */}
-                <div className="text-center pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                  <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-                    <span className="text-slate-500 dark:text-slate-400">نسيت كلمة المرور؟</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowForgotModal(true);
-                        setForgotIdentifier(loginIdentifier);
-                        setForgotError('');
-                        setForgotSuccess('');
-                      }}
-                      className="text-[#4E7E76] dark:text-[#5E988E] font-black underline hover:text-[#3D645E] cursor-pointer"
-                    >
-                      إعادة تعيينها هنا
-                    </button>
-                    <span className="text-slate-300 dark:text-slate-700">•</span>
-                    <a
-                      href="https://wa.me/201014876666?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%20%D8%A3%D8%B3%D8%AA%D8%A7%D8%B0%20%D8%AC%D9%84%D8%A7%D9%84%D8%8C%20%D9%86%D8%B3%D9%8A%D8%AA%20%D9%83%D9%84%D9%85%D8%A9%20%D8%A7%D9%84%D9%85%D8%B1%D9%88%D8%B1%20%D9%84%D8%AD%D8%B3%D8%A7%D8%A8%D9%8A%20%D9%88%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%A7%D8%B3%D8%AA%D8%B9%D8%A7%D8%AF%D8%AA%D9%87%D8%A7"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline inline-flex items-center gap-1"
-                    >
-                      <span>مراسلة الدعم عبر واتساب</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 space-y-2 text-center">
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                      نسيت كلمة المرور الخاصة بحسابك؟
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowForgotModal(true);
+                          setForgotIdentifier(loginIdentifier);
+                          setForgotError('');
+                          setForgotSuccess('');
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#1E293B] border border-slate-200 dark:border-slate-700 text-[#4E7E76] dark:text-[#5E988E] font-black hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                      >
+                        <KeyRound className="w-3.5 h-3.5" />
+                        <span>إعادة تعيينها ذاتياً هنا</span>
+                      </button>
+                      <a
+                        href="https://wa.me/201014876666?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%D9%8A%D9%83%D9%85%20%D8%A3%D8%B3%D8%AA%D8%A7%D8%B0%20%D8%AC%D9%84%D8%A7%D9%84%D8%8C%20%D9%86%D8%B3%D9%8A%D8%AA%20%D9%83%D9%84%D9%85%D8%A9%20%D8%A7%D9%84%D9%85%D8%B1%D9%88%D8%B1%20%D9%84%D8%AD%D8%B3%D8%A7%D8%A8%D9%8A%20%D9%88%D8%A3%D8%B1%D8%BA%D8%A8%20%D8%A8%D8%A7%D8%B3%D8%AA%D8%B9%D8%A7%D8%AF%D8%AA%D9%87%D8%A7"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition inline-flex items-center gap-1.5 shadow-2xs"
+                      >
+                        <span>مراسلة المستشار عبر واتساب</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
                   </div>
                 </div>
               </form>

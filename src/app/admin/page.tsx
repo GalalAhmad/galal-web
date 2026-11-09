@@ -282,8 +282,8 @@ export default function AdminDashboardPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    // Primary admin password
-    const validPasswords = ['galal@admin2026', 'galalahmad2026', 'galal2026', 'admin@galal'];
+    // Primary admin password (المستشار جلال أحمد)
+    const validPasswords = ['Galal@2026', 'galal@admin2026', 'galalahmad2026', 'galal2026', 'admin@galal'];
     if (validPasswords.includes(inputPassword.trim())) {
       setIsAuthenticated(true);
       try {
@@ -1311,6 +1311,15 @@ ${meet}
         </div>
 
         <div className="flex items-center gap-3 text-xs">
+          {/* Prominent link to Counselor Clinical Workspace */}
+          <Link
+            href="/counselor"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl transition font-black shadow-md shadow-teal-500/20"
+            title="الانتقال إلى مساحة المعالج وسجلات العملاء الإكلينيكية وDSM-5"
+          >
+            <span>مساحة المعالج الإكلينيكية 🩺</span>
+          </Link>
+
           {newInquiriesCount > 0 && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-950/60 border border-rose-800 text-rose-300 font-bold animate-pulse">
               <BellRing className="w-3.5 h-3.5" />
@@ -1347,7 +1356,32 @@ ${meet}
       </header>
 
       {/* Main Container */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-4">
+        
+        {/* Banner linking to Independent Counselor Workspace */}
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-teal-950/80 via-slate-900 to-teal-950/80 border border-teal-500/40 flex flex-wrap items-center justify-between gap-4 shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-teal-500/20 text-teal-300 flex items-center justify-center text-xl font-bold border border-teal-500/30 shrink-0">
+              🩺
+            </div>
+            <div>
+              <strong className="text-white text-xs sm:text-sm block">
+                مساحة عمل المعالج الإكلينيكية المستقلة (المستشار جلال أحمد شخصياً)
+              </strong>
+              <p className="text-[11px] text-teal-200">
+                إدارة ملفات العملاء الفردية، استوديو الجلسات المباشرة، سجلات SOAP، ومساعد الدليل التشخيصي الخامس (DSM-5).
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/counselor"
+            className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs transition shadow-md shadow-teal-500/20 flex items-center gap-1.5 shrink-0"
+          >
+            <span>دخول مساحة المعالج الخاصة ←</span>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Navigation Sidebar */}
         <aside className="lg:col-span-3 space-y-1.5">
@@ -3449,6 +3483,7 @@ ${meet}
         </main>
 
       </div>
+    </div>
 
       {/* Modal: Reschedule Appointment */}
       {rescheduleBooking && (

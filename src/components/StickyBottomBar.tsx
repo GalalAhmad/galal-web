@@ -39,8 +39,8 @@ export default function StickyBottomBar() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Don't render inside admin dashboard, course player/pages, or booking flow to prevent overlay on controls
-  if (pathname.startsWith('/admin') || pathname.startsWith('/courses') || pathname.startsWith('/booking')) {
+  // Don't render inside admin dashboard, course player/pages, booking flow, or counselor workspace to prevent overlay on controls
+  if (pathname.startsWith('/admin') || pathname.startsWith('/courses') || pathname.startsWith('/booking') || pathname.startsWith('/counselor')) {
     return null;
   }
 

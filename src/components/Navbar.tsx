@@ -40,7 +40,7 @@ export default function Navbar() {
   }, [lastScrollY, mobileMenuOpen]);
 
   const navLinks = [
-    { href: '/', label: 'رئيسية' },
+    { href: '/', label: 'الرئيسية' },
     { href: '/services', label: 'استشارات' },
     { href: '/courses', label: 'بناء وتمكين' },
     { href: '/aqwameyat-quran', label: 'أقومية القرآن' },
@@ -61,27 +61,27 @@ export default function Navbar() {
           <img 
             src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
             alt="شعار جلال أحمد" 
-            className="h-10 sm:h-11 xl:h-12 w-auto object-contain logo-clean transition-transform group-hover:scale-105 shrink-0"
+            className="h-9 sm:h-11 xl:h-12 w-auto object-contain logo-clean transition-transform group-hover:scale-105 shrink-0"
           />
         </Link>
 
-        {/* روابط التنقل الرئيسية — ضمان ظهور كل عنصر على سطر واحد مستحيل ينكسر */}
-        <nav className="hidden lg:flex items-center gap-2 xl:gap-4 2xl:gap-6 text-xs xl:text-[13px] font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+        {/* روابط التنقل الرئيسية — ضمان ظهور كل عنصر على سطر واحد مستحيل ينكسر في جميع الشاشات */}
+        <nav className="hidden lg:flex items-center flex-nowrap shrink-0 gap-1 xl:gap-2.5 2xl:gap-4 text-[11px] xl:text-[12.5px] 2xl:text-[13.5px] font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap select-none">
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`transition-all py-1.5 px-1 relative whitespace-nowrap shrink-0 block leading-none ${
+                className={`transition-all py-1 px-1.5 rounded-lg relative whitespace-nowrap shrink-0 inline-block leading-normal ${
                   isActive
-                    ? 'text-[#4E7E76] dark:text-[#5E988E] font-black'
-                    : 'hover:text-[#4E7E76] dark:hover:text-[#5E988E]'
+                    ? 'text-[#4E7E76] dark:text-[#5E988E] font-black bg-teal-50/70 dark:bg-teal-950/40'
+                    : 'hover:text-[#4E7E76] dark:hover:text-[#5E988E] hover:bg-slate-50 dark:hover:bg-slate-800/40'
                 }`}
               >
-                <span>{link.label}</span>
+                <span className="whitespace-nowrap inline-block shrink-0">{link.label}</span>
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#4E7E76] dark:bg-[#5E988E] rounded-full" />
+                  <span className="absolute bottom-0 left-1 right-1 h-0.5 bg-[#4E7E76] dark:bg-[#5E988E] rounded-full" />
                 )}
               </Link>
             );
@@ -89,7 +89,18 @@ export default function Navbar() {
         </nav>
 
         {/* أدوات التحكم وزر الحجز البارز */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 xl:gap-3 shrink-0 whitespace-nowrap">
+        <div className="flex items-center gap-1.5 sm:gap-2 xl:gap-3 shrink-0 whitespace-nowrap">
+          
+          {/* رابط سريع للمساحة الإكلينيكية الخاصة بالمستشار لو كان مسجلاً */}
+          {(user?.role === 'admin' || (user as any)?.role === 'counselor') && (
+            <Link
+              href="/counselor"
+              className="hidden xl:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-black bg-teal-50 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800/80 hover:bg-teal-100 transition whitespace-nowrap shrink-0"
+              title="مساحة العمل الإكلينيكية للمستشار جلال"
+            >
+              <span className="whitespace-nowrap shrink-0">مساحة المعالج 🩺</span>
+            </Link>
+          )}
           
           {/* تبديل المظهر */}
           <button
@@ -111,20 +122,21 @@ export default function Navbar() {
           {/* User Account / Login Button */}
           <Link
             href={user?.name ? '/profile' : '/login'}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 xl:px-3.5 py-2 rounded-full text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition whitespace-nowrap shrink-0 leading-none"
+            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 xl:px-3.5 py-2 rounded-full text-xs font-bold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition whitespace-nowrap shrink-0 leading-none"
             title={user?.name ? 'الملف الشخصي والمتابعة' : 'تسجيل الدخول / إنشاء حساب'}
           >
             <User className="w-3.5 h-3.5 text-[#4E7E76] dark:text-[#5E988E] shrink-0" />
-            <span className="whitespace-nowrap">{user?.name ? user.name.split(' ')[0] : 'دخول / حسابي'}</span>
+            <span className="whitespace-nowrap shrink-0">{user?.name ? user.name.split(' ')[0] : 'دخول / حسابي'}</span>
           </Link>
 
           {/* زر احجز جلسة */}
           <Link
             href="/booking"
-            className="hidden sm:inline-flex items-center gap-2 px-3.5 xl:px-5 py-2.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-xs font-bold rounded-full transition shadow-xs hover:shadow whitespace-nowrap shrink-0 leading-none"
+            className="hidden sm:inline-flex items-center gap-1.5 xl:gap-2 px-3 xl:px-4.5 py-2 xl:py-2.5 bg-[#CC4E46] hover:bg-[#B33D35] text-white text-xs font-bold rounded-full transition shadow-xs hover:shadow whitespace-nowrap shrink-0 leading-none"
           >
             <Calendar className="w-3.5 h-3.5 shrink-0" />
-            <span className="whitespace-nowrap">احجز جلستك الآن</span>
+            <span className="whitespace-nowrap shrink-0 hidden md:inline">احجز جلستك الآن</span>
+            <span className="whitespace-nowrap shrink-0 md:hidden">احجز الآن</span>
           </Link>
 
           {/* زر قائمة الجوال */}

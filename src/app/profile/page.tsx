@@ -962,6 +962,25 @@ export default function ClientProfilePage() {
               </div>
             </div>
 
+            {/* Counselor Workspace Switcher Banner if Logged In As Counselor */}
+            {isConsultant && (
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-teal-950/80 via-slate-900 to-teal-950/80 border border-teal-500/50 flex flex-wrap items-center justify-between gap-3 shadow-md animate-fadeIn">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-xl">🩺</span>
+                  <div>
+                    <strong className="text-xs text-white block">مساحة عمل المعالج الإكلينيكية المستقلة جاهزة</strong>
+                    <span className="text-[11px] text-teal-300">استوديو الجلسات المباشرة، سجلات SOAP، ومحرك الدليل التشخيصي DSM-5</span>
+                  </div>
+                </div>
+                <Link
+                  href="/counselor"
+                  className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs transition shadow-md flex items-center gap-1.5 shrink-0"
+                >
+                  <span>فتح مساحة المعالج ←</span>
+                </Link>
+              </div>
+            )}
+
             {/* Quick Metrics Bar (Overview Cards) */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <button

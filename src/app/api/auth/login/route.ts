@@ -32,6 +32,36 @@ export async function POST(request: Request) {
     const cleanPhone = normalizePhone(cleanInput);
     const cleanEmail = cleanInput.toLowerCase();
 
+    // 0. MASTER COUNSELOR ACCOUNT (المستشار جـلال أحـمد شخصياً)
+    // حساب المعالج المعتمد للدخول المباشر إلى مساحة العمل الإكلينيكية ولوحة الإدارة
+    const isCounselorIdentifier = 
+      cleanInput === '01014876666' || 
+      cleanPhone === '01014876666' || 
+      cleanEmail === 'counselor@galalahmad.com' || 
+      cleanEmail === 'galal@admin.com' ||
+      cleanInput.toLowerCase() === 'galal';
+
+    const validCounselorPasswords = ['Galal@2026', 'galalahmad2026', 'galal2026', 'admin@galal', 'galal@admin2026'];
+
+    if (isCounselorIdentifier && validCounselorPasswords.includes(password.trim())) {
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: 'counselor-galal-ahmad',
+          name: 'المستشار جـلال أحـمد',
+          phone: '01014876666',
+          email: 'counselor@galalahmad.com',
+          gender: 'male',
+          ageGroup: '36-45',
+          maritalStatus: 'متزوج',
+          country: 'مصر',
+          city: 'القاهرة',
+          role: 'counselor', // دور المعالج المعتمد
+          createdAt: new Date().toISOString(),
+        },
+      });
+    }
+
     // 1. Check in Supabase if configured
     if (isSupabaseConfigured) {
       let query = supabaseAdmin.from('profiles').select('*');

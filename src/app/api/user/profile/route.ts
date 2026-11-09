@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { hashPassword, phonesMatch, normalizePhone } from '@/lib/auth';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
+import { parseClinicalDossier } from '@/lib/clinical/dossierParser';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'userProfiles.json');
 
@@ -24,26 +25,6 @@ async function writeProfilesLocal(data: any[]) {
   } catch (err) {
     console.error('Error writing userProfiles.json:', err);
   }
-}
-
-export function parseClinicalDossier(rawNotes: string | null) {
-  let notes = rawNotes || '';
-  let homework: any[] = [];
-  let courses: any[] = [];
-  let readingPlan: any[] = [];
-
-  if (rawNotes && typeof rawNotes === 'string' && rawNotes.trim().startsWith('{')) {
-    try {
-      const parsed = JSON.parse(rawNotes);
-      notes = parsed.notes !== undefined ? parsed.notes : '';
-      homework = Array.isArray(parsed.homework) ? parsed.homework : [];
-      courses = Array.isArray(parsed.courses) ? parsed.courses : [];
-      readingPlan = Array.isArray(parsed.readingPlan) ? parsed.readingPlan : [];
-    } catch (e) {
-      notes = rawNotes;
-    }
-  }
-  return { notes, homework, courses, readingPlan };
 }
 
 export async function GET(request: Request) {

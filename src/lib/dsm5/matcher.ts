@@ -126,7 +126,7 @@ export function evaluateCriteriaFulfillment(
 
 /**
  * توليد نص التقييم الإكلينيكي الذكي (SOAP Assessment Generator)
- * يساعد المستشار على تضمين الصياغة التشخيصية المعتمدة بنقرة واحدة
+ * يساعد المعالج على تضمين الصياغة التشخيصية المعتمدة بنقرة واحدة
  */
 export function generateClinicalSOAPAssessmentSnippet(
   disorder: DSM5Disorder,
@@ -149,6 +149,6 @@ ${disorder.recommendedInterventions.map((m) => `• مسار (${m.modality}): ${
 
 [قواعد الاستبعاد والتشخيص الفارق]:
 ${disorder.differentials.map((diff) => `• استبعاد ${diff.disorderNameAr}: ${diff.distinctionRule}`).join('\n')}
-${clinicalNotes ? `\n[ملاحظات المستشار الخاصة أثناء الفحص]:\n${clinicalNotes}` : ''}
+${clinicalNotes ? `\n[ملاحظات المعالج الخاصة أثناء الفحص]:\n${clinicalNotes}` : ''}
 `.trim();
 }

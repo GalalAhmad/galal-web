@@ -282,7 +282,7 @@ export default function AdminDashboardPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    // Primary admin password (المستشار جلال أحمد)
+    // Primary admin password (أ. جلال أحمد)
     const validPasswords = ['Galal@2026', 'galal@admin2026', 'galalahmad2026', 'galal2026', 'admin@galal'];
     if (validPasswords.includes(inputPassword.trim())) {
       setIsAuthenticated(true);
@@ -717,7 +717,7 @@ export default function AdminDashboardPage() {
   };
 
   // Generated WhatsApp feedback link text
-  const generatedFeedbackMsg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${clientNameForWhatsapp || ''}، سعدنا جداً بلقائك وتقديم الجلسة الاستشارية (${serviceForWhatsapp}) مع المستشار جلال أحمد. رأيك وتجربتك تهمنا وتسهم في تطوير خدماتنا، نسعد بمشاركتك تقييمك الموجز عبر الرابط الآمن:%0Ahttps://galalahmad.com/feedback`;
+  const generatedFeedbackMsg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${clientNameForWhatsapp || ''}، سعدنا جداً بلقائك وتقديم الجلسة الاستشارية (${serviceForWhatsapp}) مع أ. جلال أحمد. رأيك وتجربتك تهمنا وتسهم في تطوير خدماتنا، نسعد بمشاركتك تقييمك الموجز عبر الرابط الآمن:%0Ahttps://galalahmad.com/feedback`;
 
   const copyReviewText = () => {
     const rawText = decodeURIComponent(generatedFeedbackMsg).replace(/%0A/g, '\n');
@@ -852,7 +852,7 @@ export default function AdminDashboardPage() {
       );
 
       const msg = `السلام عليكم أخي/أختي ${rescheduleBooking.clientName}،
-نود إبلاغكم بأنه تم اعتماد الموعد الجديد لجلستكم الاستشارية (${rescheduleBooking.trackLabel}) مع المستشار جلال أحمد:
+نود إبلاغكم بأنه تم اعتماد الموعد الجديد لجلستكم الاستشارية (${rescheduleBooking.trackLabel}) مع أ. جلال أحمد:
 
 📅 الموعد الجديد: ${rescheduleDate}
 ⏰ الساعة: ${rescheduleTime}
@@ -875,7 +875,7 @@ export default function AdminDashboardPage() {
   const openWhatsAppWithMeetLink = (booking: any) => {
     const meet = meetLinkInput[booking.id] || booking.meetLink || 'https://meet.google.com';
     const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أستاذ ${booking.clientName} الكريم.
-معك المستشار جلال أحمد، يسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}).
+معك أ. جلال أحمد، يسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}).
 
 🗓️ *الموعد:* ${booking.slotDate}
 ⏰ *الوقت:* ${booking.slotTime} (بتوقيت مكة والقاهرة)
@@ -1182,7 +1182,7 @@ ${meet}
       if (profData.profiles) setClientProfiles(profData.profiles);
 
       const cleanPhone = (newClientPhone || '').replace(/[^\d]/g, '');
-      const msg = `أهلاً بك أ. ${newClientName.trim()} في منصة المستشار جـلال أحـمد 🌿\nتم تجهيز ملفك الاستشاري الشخصي بنجاح لمتابعة جلساتك ومقاييسك وتكليفاتك الإرشادية.\n\nبيانات دخولك الخاصة:\n👤 اسم المستخدم: ${newClientPhone.trim() || newClientEmail.trim()}\n🔑 كلمة المرور: ${newClientPassword.trim()}\n🔗 رابط الدخول المباشر: https://galalahmad.com/login\n\nنتمنى لك رحلة موفقة نحو الاتزان وراحة البال.`;
+      const msg = `أهلاً بك أ. ${newClientName.trim()} في منصة جـلال أحـمد 🌿\nتم تجهيز ملفك الاستشاري الشخصي بنجاح لمتابعة جلساتك ومقاييسك وتكليفاتك الإرشادية.\n\nبيانات دخولك الخاصة:\n👤 اسم المستخدم: ${newClientPhone.trim() || newClientEmail.trim()}\n🔑 كلمة المرور: ${newClientPassword.trim()}\n🔗 رابط الدخول المباشر: https://galalahmad.com/login\n\nنتمنى لك رحلة موفقة نحو الاتزان وراحة البال.`;
       const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
       setCreatedClientWhatsAppUrl(waUrl);
       setAddClientMsg('تم إنشاء حساب وملف المستفيد بنجاح!');
@@ -1212,7 +1212,7 @@ ${meet}
       });
       if (res.ok) {
         const cleanPhone = (client.phone || '').replace(/[^\d]/g, '');
-        const msg = `أهلاً بك أ. ${client.name} في منصة المستشار جلال أحمد 🌿\nتمت إعادة تعيين كلمة المرور الخاصة بحسابك بنجاح:\n🔑 كلمة المرور الجديدة: ${newPass.trim()}\n🔗 رابط الدخول: https://galalahmad.com/login`;
+        const msg = `أهلاً بك أ. ${client.name} في منصة جلال أحمد 🌿\nتمت إعادة تعيين كلمة المرور الخاصة بحسابك بنجاح:\n🔑 كلمة المرور الجديدة: ${newPass.trim()}\n🔗 رابط الدخول: https://galalahmad.com/login`;
         if (cleanPhone && confirm('تم تحديث كلمة المرور بنجاح! هل تريد إرسال بيانات الدخول الجديدة للعميل عبر واتساب فوراً؟')) {
           window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         } else {
@@ -1247,7 +1247,7 @@ ${meet}
               <span>منطقة تحكم محمية ومشفرة</span>
             </div>
             <h1 className="text-xl font-black text-white">
-              لوحة إدارة المستشار جلال أحمد
+              لوحة إدارة أ. جلال أحمد
             </h1>
             <p className="text-xs text-slate-400">
               أدخل كلمة المرور الخاصة بك لتسجيل الدخول والتحكم في الموقع
@@ -1303,7 +1303,7 @@ ${meet}
         <div className="flex items-center gap-3">
           <img src="/assets/logo-white.png" alt="جلال أحمد" className="h-8 w-auto opacity-95 logo-clean" />
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-white text-base">لوحة إدارة المستشار جلال أحمد</span>
+            <span className="font-extrabold text-white text-base">لوحة إدارة أ. جلال أحمد</span>
             <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 font-semibold">
               نشطة ومزامنة ✓
             </span>
@@ -1366,7 +1366,7 @@ ${meet}
             </div>
             <div>
               <strong className="text-white text-xs sm:text-sm block">
-                مساحة عمل المعالج الإكلينيكية المستقلة (المستشار جلال أحمد شخصياً)
+                مساحة عمل المعالج الإكلينيكية المستقلة (أ. جلال أحمد شخصياً)
               </strong>
               <p className="text-[11px] text-teal-200">
                 إدارة ملفات العملاء الفردية، استوديو الجلسات المباشرة، سجلات SOAP، ومساعد الدليل التشخيصي الخامس (DSM-5).
@@ -2200,7 +2200,7 @@ ${meet}
 
                           <div className="flex items-center gap-2">
                             <a
-                              href={`https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته، أ. ${item.contactPerson}، تواصل معكم بخصوص طلبكم المؤسسي لـ (${item.instName}) عبر موقع المستشار جلال أحمد.`)}`}
+                              href={`https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته، أ. ${item.contactPerson}، تواصل معكم بخصوص طلبكم المؤسسي لـ (${item.instName}) عبر موقع أ. جلال أحمد.`)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-3 py-1.5 rounded-xl bg-[#168962]/20 hover:bg-[#168962]/40 text-[#4E7E76] dark:text-[#5E988E] border border-[#168962]/40 font-bold transition flex items-center gap-1.5"
@@ -2309,7 +2309,7 @@ ${meet}
                           )}
                           {item.email && (
                             <a
-                              href={`mailto:${item.email}?subject=بخصوص%20رسالتك%20في%20صندوق%20النصيحة%20-%20المستشار%20جلال%20أحمد`}
+                              href={`mailto:${item.email}?subject=بخصوص%20رسالتك%20في%20صندوق%20النصيحة%20-%20المعالج%20جلال%20أحمد`}
                               className="px-3 py-1 rounded-xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs font-bold transition flex items-center gap-1.5"
                             >
                               <Send className="w-3 h-3 ml-1" />
@@ -2470,7 +2470,7 @@ ${meet}
                         required
                         value={manualReview.feedback}
                         onChange={(e) => setManualReview({ ...manualReview, feedback: e.target.value })}
-                        placeholder="ماذا قال المستفيد عن تجربته مع المستشار جلال أحمد..."
+                        placeholder="ماذا قال المستفيد عن تجربته مع أ. جلال أحمد..."
                         className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white leading-relaxed"
                       />
                     </div>

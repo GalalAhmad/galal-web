@@ -318,7 +318,7 @@ export default function AboutPage() {
             <div className="p-6 rounded-3xl bg-white dark:bg-[#161F2B] border border-slate-200/80 dark:border-slate-800 space-y-3 shadow-2xs">
               <span className="text-base font-black text-[#154F9C]">02. مسؤولية التغيير</span>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
-                «وَمَنْ يَصِفُ لَكَ الطَّرِيقَ.. لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ» — المستشار يضيء الدرب، والمسترشد هو البطل الحقيقي لمسيرته.
+                «وَمَنْ يَصِفُ لَكَ الطَّرِيقَ.. لَنْ يَسْلُكَهُ نِيَابَةً عَنْكَ» — المعالج يضيء الدرب، والمسترشد هو البطل الحقيقي لمسيرته.
               </p>
             </div>
 

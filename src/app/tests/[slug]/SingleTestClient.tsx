@@ -222,7 +222,7 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
                 تسجيل الدخول مطلوب لإجراء المقياس
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto leading-relaxed">
-                لحفظ وتوثيق نتائج المقياس، ومتابعة قراءتك التحليلية وتوصيات المستشار ضمن ملفك الاستشاري الشخصي، يرجى تسجيل الدخول أو إنشاء حساب جديد.
+                لحفظ وتوثيق نتائج المقياس، ومتابعة قراءتك التحليلية وتوصيات المعالج ضمن ملفك الاستشاري الشخصي، يرجى تسجيل الدخول أو إنشاء حساب جديد.
               </p>
             </div>
 

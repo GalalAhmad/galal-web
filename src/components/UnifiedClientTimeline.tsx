@@ -142,7 +142,7 @@ export default function UnifiedClientTimeline({
 
   function getHomeworkStatusLabel(status: string) {
     switch (status) {
-      case 'assigned': return 'مُسند من المستشار';
+      case 'assigned': return 'مُسند من المعالج';
       case 'in_progress': return 'قيد التنفيذ والمتابعة';
       case 'submitted': return 'تم إرسال إجابة العميل';
       case 'completed': return 'مكتمل ومعتمد ✓';

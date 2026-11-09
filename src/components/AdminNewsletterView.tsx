@@ -109,7 +109,7 @@ export default function AdminNewsletterView() {
       setTitle('انطلاق الدفعة القادمة من رحلة رِفق وميثاق للأسرة');
       setBadge('إعلان دفعة تدريبية');
       setContent(
-        'نعلن عن فتح باب الانضمام للدفعة القادمة من برنامج ميثاق لبناء الأسرة والزواج. يتضمن المسار محطات تطبيقية أسبوعية مباشرة عبر زووم مع المستشار وتطبيقات عملية لكل محطة.'
+        'نعلن عن فتح باب الانضمام للدفعة القادمة من برنامج ميثاق لبناء الأسرة والزواج. يتضمن المسار محطات تطبيقية أسبوعية مباشرة عبر زووم مع أ. جلال أحمد وتطبيقات عملية لكل محطة.'
       );
       setActionUrl('https://galalahmad.com/courses/family/mithaq');
       setActionText('الاطلاع على تفاصيل البرنامج والتسجيل ←');
@@ -456,7 +456,7 @@ export default function AdminNewsletterView() {
               <div className="mt-4 p-5 rounded-2xl bg-white text-slate-900 space-y-4 text-right shadow-inner">
                 {/* Email Header */}
                 <div className="p-4 rounded-xl bg-[#154F9C] text-white text-center space-y-1">
-                  <h4 className="text-sm font-black">المستشار جـلال أحـمد</h4>
+                  <h4 className="text-sm font-black">أ. جـلال أحـمد</h4>
                   <p className="text-[10px] opacity-80">إشعار جديد للمشتركين في النشرة الفكرية والإرشادية</p>
                 </div>
 
@@ -484,7 +484,7 @@ export default function AdminNewsletterView() {
                 {/* Email Footer */}
                 <div className="pt-3 border-t border-slate-200 text-center text-[10px] text-slate-400 space-y-0.5">
                   <p>تصلك هذه الرسالة لاشتراكك في نشرة galalahmad.com</p>
-                  <p>© 2026 المستشار جلال أحمد — جميع الحقوق محفوظة</p>
+                  <p>© 2026 أ. جلال أحمد — جميع الحقوق محفوظة</p>
                 </div>
               </div>
             </div>

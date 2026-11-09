@@ -50,11 +50,11 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: PageProps) {
   const course = getCourse(params.slug);
   if (!course) {
-    return { title: 'البرنامج غير موجود | أكاديمية المستشار جلال أحمد' };
+    return { title: 'البرنامج غير موجود | أكاديمية أ. جلال أحمد' };
   }
 
   return {
-    title: `${course.title} | المستشار جلال أحمد`,
+    title: `${course.title} | أ. جلال أحمد`,
     description: course.subtitle || course.overview.slice(0, 160),
     openGraph: {
       title: course.title,

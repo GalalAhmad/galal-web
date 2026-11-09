@@ -91,7 +91,7 @@ export default function Navbar() {
         {/* أدوات التحكم وزر الحجز البارز */}
         <div className="flex items-center gap-1.5 sm:gap-2 xl:gap-3 shrink-0 whitespace-nowrap">
           
-          {/* رابط سريع للمساحة الإكلينيكية الخاصة بالمستشار لو كان مسجلاً */}
+          {/* رابط سريع للمساحة الإكلينيكية الخاصة بالمعالج لو كان مسجلاً */}
           {(user?.role === 'admin' || (user as any)?.role === 'counselor') && (
             <Link
               href="/counselor"

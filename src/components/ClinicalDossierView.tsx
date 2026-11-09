@@ -302,7 +302,7 @@ export default function ClinicalDossierView({
               type="button"
               onClick={() => {
                 setShowEmailModal(true);
-                setEmailSubject(`متابعة استشارية | المستشار جلال أحمد`);
+                setEmailSubject(`متابعة استشارية | أ. جلال أحمد`);
                 setEmailSentResult(null);
               }}
               className="px-4 py-2 rounded-xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#154F9C]/20 cursor-pointer"
@@ -314,7 +314,7 @@ export default function ClinicalDossierView({
 
           {cleanClientPhone && (
             <a
-              href={`https://wa.me/${cleanClientPhone}?text=${encodeURIComponent(`السلام عليكم أ. ${client.name}، معك المستشار جلال أحمد بخصوص متابعة جلستك الاستشارية.`)}`}
+              href={`https://wa.me/${cleanClientPhone}?text=${encodeURIComponent(`السلام عليكم أ. ${client.name}، معك أ. جلال أحمد بخصوص متابعة جلستك الاستشارية.`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
@@ -456,7 +456,7 @@ export default function ClinicalDossierView({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-black text-white flex items-center gap-2">
                   <Lock className="w-4 h-4 text-rose-400" />
-                  <span>الملاحظات السريرية السرية للمستشار (خاصة بالمستشار فقط):</span>
+                  <span>الملاحظات السريرية السرية للمستشار (خاصة بالمعالج فقط):</span>
                 </h4>
                 {notesSavedSuccess && (
                   <span className="text-xs text-emerald-400 flex items-center gap-1 font-bold animate-fadeIn">

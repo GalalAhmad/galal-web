@@ -623,7 +623,7 @@ export default function CoursePlayerView({ course }: CoursePlayerViewProps) {
                 className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold transition shadow-xs"
               >
                 <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                <span>حجز جلسة خاصة مع المستشار</span>
+                <span>حجز جلسة خاصة مع أ. جلال أحمد</span>
               </Link>
             </div>
           </aside>

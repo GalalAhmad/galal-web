@@ -242,7 +242,7 @@ export default function ConsultationStudio({
             </div>
             <div className="flex items-center gap-2 text-[11px] text-slate-400">
               <Lock className="w-3.5 h-3.5 text-teal-400" />
-              <span>سجل مشفر خاص بالمستشار جلال أحمد</span>
+              <span>سجل مشفر خاص بأ. جلال أحمد</span>
             </div>
           </div>
 
@@ -406,7 +406,7 @@ export default function ConsultationStudio({
                 activeSideTool === 'tools' ? 'bg-teal-600 text-white' : 'text-slate-400 hover:text-white'
               }`}
             >
-              أدوات المستشار
+              أدوات المعالج
             </button>
             <button
               onClick={() => setActiveSideTool('exercises')}

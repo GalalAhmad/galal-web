@@ -443,7 +443,7 @@ export default function DSM5AssistantModal({
 
                 <div className="space-y-1.5">
                   <label className="text-[11px] text-slate-300 block font-bold">
-                    ملاحظة سريرية إضافية خاصة بالمستشار (اختياري):
+                    ملاحظة سريرية إضافية خاصة بالمعالج (اختياري):
                   </label>
                   <textarea
                     rows={2}

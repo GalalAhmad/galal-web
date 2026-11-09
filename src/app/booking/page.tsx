@@ -1888,7 +1888,7 @@ function BookingWizardContent() {
                   <span>رابط قاعة الجلسة: بانتظار الاعتماد المالي وتأكيد الموعد</span>
                 </div>
                 <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                  سيتم تفعيل رابط قاعة اللقاء وإرسال إشعار رسمي إلى بريدك الإلكتروني ({submittedBooking.clientEmail || 'المسجل'}) فور مراجعة المستشار لإيصال السداد واعتماد الموعد.
+                  سيتم تفعيل رابط قاعة اللقاء وإرسال إشعار رسمي إلى بريدك الإلكتروني ({submittedBooking.clientEmail || 'المسجل'}) فور مراجعة المعالج لإيصال السداد واعتماد الموعد.
                 </p>
               </div>
             )}

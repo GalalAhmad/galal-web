@@ -66,7 +66,7 @@ export default function AdviceBoxSection() {
                 شكراً لمشاركتك القيّمة!
               </h4>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto">
-                تم استلام رسالتك في صندوق النصيحة بنجاح، وستصل مباشرة إلى المستشار وإدارة المنصة للتحسين والتطوير المستمر.
+                تم استلام رسالتك في صندوق النصيحة بنجاح، وستصل مباشرة إلى المعالج وإدارة المنصة للتحسين والتطوير المستمر.
               </p>
               <button
                 type="button"

@@ -351,7 +351,7 @@ export default function ServicesPage() {
             <div className="p-4 rounded-2xl bg-[#FAFCFA] dark:bg-[#111722] border border-slate-200/70 dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-[#154F9C]">الخطوة 2</span>
               <h4 className="text-sm font-black text-slate-900 dark:text-white">استمارة الفرز السريري</h4>
-              <p className="text-xs text-slate-500 font-normal">إجابة أسئلة موجزة تساعد المستشار على التحضير المسبق لجلستك واستثمار وقتها كاملاً.</p>
+              <p className="text-xs text-slate-500 font-normal">إجابة أسئلة موجزة تساعد المعالج على التحضير المسبق لجلستك واستثمار وقتها كاملاً.</p>
             </div>
             <div className="p-4 rounded-2xl bg-[#FAFCFA] dark:bg-[#111722] border border-slate-200/70 dark:border-slate-800 space-y-2">
               <span className="text-xs font-bold text-[#CC4E46]">الخطوة 3</span>

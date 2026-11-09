@@ -282,7 +282,7 @@ export default function AdminDashboardPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    // Primary admin password (أ. جلال أحمد)
+    // Primary admin password ( أحمد)
     const validPasswords = ['Galal@2026', 'galal@admin2026', 'galalahmad2026', 'galal2026', 'admin@galal'];
     if (validPasswords.includes(inputPassword.trim())) {
       setIsAuthenticated(true);
@@ -717,7 +717,7 @@ export default function AdminDashboardPage() {
   };
 
   // Generated WhatsApp feedback link text
-  const generatedFeedbackMsg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${clientNameForWhatsapp || ''}، سعدنا جداً بلقائك وتقديم الجلسة الاستشارية (${serviceForWhatsapp}) مع أ. جلال أحمد. رأيك وتجربتك تهمنا وتسهم في تطوير خدماتنا، نسعد بمشاركتك تقييمك الموجز عبر الرابط الآمن:%0Ahttps://galalahmad.com/feedback`;
+  const generatedFeedbackMsg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${clientNameForWhatsapp || ''}، سعدنا جداً بلقائك وتقديم الجلسة الاستشارية (${serviceForWhatsapp}) مع  أحمد. رأيك وتجربتك تهمنا وتسهم في تطوير خدماتنا، نسعد بمشاركتك تقييمك الموجز عبر الرابط الآمن:%0Ahttps://galalahmad.com/feedback`;
 
   const copyReviewText = () => {
     const rawText = decodeURIComponent(generatedFeedbackMsg).replace(/%0A/g, '\n');
@@ -852,7 +852,7 @@ export default function AdminDashboardPage() {
       );
 
       const msg = `السلام عليكم أخي/أختي ${rescheduleBooking.clientName}،
-نود إبلاغكم بأنه تم اعتماد الموعد الجديد لجلستكم الاستشارية (${rescheduleBooking.trackLabel}) مع أ. جلال أحمد:
+نود إبلاغكم بأنه تم اعتماد الموعد الجديد لجلستكم الاستشارية (${rescheduleBooking.trackLabel}) مع  أحمد:
 
 📅 الموعد الجديد: ${rescheduleDate}
 ⏰ الساعة: ${rescheduleTime}
@@ -875,7 +875,7 @@ export default function AdminDashboardPage() {
   const openWhatsAppWithMeetLink = (booking: any) => {
     const meet = meetLinkInput[booking.id] || booking.meetLink || 'https://meet.google.com';
     const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أستاذ ${booking.clientName} الكريم.
-معك أ. جلال أحمد، يسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}).
+معك  أحمد، يسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}).
 
 🗓️ *الموعد:* ${booking.slotDate}
 ⏰ *الوقت:* ${booking.slotTime} (بتوقيت مكة والقاهرة)
@@ -1247,7 +1247,7 @@ ${meet}
               <span>منطقة تحكم محمية ومشفرة</span>
             </div>
             <h1 className="text-xl font-black text-white">
-              لوحة إدارة أ. جلال أحمد
+              لوحة إدارة  أحمد
             </h1>
             <p className="text-xs text-slate-400">
               أدخل كلمة المرور الخاصة بك لتسجيل الدخول والتحكم في الموقع
@@ -1303,7 +1303,7 @@ ${meet}
         <div className="flex items-center gap-3">
           <img src="/assets/logo-white.png" alt="جلال أحمد" className="h-8 w-auto opacity-95 logo-clean" />
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-white text-base">لوحة إدارة أ. جلال أحمد</span>
+            <span className="font-extrabold text-white text-base">لوحة إدارة  أحمد</span>
             <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 font-semibold">
               نشطة ومزامنة ✓
             </span>
@@ -1366,7 +1366,7 @@ ${meet}
             </div>
             <div>
               <strong className="text-white text-xs sm:text-sm block">
-                مساحة عمل المعالج الإكلينيكية المستقلة (أ. جلال أحمد شخصياً)
+                مساحة عمل المعالج الإكلينيكية المستقلة ( أحمد شخصياً)
               </strong>
               <p className="text-[11px] text-teal-200">
                 إدارة ملفات العملاء الفردية، استوديو الجلسات المباشرة، سجلات SOAP، ومساعد الدليل التشخيصي الخامس (DSM-5).
@@ -2200,7 +2200,7 @@ ${meet}
 
                           <div className="flex items-center gap-2">
                             <a
-                              href={`https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته، أ. ${item.contactPerson}، تواصل معكم بخصوص طلبكم المؤسسي لـ (${item.instName}) عبر موقع أ. جلال أحمد.`)}`}
+                              href={`https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته، أ. ${item.contactPerson}، تواصل معكم بخصوص طلبكم المؤسسي لـ (${item.instName}) عبر موقع  أحمد.`)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-3 py-1.5 rounded-xl bg-[#168962]/20 hover:bg-[#168962]/40 text-[#4E7E76] dark:text-[#5E988E] border border-[#168962]/40 font-bold transition flex items-center gap-1.5"
@@ -2470,7 +2470,7 @@ ${meet}
                         required
                         value={manualReview.feedback}
                         onChange={(e) => setManualReview({ ...manualReview, feedback: e.target.value })}
-                        placeholder="ماذا قال المستفيد عن تجربته مع أ. جلال أحمد..."
+                        placeholder="ماذا قال المستفيد عن تجربته مع  أحمد..."
                         className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white leading-relaxed"
                       />
                     </div>

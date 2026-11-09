@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'جلال أحمد | استشارات نفسية وزوجية وتربوية أونلاين',
-    description: 'استشارات نفسية وزوجية وتربوية أونلاين في بيئة آمنة وسرية تامة مع أ. جلال أحمد.',
+    description: 'استشارات نفسية وزوجية وتربوية أونلاين في بيئة آمنة وسرية تامة مع  أحمد.',
     images: ['/assets/dr-galal-speaking.jpg'],
   },
 };

@@ -242,7 +242,7 @@ export default function ConsultationStudio({
             </div>
             <div className="flex items-center gap-2 text-[11px] text-slate-400">
               <Lock className="w-3.5 h-3.5 text-teal-400" />
-              <span>سجل مشفر خاص بأ. جلال أحمد</span>
+              <span>سجل مشفر خاص ب أحمد</span>
             </div>
           </div>
 

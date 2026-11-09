@@ -21,8 +21,8 @@ export async function POST(request: Request) {
     }
 
     const targetEmail = to ? to.trim() : 'galalahmad1201@gmail.com';
-    const emailSubject = subject || 'رسالة تجريبية من لوحة إدارة أ. جلال أحمد';
-    const fromAddress = process.env.RESEND_FROM_EMAIL || 'أ. جلال أحمد <onboarding@resend.dev>';
+    const emailSubject = subject || 'رسالة تجريبية من لوحة إدارة  أحمد';
+    const fromAddress = process.env.RESEND_FROM_EMAIL || ' أحمد <onboarding@resend.dev>';
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       <body>
         <div class="container">
           <div class="header">
-            <h2 style="margin: 0; font-size: 20px;">أ. جـلال أحـمد</h2>
+            <h2 style="margin: 0; font-size: 20px;"> أحـمد</h2>
             <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.9;">اختبار نظام البريد الإلكتروني والإشعارات الرسمية</p>
           </div>
           <div class="content">
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
             </p>
           </div>
           <div class="footer">
-            <p>© 2026 أ. جلال أحمد — جميع الحقوق محفوظة</p>
+            <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
           </div>
         </div>
       </body>

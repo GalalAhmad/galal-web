@@ -365,7 +365,7 @@ export default function ClientProfilePage() {
       const newCourseEntry = {
         id: course.id,
         title: course.title,
-        instructor: course.instructor || 'أ. جلال أحمد',
+        instructor: course.instructor || ' أحمد',
         progress: 0,
         enrolledAt: new Date().toISOString(),
       };
@@ -591,7 +591,7 @@ export default function ClientProfilePage() {
       if (res.ok) {
         setJournalContent('');
         setJournalTitle('');
-        setJournalSuccessMsg(journalShared ? 'تم إرسال تدوينتك وحفظها في ملفك المشترك مع أ. جلال أحمد ✓' : 'تم حفظ الخاطرة في مفكرتك السرية الخاصة ✓');
+        setJournalSuccessMsg(journalShared ? 'تم إرسال تدوينتك وحفظها في ملفك المشترك مع  أحمد ✓' : 'تم حفظ الخاطرة في مفكرتك السرية الخاصة ✓');
         setTimeout(() => setJournalSuccessMsg(''), 5000);
         // Refresh journal entries
         const jRes = await fetch(`/api/user/journal?phone=${encodeURIComponent(userSession?.phone || authUser?.phone || '')}&email=${encodeURIComponent(userSession?.email || authUser?.email || '')}`);
@@ -927,7 +927,7 @@ export default function ClientProfilePage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-extrabold rounded-xl transition shadow-xs"
-                  title="محادثة واتساب مباشرة مع أ. جلال أحمد"
+                  title="محادثة واتساب مباشرة مع  أحمد"
                 >
                   <Phone className="w-3.5 h-3.5" />
                   <span>تواصل عبر واتساب</span>
@@ -937,10 +937,10 @@ export default function ClientProfilePage() {
                   type="button"
                   onClick={() => setActiveTab('journal')}
                   className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-extrabold rounded-xl transition shadow-xs cursor-pointer"
-                  title="مراسلة أ. جلال أحمد وتدوين الخواطر الإرشادية"
+                  title="مراسلة  أحمد وتدوين الخواطر الإرشادية"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
-                  <span>مراسلة أ. جلال والخواطر</span>
+                  <span>مراسلة  والخواطر</span>
                 </button>
 
                 <Link
@@ -1172,7 +1172,7 @@ export default function ClientProfilePage() {
                 }`}
               >
                 <MessageSquare className="w-3.5 h-3.5 text-[#4E7E76]" />
-                <span>مراسلة أ. جلال والخواطر ({journalEntries.length})</span>
+                <span>مراسلة  والخواطر ({journalEntries.length})</span>
               </button>
 
               <button
@@ -1202,7 +1202,7 @@ export default function ClientProfilePage() {
               </button>
             </div>
 
-            {/* TAB 0: CONSULTANT HUB (بوابة أ. جلال أحمد) */}
+            {/* TAB 0: CONSULTANT HUB (بوابة  أحمد) */}
             {activeTab === 'consultant_hub' && isConsultant && (
               <div className="space-y-6 animate-fadeIn">
                 {/* Consultant Top Banner */}
@@ -1294,7 +1294,7 @@ export default function ClientProfilePage() {
                                 </a>
                               )}
                               <a
-                                href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(`مرحباً أستاذ(ة) ${b.clientName}، معك أ. جلال أحمد بخصوص جلستنا اليوم الساعة ${b.slotTime}. رابط القاعة: ${b.meetLink || ''}`)}`}
+                                href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(`مرحباً أستاذ(ة) ${b.clientName}، معك  أحمد بخصوص جلستنا اليوم الساعة ${b.slotTime}. رابط القاعة: ${b.meetLink || ''}`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-black rounded-xl transition shadow-md"
@@ -1595,7 +1595,7 @@ export default function ClientProfilePage() {
               </div>
             )}
 
-            {/* TAB: CLIENT JOURNAL & COUNSELOR COMMUNICATION (مفكرة الخواطر والتواصل مع أ. جلال أحمد) */}
+            {/* TAB: CLIENT JOURNAL & COUNSELOR COMMUNICATION (مفكرة الخواطر والتواصل مع  أحمد) */}
             {activeTab === 'journal' && (
               <div className="space-y-6 animate-fadeIn">
                 {/* Fast WhatsApp Card */}
@@ -1606,7 +1606,7 @@ export default function ClientProfilePage() {
                       <span>قناة التنسيق والتواصل المباشر عبر واتساب</span>
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-400">
-                      هل لديك استفسار عاجل أو ترغب بتنسيق طارئ لموعد استشارتك؟ اضغط لبدء محادثة مباشرة مع أ. جلال أحمد.
+                      هل لديك استفسار عاجل أو ترغب بتنسيق طارئ لموعد استشارتك؟ اضغط لبدء محادثة مباشرة مع  أحمد.
                     </p>
                   </div>
                   <a
@@ -1694,7 +1694,7 @@ export default function ClientProfilePage() {
                           onChange={(e) => setJournalShared(e.target.checked)}
                           className="rounded-sm text-[#4E7E76] focus:ring-[#4E7E76] w-4 h-4"
                         />
-                        <span className="font-bold">مشاركة هذه التدوينة مع أ. جلال أحمد في ملفي الإكلينيكي</span>
+                        <span className="font-bold">مشاركة هذه التدوينة مع  أحمد في ملفي الإكلينيكي</span>
                       </label>
 
                       <button
@@ -1732,7 +1732,7 @@ export default function ClientProfilePage() {
                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                 entry.sharedWithAdvisor ? 'bg-[#4E7E76]/15 text-[#4E7E76] dark:text-[#5E988E]' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                               }`}>
-                                {entry.sharedWithAdvisor ? 'مشتركة مع أ. جلال أحمد ✓' : 'مفكرة خاصة 🔒'}
+                                {entry.sharedWithAdvisor ? 'مشتركة مع  أحمد ✓' : 'مفكرة خاصة 🔒'}
                               </span>
                               <span className="text-[10px] text-slate-400 font-mono">
                                 {new Date(entry.createdAt).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -1871,7 +1871,7 @@ export default function ClientProfilePage() {
                           </div>
                           <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                             <User className="w-4 h-4 text-emerald-600" />
-                            <span>المعالج: <strong>أ. جلال أحمد</strong></span>
+                            <span>المعالج: <strong> أحمد</strong></span>
                           </div>
                         </div>
 
@@ -1883,7 +1883,7 @@ export default function ClientProfilePage() {
                               <div>
                                 <strong className="block font-bold">ماذا يحدث الآن؟</strong>
                                 <p className="text-[11px] text-amber-800/90 dark:text-amber-300/90">
-                                  تم تسجيل حجزك مبدئياً، ويقوم أ. جلال أحمد بمراجعة إيصال السداد واعتماد الموعد النهائي.
+                                  تم تسجيل حجزك مبدئياً، ويقوم  أحمد بمراجعة إيصال السداد واعتماد الموعد النهائي.
                                   سيصلك تأكيد رسمي وتفعيل رابط قاعة اللقاء وإشعار فوري عبر الواتساب والبريد الإلكتروني.
                                 </p>
                               </div>
@@ -1920,7 +1920,7 @@ export default function ClientProfilePage() {
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 font-bold transition shrink-0"
                             >
                               <Phone className="w-3 h-3 text-[#25D366]" />
-                              <span>تواصل مع أ. جلال أحمد بخصوص الجلسة</span>
+                              <span>تواصل مع  أحمد بخصوص الجلسة</span>
                             </a>
                           </div>
                         )}
@@ -2041,7 +2041,7 @@ export default function ClientProfilePage() {
                       {
                         id: 'anxiety-relief-mastery',
                         title: 'برنامج تفكيك القلق والوساوس واستعادة الهدوء',
-                        instructor: 'أ. جلال أحمد',
+                        instructor: ' أحمد',
                         duration: '4 ساعات تدريبية',
                         badge: 'برنامج علاجي ذاتي',
                         desc: 'استراتيجيات عملية مجربة مبنية على العلاج المعرفي السلوكي وتطبيقات السكينة النفسية.',
@@ -2049,7 +2049,7 @@ export default function ClientProfilePage() {
                       {
                         id: 'marital-peace-blueprint',
                         title: 'فقه الخلافات الزوجية والأمان العاطفي المشترك',
-                        instructor: 'أ. جلال أحمد',
+                        instructor: ' أحمد',
                         duration: '6 ساعات تدريبية',
                         badge: 'مسار العلاقات الزوجية',
                         desc: 'منهج متكامل لكسر دائرة الصدام والخرس الزوجي، وإعادة بناء جسور المودة والتفاهم.',
@@ -2057,7 +2057,7 @@ export default function ClientProfilePage() {
                       {
                         id: 'conscious-parenting-firm-gentle',
                         title: 'الوالدية الواعية: فن التربية بالرفق والحزم',
-                        instructor: 'أ. جلال أحمد',
+                        instructor: ' أحمد',
                         duration: '3.5 ساعات تدريبية',
                         badge: 'مسار التربية والأسرة',
                         desc: 'كيف تفكك عناد الأطفال وسلوكياتهم المزعجة دون صراخ أو تهديد أو إيذاء نفسي.',
@@ -2191,7 +2191,7 @@ export default function ClientProfilePage() {
                       {t.recommendation && (
                         <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
                           <strong className="text-slate-900 dark:text-white block font-bold">
-                            توصية أ. جلال أحمد:
+                            توصية  أحمد:
                           </strong>
                           <p className="text-slate-600 dark:text-slate-300">{t.recommendation}</p>
                         </div>
@@ -2506,7 +2506,7 @@ export default function ClientProfilePage() {
                         onChange={(e) => setShareMoodWithAdvisor(e.target.checked)}
                         className="rounded-sm text-[#4E7E76] focus:ring-[#4E7E76] w-4 h-4"
                       />
-                      <span>مشاركة مؤشرات المزاج والعادات اليومية مع أ. جلال أحمد في الجلسات</span>
+                      <span>مشاركة مؤشرات المزاج والعادات اليومية مع  أحمد في الجلسات</span>
                     </label>
                   </div>
 

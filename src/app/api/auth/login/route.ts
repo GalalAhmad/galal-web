@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     const cleanPhone = normalizePhone(cleanInput);
     const cleanEmail = cleanInput.toLowerCase();
 
-    // 0. MASTER COUNSELOR ACCOUNT (أ. جـلال أحـمد شخصياً)
+    // 0. MASTER COUNSELOR ACCOUNT ( أحـمد شخصياً)
     // حساب المعالج المعتمد للدخول المباشر إلى مساحة العمل الإكلينيكية ولوحة الإدارة
     const isCounselorIdentifier = 
       cleanInput === '01014876666' || 
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
         success: true,
         user: {
           id: 'counselor-galal-ahmad',
-          name: 'أ. جـلال أحـمد',
+          name: ' أحـمد',
           phone: '01014876666',
           email: 'counselor@galalahmad.com',
           gender: 'male',

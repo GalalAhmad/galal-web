@@ -3,7 +3,7 @@
  * تدعم مزود Resend المعتمد مع قوالب HTML أنيقة وتنبيهات فورية للمستشار والعملاء
  */
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'أ. جلال أحمد <appointments@galalahmad.com>';
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || ' أحمد <appointments@galalahmad.com>';
 const CONSULTANT_EMAIL = 'galalahmad1201@gmail.com';
 
 interface SendBookingEmailParams {
@@ -49,7 +49,7 @@ export async function sendBookingConfirmationEmail(params: SendBookingEmailParam
     <body>
       <div class="container">
         <div class="header">
-          <h1>أ. جـلال أحـمد</h1>
+          <h1> أحـمد</h1>
           <p>المنصة الرسمية للاستشارات النفسية والزوجية وبناء الأسرة</p>
         </div>
         <div class="content">
@@ -113,7 +113,7 @@ export async function sendBookingConfirmationEmail(params: SendBookingEmailParam
 
         <div class="footer">
           <p>للتنسيق العاجل أو الاستفسارات: واتساب رسمي <strong>+20 101 487 6666</strong></p>
-          <p>© 2026 أ. جلال أحمد — جميع الحقوق محفوظة</p>
+          <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>
     </body>
@@ -131,7 +131,7 @@ export async function sendHomeworkNotificationEmail(params: {
   notes?: string;
 }) {
   const { to, clientName, homeworkTitle, notes } = params;
-  const subject = `تمرين إرشادي جديد في ملفك الشخصي 🌿 | أ. جلال أحمد`;
+  const subject = `تمرين إرشادي جديد في ملفك الشخصي 🌿 |  أحمد`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -149,7 +149,7 @@ export async function sendHomeworkNotificationEmail(params: {
     <body>
       <div class="container">
         <div class="header">
-          <h2 style="margin: 0; font-size: 18px;">أ. جـلال أحـمد</h2>
+          <h2 style="margin: 0; font-size: 18px;"> أحـمد</h2>
           <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.9;">متابعة خطتك الإرشادية والواجبات المنزلية</p>
         </div>
         <div class="content">
@@ -164,7 +164,7 @@ export async function sendHomeworkNotificationEmail(params: {
           </p>
         </div>
         <div class="footer">
-          <p>© 2026 أ. جلال أحمد — جميع الحقوق محفوظة</p>
+          <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>
     </body>
@@ -206,7 +206,7 @@ export async function sendAdvisorCustomEmail(params: {
     <body>
       <div class="container">
         <div class="header">
-          <h2>أ. جـلال أحـمد</h2>
+          <h2> أحـمد</h2>
           <p>رسالة مباشرة وتواصل مهني خاص</p>
         </div>
         <div class="content">
@@ -227,7 +227,7 @@ export async function sendAdvisorCustomEmail(params: {
         </div>
         <div class="footer">
           <p>للتواصل والاستفسار: واتساب رسمي <strong>+20 101 487 6666</strong></p>
-          <p>© 2026 أ. جلال أحمد — جميع الحقوق محفوظة</p>
+          <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>
     </body>
@@ -265,7 +265,7 @@ export async function sendAdviceNotificationEmail(params: {
     <body>
       <div class="container">
         <div class="header">
-          <h2>أ. جـلال أحـمد</h2>
+          <h2> أحـمد</h2>
           <p>تنبيه إداري فوري — صندوق النصيحة والملاحظات</p>
         </div>
         <div class="content">
@@ -330,7 +330,7 @@ export async function sendClientJournalNotificationEmail(params: {
     <body>
       <div class="container">
         <div class="header">
-          <h2>أ. جـلال أحـمد</h2>
+          <h2> أحـمد</h2>
           <p>تنبيه إكلينيكي فوري — مفكرة الحالة والمصارحة الإرشادية</p>
         </div>
         <div class="content">
@@ -363,7 +363,7 @@ export async function sendNewsletterWelcomeEmail(params: {
   name?: string;
 }): Promise<{ success: boolean; id?: string }> {
   const { to, name } = params;
-  const subject = `أهلاً بك في النشرة الإرشادية والفكرية 🌿 | أ. جـلال أحـمد`;
+  const subject = `أهلاً بك في النشرة الإرشادية والفكرية 🌿 |  أحـمد`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -384,7 +384,7 @@ export async function sendNewsletterWelcomeEmail(params: {
     <body>
       <div class="container">
         <div class="header">
-          <h1>أ. جـلال أحـمد</h1>
+          <h1> أحـمد</h1>
           <p>نشرة الوعي النفسي والتربوي وبناء الإنسان والأسرة</p>
         </div>
         <div class="content">
@@ -409,7 +409,7 @@ export async function sendNewsletterWelcomeEmail(params: {
         </div>
         <div class="footer">
           <p>تصلك هذه الرسالة لاشتراكك في نشرة galalahmad.com</p>
-          <p>© 2026 أ. جلال أحمد — جميع الحقوق محفوظة</p>
+          <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>
     </body>
@@ -451,7 +451,7 @@ export async function sendNewsletterBroadcastEmail(params: {
     <body>
       <div class="container">
         <div class="header">
-          <h1>أ. جـلال أحـمد</h1>
+          <h1> أحـمد</h1>
           <p>إشعار جديد للمشتركين في النشرة الفكرية والإرشادية</p>
         </div>
         <div class="content">
@@ -469,8 +469,8 @@ export async function sendNewsletterBroadcastEmail(params: {
           ` : ''}
         </div>
         <div class="footer">
-          <p>تصلك هذه الرسالة لاشتراكك في نشرة أ. جلال أحمد الرسمية (galalahmad.com)</p>
-          <p>© 2026 أ. جلال أحمد — جميع الحقوق محفوظة</p>
+          <p>تصلك هذه الرسالة لاشتراكك في نشرة  أحمد الرسمية (galalahmad.com)</p>
+          <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>
     </body>

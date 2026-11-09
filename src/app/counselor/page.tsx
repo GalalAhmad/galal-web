@@ -231,7 +231,7 @@ export default function CounselorWorkspacePage() {
 
         // فتح واتساب لمراسلة العميل برابط الجلسة فوراً
         const cleanPhone = (booking.clientPhone || '').replace(/[^\d]/g, '');
-        const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${booking.clientName}.\nيسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}) مع أ. جلال أحمد.\n\n📅 الموعد: ${booking.slotDate}\n⏰ الوقت: ${booking.slotTime}\n🔗 رابط الحضور المباشر (Google Meet):\n${meetLink}\n\nنتمنى لك جلسة موفقة ومثمرة دائماً.`;
+        const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${booking.clientName}.\nيسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}) مع  أحمد.\n\n📅 الموعد: ${booking.slotDate}\n⏰ الوقت: ${booking.slotTime}\n🔗 رابط الحضور المباشر (Google Meet):\n${meetLink}\n\nنتمنى لك جلسة موفقة ومثمرة دائماً.`;
         if (cleanPhone) {
           window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
@@ -266,7 +266,7 @@ export default function CounselorWorkspacePage() {
         );
         showToast('تم تعديل موعد الجلسة بنجاح ✓');
         const cleanPhone = (rescheduleBooking.clientPhone || '').replace(/[^\d]/g, '');
-        const msg = `السلام عليكم أ. ${rescheduleBooking.clientName}،\nنود إفادتك بأنه تم تحديث موعد جلستك الاستشارية (${rescheduleBooking.trackLabel}) مع أ. جلال أحمد إلى:\n📅 ${newSlotDate} في تمام الساعة ${newSlotTime}.\nنلقاك على خير بإذن الله.`;
+        const msg = `السلام عليكم أ. ${rescheduleBooking.clientName}،\nنود إفادتك بأنه تم تحديث موعد جلستك الاستشارية (${rescheduleBooking.trackLabel}) مع  أحمد إلى:\n📅 ${newSlotDate} في تمام الساعة ${newSlotTime}.\nنلقاك على خير بإذن الله.`;
         if (cleanPhone) {
           window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
@@ -393,14 +393,14 @@ export default function CounselorWorkspacePage() {
           <Link href="/" className="flex items-center group shrink-0" title="المنصة الرئيسية للمستشار جلال أحمد">
             <img
               src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
-              alt="شعار أ. جلال أحمد"
+              alt="شعار  أحمد"
               className="h-9 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105 shrink-0"
             />
           </Link>
 
           <div className="border-r border-slate-200 dark:border-slate-800 pr-3.5 space-y-0.5">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-black text-slate-900 dark:text-white">أ. جـلال أحـمد</span>
+              <span className="text-sm font-black text-slate-900 dark:text-white"> أحـمد</span>
               <span className="text-[10px] bg-teal-50 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 px-2 py-0.5 rounded-full font-bold">
                 مساحة المعالج الإكلينيكية 🩺
               </span>
@@ -1219,7 +1219,7 @@ export default function CounselorWorkspacePage() {
                 <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 text-xs leading-relaxed font-mono">
                   <div className="flex items-center justify-between text-[#4E7E76] dark:text-teal-400 border-b border-slate-200 dark:border-slate-800 pb-2">
                     <span className="font-bold">سجل الجلسة رقم 1 • تاريخ 2026-10-15</span>
-                    <span>أ. جلال أحمد</span>
+                    <span> أحمد</span>
                   </div>
                   <div><strong className="text-teal-700 dark:text-teal-300">(S):</strong> يشتكي العميل من تسارع ضربات القلب عند الحديث أمام الزملاء، وتجنب الخروج.</div>
                   <div><strong className="text-teal-700 dark:text-teal-300">(O):</strong> مظهر لائق، اتصال بصري متوتر قليلاً، علامات الإرهاق الذهني بادية.</div>

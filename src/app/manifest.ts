@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'جلال أحمد | استشارات ومقاييس',
     short_name: 'جلال أحمد',
-    description: 'منصة وتطبيق الاستشارات النفسية والتربوية والزوجية وبناء الإنسان مع أ. جلال أحمد.',
+    description: 'منصة وتطبيق الاستشارات النفسية والتربوية والزوجية وبناء الإنسان مع  أحمد.',
     start_url: '/',
     id: '/',
     display: 'standalone',

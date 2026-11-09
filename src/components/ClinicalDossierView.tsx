@@ -302,7 +302,7 @@ export default function ClinicalDossierView({
               type="button"
               onClick={() => {
                 setShowEmailModal(true);
-                setEmailSubject(`متابعة استشارية | أ. جلال أحمد`);
+                setEmailSubject(`متابعة استشارية |  أحمد`);
                 setEmailSentResult(null);
               }}
               className="px-4 py-2 rounded-xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-[#154F9C]/20 cursor-pointer"
@@ -314,7 +314,7 @@ export default function ClinicalDossierView({
 
           {cleanClientPhone && (
             <a
-              href={`https://wa.me/${cleanClientPhone}?text=${encodeURIComponent(`السلام عليكم أ. ${client.name}، معك أ. جلال أحمد بخصوص متابعة جلستك الاستشارية.`)}`}
+              href={`https://wa.me/${cleanClientPhone}?text=${encodeURIComponent(`السلام عليكم أ. ${client.name}، معك  أحمد بخصوص متابعة جلستك الاستشارية.`)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20"

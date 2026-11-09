@@ -236,10 +236,10 @@ function LoginContent() {
           
           {/* Header with Official Logo - Native App Feel */}
           <div className="p-5 sm:p-8 bg-linear-to-b from-slate-50 via-white to-white dark:from-[#111A2E] dark:via-[#0E1524] dark:to-[#0E1524] border-b border-slate-100 dark:border-slate-800 text-center space-y-2.5">
-            <Link href="/" className="inline-block group" title="الصفحة الرئيسية — أ. جلال أحمد">
+            <Link href="/" className="inline-block group" title="الصفحة الرئيسية —  أحمد">
               <img
                 src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
-                alt="شعار أ. جلال أحمد"
+                alt="شعار  أحمد"
                 className="h-12 sm:h-16 w-auto mx-auto object-contain transition-transform group-hover:scale-105"
               />
             </Link>
@@ -387,7 +387,7 @@ function LoginContent() {
                         rel="noopener noreferrer"
                         className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition inline-flex items-center gap-1.5 shadow-2xs"
                       >
-                        <span>مراسلة أ. جلال عبر واتساب</span>
+                        <span>مراسلة  عبر واتساب</span>
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>

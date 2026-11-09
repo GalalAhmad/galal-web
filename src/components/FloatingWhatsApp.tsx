@@ -6,9 +6,9 @@ import { Zap } from 'lucide-react';
 export default function FloatingWhatsApp() {
   const [showTooltip, setShowTooltip] = useState(false);
   const phoneNumber = '201014876666';
-  const defaultMessage = 'أرغب في حجز استشارة مع  أحمد';
+  const defaultMessage = 'أرغب في حجز استشارة مع د. جلال أحمد';
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(defaultMessage)}`;
-  const emergencyUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent('طلب حجز جلسة طارئة وعاجلة خلال 24 ساعة مع  أحمد')}`;
+  const emergencyUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent('طلب حجز جلسة طارئة وعاجلة خلال 24 ساعة مع د. جلال أحمد')}`;
 
   return (
     <div className="fixed bottom-20 sm:bottom-6 start-4 sm:start-6 z-40 flex flex-col items-start gap-2.5 select-none print:hidden">

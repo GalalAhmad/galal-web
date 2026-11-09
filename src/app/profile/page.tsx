@@ -5,6 +5,7 @@ import ClinicalProgressCharts from '@/components/ClinicalProgressCharts';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/context/AuthContext';
@@ -70,15 +71,15 @@ function phonesMatch(phone1?: string, phone2?: string): boolean {
 }
 
 export default function ClientProfilePage() {
+  const router = useRouter();
   const { user: authUser, logout, login } = useAuth();
   const [userSession, setUserSession] = useState<any>(null);
 
-  // App Tabs: consultations | courses | assessments | homework | settings | consultant_hub | wellbeing | journal
-  const [activeTab, setActiveTab] = useState<'consultations' | 'courses' | 'assessments' | 'homework' | 'timeline' | 'settings' | 'consultant_hub' | 'wellbeing' | 'journal'>('consultations');
+  // App Tabs: consultations | courses | assessments | homework | timeline | settings | wellbeing | journal
+  const [activeTab, setActiveTab] = useState<'consultations' | 'courses' | 'assessments' | 'homework' | 'timeline' | 'settings' | 'wellbeing' | 'journal'>('consultations');
 
   // Client Data States
   const [clientBookings, setClientBookings] = useState<any[]>([]);
-  const [allConsultations, setAllConsultations] = useState<any[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [clientTests, setClientTests] = useState<any[]>([]);
   const [clientCourses, setClientCourses] = useState<any[]>([]);
@@ -144,14 +145,19 @@ export default function ClientProfilePage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
 
-  const isConsultant = userSession?.role === 'admin' || 
-    userSession?.email === 'admin@galalahmad.com' ||
-    userSession?.email === 'galalahmad1201@gmail.com' ||
-    userSession?.email === 'insanaraby@gmail.com';
-
-  // Check login on mount and whenever authUser updates
+  // Check login on mount and whenever authUser updates:
+  // Strict Role Separation: Counselor redirects to /counselor, Admin redirects to /admin
   useEffect(() => {
     if (authUser?.name) {
+      if (authUser.role === 'counselor') {
+        router.replace('/counselor');
+        return;
+      }
+      if (authUser.role === 'admin') {
+        router.replace('/admin');
+        return;
+      }
+
       setUserSession(authUser);
       setEditName(authUser.name || '');
       setEditPhone(authUser.phone || '');
@@ -161,41 +167,23 @@ export default function ClientProfilePage() {
       setEditAgeGroup(authUser.ageGroup || '');
       if (authUser.gender) setEditGender(authUser.gender === 'female' || authUser.gender === 'أنثى' ? 'female' : 'male');
       fetchClientData(authUser);
-      if (authUser?.role === 'admin' || authUser?.email === 'admin@galalahmad.com' || authUser?.email === 'galalahmad1201@gmail.com') {
-        setActiveTab('consultant_hub');
-      }
     } else {
       setUserSession(null);
     }
-  }, [authUser]);
+  }, [authUser, router]);
 
   // Fetch client bookings, test records, courses, and homework
   const fetchClientData = async (user: any) => {
+    if (!user) return;
     setLoadingBookings(true);
 
     try {
-      // 1. Fetch Bookings securely with identity params
-      const isConsultantUser = user?.role === 'admin' || 
-        user?.email === 'admin@galalahmad.com' ||
-        user?.email === 'galalahmad1201@gmail.com' ||
-        user?.email === 'insanaraby@gmail.com';
-      const bookingUrl = isConsultantUser
-        ? '/api/bookings?admin=true'
-        : `/api/bookings?phone=${encodeURIComponent(user?.phone || '')}&email=${encodeURIComponent(user?.email || '')}`;
-
+      // 1. Fetch Bookings securely strictly for this authenticated client only
+      const bookingUrl = `/api/bookings?phone=${encodeURIComponent(user?.phone || '')}&email=${encodeURIComponent(user?.email || '')}`;
       const bookRes = await fetch(bookingUrl, { cache: 'no-store' });
       const bookData = await bookRes.json();
       if (bookData.bookings) {
-        if (isConsultantUser) {
-          setAllConsultations(bookData.bookings);
-          const myOwn = bookData.bookings.filter((b: any) => 
-            (user?.email && (b.clientEmail || '').toLowerCase() === (user.email || '').toLowerCase()) ||
-            (user?.phone && phonesMatch(b.clientPhone, user.phone))
-          );
-          setClientBookings(myOwn);
-        } else {
-          setClientBookings(bookData.bookings);
-        }
+        setClientBookings(bookData.bookings);
       }
 
       // 2. Fetch User Profile & Test Results & Courses & Homework
@@ -475,11 +463,23 @@ export default function ClientProfilePage() {
         return;
       }
 
+      // Role-based smart redirect
+      if (data.user.role === 'counselor') {
+        login(data.user);
+        router.replace('/counselor');
+        return;
+      }
+      if (data.user.role === 'admin') {
+        login(data.user);
+        router.replace('/admin');
+        return;
+      }
+
+      login(data.user);
       setUserSession(data.user);
       setEditName(data.user.name || '');
       setEditPhone(data.user.phone || '');
       setEditEmail(data.user.email || '');
-      localStorage.setItem('galal_user_session', JSON.stringify(data.user));
       fetchClientData(data.user);
     } catch (err) {
       setLoginError('تعذر الاتصال بالخادم');
@@ -524,11 +524,11 @@ export default function ClientProfilePage() {
         return;
       }
 
+      login(data.user);
       setUserSession(data.user);
       setEditName(data.user.name || '');
       setEditPhone(data.user.phone || '');
       setEditEmail(data.user.email || '');
-      localStorage.setItem('galal_user_session', JSON.stringify(data.user));
       fetchClientData(data.user);
     } catch (err) {
       setRegError('حدث خطأ غير متوقع أثناء إنشاء الحساب');
@@ -537,12 +537,10 @@ export default function ClientProfilePage() {
     }
   };
 
-
-
-  // Demo Login (أحمد الشريف)
+  // Demo Login (عميل تجريبي)
   const handleQuickDemoLogin = async () => {
-    setLoginIdentifier('01098765432');
-    setLoginPassword('123456');
+    setLoginIdentifier('01000000000');
+    setLoginPassword('Client@2026');
     setLoginLoading(true);
 
     try {
@@ -550,17 +548,17 @@ export default function ClientProfilePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier: '01098765432',
-          password: '123456',
+          identifier: '01000000000',
+          password: 'Client@2026',
         }),
       });
       const data = await res.json();
       if (data.success && data.user) {
+        login(data.user);
         setUserSession(data.user);
         setEditName(data.user.name || '');
         setEditPhone(data.user.phone || '');
         setEditEmail(data.user.email || '');
-        localStorage.setItem('galal_user_session', JSON.stringify(data.user));
         fetchClientData(data.user);
       }
     } catch (e) {
@@ -593,7 +591,7 @@ export default function ClientProfilePage() {
       if (res.ok) {
         setJournalContent('');
         setJournalTitle('');
-        setJournalSuccessMsg(journalShared ? 'تم إرسال تدوينتك وحفظها في ملفك المشترك مع  أحمد ✓' : 'تم حفظ الخاطرة في مفكرتك السرية الخاصة ✓');
+        setJournalSuccessMsg(journalShared ? 'تم إرسال تدوينتك وحفظها في ملفك المشترك مع د. جلال أحمد ✓' : 'تم حفظ الخاطرة في مفكرتك السرية الخاصة ✓');
         setTimeout(() => setJournalSuccessMsg(''), 5000);
         // Refresh journal entries
         const jRes = await fetch(`/api/user/journal?phone=${encodeURIComponent(userSession?.phone || authUser?.phone || '')}&email=${encodeURIComponent(userSession?.email || authUser?.email || '')}`);
@@ -800,7 +798,7 @@ export default function ClientProfilePage() {
                     onClick={handleQuickDemoLogin}
                     className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#4E7E76] dark:hover:text-[#5E988E] underline transition"
                   >
-                    الدخول السريع بحساب تجريبي معتمد (أحمد الشريف)
+                    الدخول السريع بحساب تجريبي معتمد (عميل تجريبي)
                   </button>
                 </div>
               </form>
@@ -929,7 +927,7 @@ export default function ClientProfilePage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-extrabold rounded-xl transition shadow-xs"
-                  title="محادثة واتساب مباشرة مع  أحمد"
+                  title="محادثة واتساب مباشرة مع د. جلال أحمد"
                 >
                   <Phone className="w-3.5 h-3.5" />
                   <span>تواصل عبر واتساب</span>
@@ -964,24 +962,6 @@ export default function ClientProfilePage() {
               </div>
             </div>
 
-            {/* Counselor Workspace Switcher Banner if Logged In As Counselor */}
-            {isConsultant && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-teal-950/80 via-slate-900 to-teal-950/80 border border-teal-500/50 flex flex-wrap items-center justify-between gap-3 shadow-md animate-fadeIn">
-                <div className="flex items-center gap-2.5">
-                  <span className="text-xl">🩺</span>
-                  <div>
-                    <strong className="text-xs text-white block">مساحة عمل المعالج الإكلينيكية المستقلة جاهزة</strong>
-                    <span className="text-[11px] text-teal-300">استوديو الجلسات المباشرة، سجلات SOAP، ومحرك الدليل التشخيصي DSM-5</span>
-                  </div>
-                </div>
-                <Link
-                  href="/counselor"
-                  className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs transition shadow-md flex items-center gap-1.5 shrink-0"
-                >
-                  <span>فتح مساحة المعالج ←</span>
-                </Link>
-              </div>
-            )}
 
             {/* Quick Metrics Bar (Overview Cards) */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -1084,20 +1064,6 @@ export default function ClientProfilePage() {
 
             {/* Mobile App Segmented Tab Bar */}
             <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold overflow-x-auto scrollbar-none">
-              {isConsultant && (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('consultant_hub')}
-                  className={`flex-1 min-w-[145px] py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 font-extrabold ${
-                    activeTab === 'consultant_hub'
-                      ? 'bg-[#154F9C] text-white shadow-xs'
-                      : 'text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20'
-                  }`}
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>بوابة المعالج ({allConsultations.filter(b => b.slotDate === new Date().toISOString().split('T')[0]).length} اليوم)</span>
-                </button>
-              )}
 
               <button
                 type="button"
@@ -1204,208 +1170,6 @@ export default function ClientProfilePage() {
               </button>
             </div>
 
-            {/* TAB 0: CONSULTANT HUB (بوابة  أحمد) */}
-            {activeTab === 'consultant_hub' && isConsultant && (
-              <div className="space-y-6 animate-fadeIn">
-                {/* Consultant Top Banner */}
-                <div className="p-6 rounded-3xl bg-linear-to-br from-[#0F1D38] via-[#0D182E] to-[#080F1E] border border-[#154F9C]/40 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
-                        بوابة المعالج المعتمد
-                      </span>
-                      <span className="text-xs text-slate-300">
-                        {new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                      </span>
-                    </div>
-                    <h2 className="text-xl sm:text-2xl font-black">
-                      جلساتك الاستشارية اليوم والمواعيد القادمة
-                    </h2>
-                    <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
-                      تحكم بمواعيدك وجلساتك من هاتفك مباشرة: دخول قاعة Google Meet بنقرة واحدة، مراسلة العميل بالواتساب، واستعراض الأعراض المسجلة في الاستمارة التشخيصية.
-                    </p>
-                  </div>
-
-                  <Link
-                    href="/admin"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#154F9C] hover:bg-[#124080] text-white text-xs font-bold transition shadow-lg shrink-0"
-                  >
-                    <span>لوحة التحكم الشاملة (Admin)</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-
-                {/* Today's Sessions Section */}
-                <div className="space-y-3">
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Video className="w-5 h-5 text-emerald-500" />
-                    <span>جلسات اليوم ({allConsultations.filter(b => b.slotDate === new Date().toISOString().split('T')[0] && b.status !== 'cancelled').length})</span>
-                  </h3>
-
-                  {(() => {
-                    const todayIso = new Date().toISOString().split('T')[0];
-                    const todayList = allConsultations.filter(b => b.slotDate === todayIso && b.status !== 'cancelled');
-
-                    if (todayList.length === 0) {
-                      return (
-                        <div className="p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500">
-                          لا توجد جلسات استشارية مجدولة لليوم.
-                        </div>
-                      );
-                    }
-
-                    return todayList.map((b: any) => {
-                      const cleanPhone = (b.clientPhone || '').replace(/[^\d]/g, '');
-                      const pills = getIntakeSummaryPills(b.track, b.answers);
-
-                      return (
-                        <div
-                          key={b.id}
-                          className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#161B22] border-2 border-emerald-500/40 dark:border-emerald-500/30 shadow-md space-y-4"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[#154F9C] dark:text-[#60A5FA] font-bold">
-                                  {b.id}
-                                </span>
-                                <span className="text-sm font-bold text-slate-900 dark:text-white">
-                                  {b.clientName}
-                                </span>
-                                <span className="text-[11px] px-2 py-0.5 rounded-full bg-[#154F9C]/10 text-[#154F9C] dark:text-[#60A5FA] font-bold">
-                                  {b.trackLabel}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold mt-1">
-                                <Clock className="w-3.5 h-3.5" />
-                                <span>الساعة {b.slotTime} (اليوم)</span>
-                              </div>
-                            </div>
-
-                            {/* Direct Actions: Google Meet & WhatsApp */}
-                            <div className="flex items-center gap-2">
-                              {b.meetLink && (
-                                <a
-                                  href={b.meetLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white text-xs font-black rounded-xl transition shadow-md"
-                                >
-                                  <Video className="w-4 h-4" />
-                                  <span>دخول القاعة (Meet)</span>
-                                </a>
-                              )}
-                              <a
-                                href={`https://wa.me/${cleanPhone}?text=${encodeURIComponent(`مرحباً أستاذ(ة) ${b.clientName}، معك  أحمد بخصوص جلستنا اليوم الساعة ${b.slotTime}. رابط القاعة: ${b.meetLink || ''}`)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-black rounded-xl transition shadow-md"
-                              >
-                                <Phone className="w-4 h-4" />
-                                <span>واتساب المستفيد</span>
-                              </a>
-                            </div>
-                          </div>
-
-                          {/* Intake summary pills */}
-                          {pills.length > 0 && (
-                            <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-                              <span className="text-slate-400 font-bold">ملخص الأعراض:</span>
-                              {pills.map((pill, idx) => (
-                                <span
-                                  key={idx}
-                                  className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[11px]"
-                                >
-                                  {pill}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-
-                {/* Upcoming Sessions Section */}
-                <div className="space-y-3 pt-4">
-                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-sky-500" />
-                    <span>الجلسات القادمة والمجدولة</span>
-                  </h3>
-
-                  {(() => {
-                    const todayIso = new Date().toISOString().split('T')[0];
-                    const upcomingList = allConsultations.filter(b => b.slotDate > todayIso && b.status !== 'cancelled');
-
-                    if (upcomingList.length === 0) {
-                      return (
-                        <div className="p-8 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 text-center text-xs text-slate-500">
-                          لا توجد حجوزات قادمة بعد اليوم.
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {upcomingList.map((b: any) => {
-                          const cleanPhone = (b.clientPhone || '').replace(/[^\d]/g, '');
-                          return (
-                            <div
-                              key={b.id}
-                              className="p-5 rounded-3xl bg-white dark:bg-[#161B22] border border-slate-200 dark:border-slate-800 space-y-3 shadow-xs"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="font-extrabold text-sm text-slate-900 dark:text-white">
-                                  {b.clientName}
-                                </span>
-                                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">
-                                  {b.trackLabel}
-                                </span>
-                              </div>
-
-                              <div className="flex items-center gap-3 text-xs text-slate-500">
-                                <span className="flex items-center gap-1 font-bold text-slate-700 dark:text-slate-300">
-                                  <Calendar className="w-3.5 h-3.5 text-[#154F9C]" />
-                                  <span>{b.slotDate}</span>
-                                </span>
-                                <span>•</span>
-                                <span className="flex items-center gap-1">
-                                  <Clock className="w-3.5 h-3.5" />
-                                  <span>{b.slotTime}</span>
-                                </span>
-                              </div>
-
-                              <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800 text-xs">
-                                <a
-                                  href={`https://wa.me/${cleanPhone}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold flex items-center gap-1"
-                                >
-                                  <Phone className="w-3 h-3" />
-                                  <span>{b.clientPhone}</span>
-                                </a>
-                                {b.meetLink && (
-                                  <a
-                                    href={b.meetLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[#154F9C] dark:text-[#60A5FA] hover:underline font-bold"
-                                  >
-                                    رابط Meet ↗
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            )}
 
             {/* TAB: UNIFIED CLIENT ACTIVITY TIMELINE */}
             {activeTab === 'timeline' && (
@@ -1597,7 +1361,7 @@ export default function ClientProfilePage() {
               </div>
             )}
 
-            {/* TAB: CLIENT JOURNAL & COUNSELOR COMMUNICATION (مفكرة الخواطر والتواصل مع  أحمد) */}
+            {/* TAB: CLIENT JOURNAL & COUNSELOR COMMUNICATION (مفكرة الخواطر والتواصل مع د. جلال أحمد) */}
             {activeTab === 'journal' && (
               <div className="space-y-6 animate-fadeIn">
                 {/* Fast WhatsApp Card */}
@@ -1608,7 +1372,7 @@ export default function ClientProfilePage() {
                       <span>قناة التنسيق والتواصل المباشر عبر واتساب</span>
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-400">
-                      هل لديك استفسار عاجل أو ترغب بتنسيق طارئ لموعد استشارتك؟ اضغط لبدء محادثة مباشرة مع  أحمد.
+                      هل لديك استفسار عاجل أو ترغب بتنسيق طارئ لموعد استشارتك؟ اضغط لبدء محادثة مباشرة مع د. جلال أحمد.
                     </p>
                   </div>
                   <a
@@ -1696,7 +1460,7 @@ export default function ClientProfilePage() {
                           onChange={(e) => setJournalShared(e.target.checked)}
                           className="rounded-sm text-[#4E7E76] focus:ring-[#4E7E76] w-4 h-4"
                         />
-                        <span className="font-bold">مشاركة هذه التدوينة مع  أحمد في ملفي الإكلينيكي</span>
+                        <span className="font-bold">مشاركة هذه التدوينة مع د. جلال أحمد في ملفي الإكلينيكي</span>
                       </label>
 
                       <button
@@ -1734,7 +1498,7 @@ export default function ClientProfilePage() {
                               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                 entry.sharedWithAdvisor ? 'bg-[#4E7E76]/15 text-[#4E7E76] dark:text-[#5E988E]' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                               }`}>
-                                {entry.sharedWithAdvisor ? 'مشتركة مع  أحمد ✓' : 'مفكرة خاصة 🔒'}
+                                {entry.sharedWithAdvisor ? 'مشتركة مع د. جلال أحمد ✓' : 'مفكرة خاصة 🔒'}
                               </span>
                               <span className="text-[10px] text-slate-400 font-mono">
                                 {new Date(entry.createdAt).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -1922,7 +1686,7 @@ export default function ClientProfilePage() {
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 font-bold transition shrink-0"
                             >
                               <Phone className="w-3 h-3 text-[#25D366]" />
-                              <span>تواصل مع  أحمد بخصوص الجلسة</span>
+                              <span>تواصل مع د. جلال أحمد بخصوص الجلسة</span>
                             </a>
                           </div>
                         )}
@@ -2569,7 +2333,7 @@ export default function ClientProfilePage() {
                         onChange={(e) => setShareMoodWithAdvisor(e.target.checked)}
                         className="rounded-sm text-[#4E7E76] focus:ring-[#4E7E76] w-4 h-4"
                       />
-                      <span>مشاركة مؤشرات المزاج والعادات اليومية مع  أحمد في الجلسات</span>
+                      <span>مشاركة مؤشرات المزاج والعادات اليومية مع د. جلال أحمد في الجلسات</span>
                     </label>
                   </div>
 

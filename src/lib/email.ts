@@ -113,7 +113,7 @@ export async function sendBookingConfirmationEmail(params: SendBookingEmailParam
 
         <div class="footer">
           <p>للتنسيق العاجل أو الاستفسارات: واتساب رسمي <strong>+20 101 487 6666</strong></p>
-          <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
+          <p>© 2026 د. جلال أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>
     </body>
@@ -131,7 +131,7 @@ export async function sendHomeworkNotificationEmail(params: {
   notes?: string;
 }) {
   const { to, clientName, homeworkTitle, notes } = params;
-  const subject = `تمرين إرشادي جديد في ملفك الشخصي 🌿 |  أحمد`;
+  const subject = `تمرين إرشادي جديد في ملفك الشخصي 🌿 | د. جلال أحمد`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -164,7 +164,7 @@ export async function sendHomeworkNotificationEmail(params: {
           </p>
         </div>
         <div class="footer">
-          <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
+          <p>© 2026 د. جلال أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>
     </body>
@@ -227,7 +227,7 @@ export async function sendAdvisorCustomEmail(params: {
         </div>
         <div class="footer">
           <p>للتواصل والاستفسار: واتساب رسمي <strong>+20 101 487 6666</strong></p>
-          <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
+          <p>© 2026 د. جلال أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>
     </body>
@@ -409,7 +409,7 @@ export async function sendNewsletterWelcomeEmail(params: {
         </div>
         <div class="footer">
           <p>تصلك هذه الرسالة لاشتراكك في نشرة galalahmad.com</p>
-          <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
+          <p>© 2026 د. جلال أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>
     </body>
@@ -469,8 +469,8 @@ export async function sendNewsletterBroadcastEmail(params: {
           ` : ''}
         </div>
         <div class="footer">
-          <p>تصلك هذه الرسالة لاشتراكك في نشرة  أحمد الرسمية (galalahmad.com)</p>
-          <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
+          <p>تصلك هذه الرسالة لاشتراكك في نشرة د. جلال أحمد الرسمية (galalahmad.com)</p>
+          <p>© 2026 د. جلال أحمد — جميع الحقوق محفوظة</p>
         </div>
       </div>
     </body>

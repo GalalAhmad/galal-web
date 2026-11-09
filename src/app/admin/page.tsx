@@ -10,6 +10,9 @@ import AdminNewsletterView from '@/components/AdminNewsletterView';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
 import { 
   Building2,
   GraduationCap, 
@@ -56,7 +59,10 @@ import {
   Search,
   Key,
   UserPlus,
-  Mail
+  Mail,
+  Sun,
+  Moon,
+  User
 } from 'lucide-react';
 import { articlesData as initialArticles } from '@/data/articles';
 import { getQuestionAndAnswerLabels, getIntakeSummaryPills, intakeTracks } from '@/data/intakeQuestions';
@@ -73,13 +79,14 @@ const clinicalExercises = [
 ];
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
+  const { user, loading: authLoading, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+
   // Authentication Protection State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [authLoading, setAuthLoading] = useState<boolean>(true);
-  const [inputPassword, setInputPassword] = useState<string>('');
-  const [authError, setAuthError] = useState<string>('');
 
-  const [activeTab, setActiveTab] = useState<'crm' | 'availability' | 'clients' | 'courses' | 'inquiries' | 'advice' | 'newsletter' | 'feedback' | 'faqs' | 'pricing' | 'tracks' | 'videos' | 'articles' | 'settings'>('crm');
+  const [activeTab, setActiveTab] = useState<'articles' | 'videos' | 'courses' | 'faqs' | 'feedback' | 'advice' | 'inquiries' | 'newsletter' | 'tracks' | 'pricing' | 'settings' | 'crm' | 'availability' | 'clients'>('articles');
 
   // Availability & Scheduling State (Calendly System)
   const [availability, setAvailability] = useState<{
@@ -268,37 +275,25 @@ export default function AdminDashboardPage() {
     content: ''
   });
 
-  // Check Authentication on load
+  // Check Authentication on load via unified AuthContext:
+  // Strict Role Control: Only 'admin' or 'counselor' roles can access platform administration
   useEffect(() => {
-    try {
-      const auth = localStorage.getItem('galal_admin_session');
-      if (auth === 'active') {
+    if (!authLoading) {
+      if (!user || (user.role !== 'admin' && user.role !== 'counselor')) {
+        router.replace('/login?redirect=/admin');
+      } else {
         setIsAuthenticated(true);
       }
-    } catch (e) {}
-    setAuthLoading(false);
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError('');
-    // Primary admin password ( أحمد)
-    const validPasswords = ['Galal@2026', 'galal@admin2026', 'galalahmad2026', 'galal2026', 'admin@galal'];
-    if (validPasswords.includes(inputPassword.trim())) {
-      setIsAuthenticated(true);
-      try {
-        localStorage.setItem('galal_admin_session', 'active');
-      } catch (e) {}
-    } else {
-      setAuthError('كلمة المرور غير صحيحة، يرجى المحاولة مرة أخرى.');
     }
-  };
+  }, [user, authLoading, router]);
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    logout();
     try {
       localStorage.removeItem('galal_admin_session');
     } catch (e) {}
+    router.push('/login');
   };
 
   // Fetch inquiries, feedback, settings, and videos
@@ -717,7 +712,7 @@ export default function AdminDashboardPage() {
   };
 
   // Generated WhatsApp feedback link text
-  const generatedFeedbackMsg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${clientNameForWhatsapp || ''}، سعدنا جداً بلقائك وتقديم الجلسة الاستشارية (${serviceForWhatsapp}) مع  أحمد. رأيك وتجربتك تهمنا وتسهم في تطوير خدماتنا، نسعد بمشاركتك تقييمك الموجز عبر الرابط الآمن:%0Ahttps://galalahmad.com/feedback`;
+  const generatedFeedbackMsg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${clientNameForWhatsapp || ''}، سعدنا جداً بلقائك وتقديم الجلسة الاستشارية (${serviceForWhatsapp}) مع د. جلال أحمد. رأيك وتجربتك تهمنا وتسهم في تطوير خدماتنا، نسعد بمشاركتك تقييمك الموجز عبر الرابط الآمن:%0Ahttps://galalahmad.com/feedback`;
 
   const copyReviewText = () => {
     const rawText = decodeURIComponent(generatedFeedbackMsg).replace(/%0A/g, '\n');
@@ -852,7 +847,7 @@ export default function AdminDashboardPage() {
       );
 
       const msg = `السلام عليكم أخي/أختي ${rescheduleBooking.clientName}،
-نود إبلاغكم بأنه تم اعتماد الموعد الجديد لجلستكم الاستشارية (${rescheduleBooking.trackLabel}) مع  أحمد:
+نود إبلاغكم بأنه تم اعتماد الموعد الجديد لجلستكم الاستشارية (${rescheduleBooking.trackLabel}) مع د. جلال أحمد:
 
 📅 الموعد الجديد: ${rescheduleDate}
 ⏰ الساعة: ${rescheduleTime}
@@ -875,7 +870,7 @@ export default function AdminDashboardPage() {
   const openWhatsAppWithMeetLink = (booking: any) => {
     const meet = meetLinkInput[booking.id] || booking.meetLink || 'https://meet.google.com';
     const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أستاذ ${booking.clientName} الكريم.
-معك  أحمد، يسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}).
+معك د. جلال أحمد، يسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}).
 
 🗓️ *الموعد:* ${booking.slotDate}
 ⏰ *الوقت:* ${booking.slotTime} (بتوقيت مكة والقاهرة)
@@ -1226,71 +1221,12 @@ ${meet}
     }
   };
 
-  // 1. Loading state
-  if (authLoading) {
+  // 1. Loading & Authentication Check
+  if (authLoading || !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#0A0F18] flex items-center justify-center text-slate-400">
-        <RefreshCw className="w-6 h-6 animate-spin text-[#154F9C]" />
-      </div>
-    );
-  }
-
-  // 2. Authentication Gate (Protecting Admin Panel strictly for Galal Ahmad)
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-[#0A0F18] text-slate-100 flex items-center justify-center p-4 selection:bg-[#154F9C] selection:text-white" dir="rtl">
-        <div className="w-full max-w-md p-8 rounded-3xl bg-[#0E1524] border border-slate-800 shadow-2xl space-y-6 text-right">
-          <div className="text-center space-y-3">
-            <img src="/assets/logo-white.png" alt="جلال أحمد" className="h-10 w-auto mx-auto logo-clean" />
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs font-bold text-slate-400">
-              <Lock className="w-3.5 h-3.5 text-amber-400" />
-              <span>منطقة تحكم محمية ومشفرة</span>
-            </div>
-            <h1 className="text-xl font-black text-white">
-              لوحة إدارة  أحمد
-            </h1>
-            <p className="text-xs text-slate-400">
-              أدخل كلمة المرور الخاصة بك لتسجيل الدخول والتحكم في الموقع
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                كلمة المرور السرية:
-              </label>
-              <input
-                type="password"
-                required
-                autoFocus
-                value={inputPassword}
-                onChange={(e) => setInputPassword(e.target.value)}
-                placeholder="••••••••••••"
-                className="w-full p-3.5 rounded-2xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#154F9C] text-center font-mono"
-              />
-            </div>
-
-            {authError && (
-              <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs text-center font-bold">
-                {authError}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="w-full py-3.5 px-4 rounded-2xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs sm:text-sm font-bold transition shadow-md shadow-[#154F9C]/20 cursor-pointer flex items-center justify-center gap-2"
-            >
-              <Lock className="w-4 h-4" />
-              <span>دخول إلى لوحة التحكم</span>
-            </button>
-          </form>
-
-          <div className="text-center pt-2">
-            <Link href="/" className="text-xs text-slate-500 hover:text-slate-300 transition">
-              ← العودة إلى الموقع الرئيسي
-            </Link>
-          </div>
-        </div>
+      <div className="min-h-screen bg-[#0A0F18] flex flex-col items-center justify-center p-4 text-center text-slate-300">
+        <RefreshCw className="w-8 h-8 animate-spin text-[#154F9C] mb-3" />
+        <p className="text-xs font-bold">جاري التحقق من صلاحيات إدارة المنصة...</p>
       </div>
     );
   }
@@ -1299,18 +1235,26 @@ ${meet}
     <div className="min-h-screen bg-[#0A0F18] text-slate-100 flex flex-col font-sans" dir="rtl">
       
       {/* Top Header */}
-      <header className="border-b border-slate-800 bg-[#0E1524] px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-0 z-40 backdrop-blur-md">
+      <header className="border-b border-slate-800 bg-[#0E1524] px-4 sm:px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-4 sticky top-0 z-40 backdrop-blur-md shadow-xs">
         <div className="flex items-center gap-3">
-          <img src="/assets/logo-white.png" alt="جلال أحمد" className="h-8 w-auto opacity-95 logo-clean" />
+          <Link href="/" title="الرئيسية — د. جلال أحمد">
+            <img
+              src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
+              alt="شعار د. جلال أحمد"
+              className="h-8 w-auto opacity-95 logo-clean"
+            />
+          </Link>
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-white text-base">لوحة إدارة  أحمد</span>
+            <span className="font-extrabold text-white text-base">
+              لوحة إدارة المنصة (Admin)
+            </span>
             <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 font-semibold">
               نشطة ومزامنة ✓
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex items-center gap-2.5 text-xs">
           {/* Prominent link to Counselor Clinical Workspace */}
           <Link
             href="/counselor"
@@ -1320,19 +1264,21 @@ ${meet}
             <span>مساحة المعالج الإكلينيكية 🩺</span>
           </Link>
 
-          {newInquiriesCount > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-950/60 border border-rose-800 text-rose-300 font-bold animate-pulse">
-              <BellRing className="w-3.5 h-3.5" />
-              <span>{newInquiriesCount} طلب مؤسسي جديد</span>
-            </div>
-          )}
+          {/* Theme switcher */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl text-slate-300 bg-slate-800 hover:bg-slate-700 transition cursor-pointer"
+            title={theme === 'dark' ? 'التحويل للمظهر الفاتح' : 'التحويل للمظهر الليلي'}
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-300" />}
+          </button>
 
           <button
             onClick={fetchData}
             title="تحديث البيانات"
-            className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition"
+            className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            <RefreshCw className="w-4 h-4" />
           </button>
 
           <Link 
@@ -1343,6 +1289,12 @@ ${meet}
             <span>معاينة الموقع</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </Link>
+
+          {/* User pill */}
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-bold">
+            <User className="w-3.5 h-3.5 text-[#154F9C]" />
+            <span>{user?.name || 'مدير المنصة'}</span>
+          </div>
 
           <button
             onClick={handleLogout}
@@ -1366,7 +1318,7 @@ ${meet}
             </div>
             <div>
               <strong className="text-white text-xs sm:text-sm block">
-                مساحة عمل المعالج الإكلينيكية المستقلة ( أحمد شخصياً)
+                مساحة عمل المعالج الإكلينيكية المستقلة (د. جلال أحمد شخصياً)
               </strong>
               <p className="text-[11px] text-teal-200">
                 إدارة ملفات العملاء الفردية، استوديو الجلسات المباشرة، سجلات SOAP، ومساعد الدليل التشخيصي الخامس (DSM-5).
@@ -2200,7 +2152,7 @@ ${meet}
 
                           <div className="flex items-center gap-2">
                             <a
-                              href={`https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته، أ. ${item.contactPerson}، تواصل معكم بخصوص طلبكم المؤسسي لـ (${item.instName}) عبر موقع  أحمد.`)}`}
+                              href={`https://wa.me/${item.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`السلام عليكم ورحمة الله وبركاته، أ. ${item.contactPerson}، تواصل معكم بخصوص طلبكم المؤسسي لـ (${item.instName}) عبر موقع د. جلال أحمد.`)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="px-3 py-1.5 rounded-xl bg-[#168962]/20 hover:bg-[#168962]/40 text-[#4E7E76] dark:text-[#5E988E] border border-[#168962]/40 font-bold transition flex items-center gap-1.5"
@@ -2470,7 +2422,7 @@ ${meet}
                         required
                         value={manualReview.feedback}
                         onChange={(e) => setManualReview({ ...manualReview, feedback: e.target.value })}
-                        placeholder="ماذا قال المستفيد عن تجربته مع  أحمد..."
+                        placeholder="ماذا قال المستفيد عن تجربته مع د. جلال أحمد..."
                         className="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white leading-relaxed"
                       />
                     </div>

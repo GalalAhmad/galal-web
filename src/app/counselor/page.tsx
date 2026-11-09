@@ -45,7 +45,8 @@ import {
   Moon,
   DollarSign,
   AlertCircle,
-  Home
+  Home,
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -63,8 +64,17 @@ import {
 
 export default function CounselorWorkspacePage() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+
+  // Route Protection: Counselor Workspace is strictly for Dr. Galal Ahmad
+  useEffect(() => {
+    if (!authLoading) {
+      if (!user || user.role !== 'counselor') {
+        router.replace('/login?redirect=/counselor');
+      }
+    }
+  }, [user, authLoading, router]);
 
   // Navigation Tabs in Counselor Workspace
   const [activeTab, setActiveTab] = useState<
@@ -235,7 +245,7 @@ export default function CounselorWorkspacePage() {
 
         // فتح واتساب لمراسلة العميل برابط الجلسة فوراً
         const cleanPhone = (booking.clientPhone || '').replace(/[^\d]/g, '');
-        const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${booking.clientName}.\nيسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}) مع  أحمد.\n\n📅 الموعد: ${booking.slotDate}\n⏰ الوقت: ${booking.slotTime}\n🔗 رابط الحضور المباشر (Google Meet):\n${meetLink}\n\nنتمنى لك جلسة موفقة ومثمرة دائماً.`;
+        const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${booking.clientName}.\nيسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}) مع د. جلال أحمد.\n\n📅 الموعد: ${booking.slotDate}\n⏰ الوقت: ${booking.slotTime}\n🔗 رابط الحضور المباشر (Google Meet):\n${meetLink}\n\nنتمنى لك جلسة موفقة ومثمرة دائماً.`;
         if (cleanPhone) {
           window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
@@ -270,7 +280,7 @@ export default function CounselorWorkspacePage() {
         );
         showToast('تم تعديل موعد الجلسة بنجاح ✓');
         const cleanPhone = (rescheduleBooking.clientPhone || '').replace(/[^\d]/g, '');
-        const msg = `السلام عليكم أ. ${rescheduleBooking.clientName}،\nنود إفادتك بأنه تم تحديث موعد جلستك الاستشارية (${rescheduleBooking.trackLabel}) مع  أحمد إلى:\n📅 ${newSlotDate} في تمام الساعة ${newSlotTime}.\nنلقاك على خير بإذن الله.`;
+        const msg = `السلام عليكم أ. ${rescheduleBooking.clientName}،\nنود إفادتك بأنه تم تحديث موعد جلستك الاستشارية (${rescheduleBooking.trackLabel}) مع د. جلال أحمد إلى:\n📅 ${newSlotDate} في تمام الساعة ${newSlotTime}.\nنلقاك على خير بإذن الله.`;
         if (cleanPhone) {
           window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
@@ -434,6 +444,18 @@ export default function CounselorWorkspacePage() {
     { idx: 6, label: 'السبت' },
   ];
 
+  if (authLoading || (!user || user.role !== 'counselor')) {
+    return (
+      <div className="min-h-screen bg-[#070B11] flex flex-col items-center justify-center p-4 text-center text-slate-200">
+        <div className="w-16 h-16 rounded-3xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-3xl mb-4 animate-pulse">
+          🩺
+        </div>
+        <h2 className="text-base font-black text-white mb-1">جاري التحقق من أمان مساحة المعالج...</h2>
+        <p className="text-xs text-slate-400">مساحة عمل خاصة ومشفرة لدكتور جلال أحمد شخصياً</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#070B13] text-slate-900 dark:text-slate-100 flex flex-col font-sans selection:bg-[#4E7E76] selection:text-white antialiased transition-colors duration-200" dir="rtl">
       
@@ -442,17 +464,17 @@ export default function CounselorWorkspacePage() {
         
         {/* Left / Identity & Logo */}
         <div className="flex items-center gap-3.5">
-          <Link href="/" className="flex items-center group shrink-0" title="المنصة الرئيسية للمستشار جلال أحمد">
+          <Link href="/" className="flex items-center group shrink-0" title="الصفحة الرئيسية — د. جلال أحمد">
             <img
               src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
-              alt="شعار  أحمد"
+              alt="شعار د. جلال أحمد"
               className="h-9 sm:h-11 w-auto object-contain transition-transform group-hover:scale-105 shrink-0"
             />
           </Link>
 
           <div className="border-r border-slate-200 dark:border-slate-800 pr-3.5 space-y-0.5">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-black text-slate-900 dark:text-white"> أحـمد</span>
+              <span className="text-sm font-black text-slate-900 dark:text-white">د. جـلال أحـمد</span>
               <span className="text-[10px] bg-teal-50 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 px-2 py-0.5 rounded-full font-bold">
                 مساحة المعالج الإكلينيكية 🩺
               </span>
@@ -524,6 +546,17 @@ export default function CounselorWorkspacePage() {
             <span>لوحة إدارة الموقع</span>
             <ExternalLink className="w-3 h-3" />
           </Link>
+
+          <button
+            onClick={() => {
+              logout();
+              router.push('/login');
+            }}
+            className="p-2 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-transparent hover:border-rose-200 dark:hover:border-rose-900/50 transition cursor-pointer"
+            title="تسجيل الخروج من مساحة المعالج"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
 
       </header>

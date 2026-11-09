@@ -190,7 +190,7 @@ export default function AdminBookingsView({
   const openWhatsAppConfirm = (booking: any) => {
     const meet = meetLinkInput[booking.id] || booking.meetLink || 'https://meet.google.com';
     const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أستاذ ${booking.clientName} الكريم 🌿
-معك  أحمد، يسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}).
+معك د. جلال أحمد، يسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}).
 
 🗓️ الموعد: ${booking.slotDate}
 ⏰ الوقت: ${booking.slotTime} (بتوقيت القاهرة ومكة المكرمة)

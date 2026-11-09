@@ -1,23 +1,29 @@
 [
   {
-    "id": "bfd1c36f-37cb-4b0d-a2d4-31b897ffeb9a",
-    "name": "Galal",
-    "phone": "01003207974",
-    "email": "insanaraby@gmail.com",
+    "id": "client-test-01",
+    "name": "عميل تجريبي",
+    "phone": "01000000000",
+    "email": "client@test.com",
     "role": "client",
-    "gender": "",
-    "ageGroup": "",
-    "maritalStatus": "",
-    "country": "",
-    "city": "",
-    "clinicalNotes": "محتاج تسمع حلقات مع نفسي للدكتور عبدالرحمن ذاكر الهاشمي ",
+    "gender": "male",
+    "ageGroup": "26-35",
+    "maritalStatus": "متزوج",
+    "country": "مصر",
+    "city": "القاهرة",
+    "clinicalNotes": "تم فتح ملف المتابعة الإرشادية مع د. جلال أحمد.",
     "homework": [
       {
-        "id": "hw-1793667951194-791",
-        "title": "قراءة مقال: الوالدية الواعية: كيف نربي بالرفق والحزم معاً دون تناقض؟",
-        "link": "/articles#parenting-with-kindness-and-firmness",
+        "id": "hw-101",
+        "exerciseSlug": "cbt-thought-record",
+        "title": "سجل رصد وتفنيد الأفكار التلقائية (CBT)",
+        "category": "CBT",
+        "categoryLabel": "علاج معرفي سلوكي",
+        "description": "تفكيك التشوهات المعرفية وإعادة البناء المعرفي المتزن.",
+        "estimatedMinutes": 15,
+        "icon": "📝",
         "completed": false,
-        "assignedAt": "2026-11-03"
+        "status": "assigned",
+        "assignedAt": "2026-11-09T18:00:00Z"
       }
     ],
     "courses": [
@@ -25,109 +31,34 @@
         "id": "rifq-mithaq",
         "title": "رحلة رِفق | ميثاق — للمتزوجين",
         "batchDate": "الدفعة المفتوحة",
-        "enrolledAt": "2026-11-04",
+        "enrolledAt": "2026-11-09",
         "status": "active",
-        "progress": 0,
+        "progress": 25,
         "notes": ""
       }
     ],
-    "readingPlan": [],
+    "readingPlan": [
+      {
+        "id": "rp-1",
+        "title": "الوالدية الواعية: كيف نربي بالرفق والحزم معاً دون تناقض؟",
+        "link": "/articles#parenting-with-kindness-and-firmness",
+        "completed": false
+      }
+    ],
     "testResults": [
       {
-        "id": "tr-1793659472",
+        "id": "tr-101",
         "testId": "depression",
-        "testTitle": "اختبار الاكتئاب",
-        "score": 17,
-        "scorePercent": 81,
-        "level": "مستوى مرتفع يستدعي الرعاية",
-        "description": "",
-        "recommendation": "يُوصى بشدة بطلب استشارة متخصصة لتقديم خطة دعم ملائمة.",
-        "date": "٣ نوفمبر ٢٠٢٦",
-        "timestamp": "2026-11-02T22:44:31.881083+00:00"
-      },
-      {
-        "id": "tr-1793667643",
-        "testId": "adhd",
-        "testTitle": "اختبار ADHD",
-        "score": 15,
-        "scorePercent": 83,
-        "level": "مستوى مرتفع يستدعي الرعاية",
-        "description": "",
-        "recommendation": "يُوصى بشدة بطلب استشارة متخصصة لتقديم خطة دعم ملائمة.",
-        "date": "٣ نوفمبر ٢٠٢٦",
-        "timestamp": "2026-11-03T01:00:42.724724+00:00"
+        "testTitle": "مقياس الاكتئاب النفسي (PHQ-9)",
+        "score": 8,
+        "scorePercent": 35,
+        "level": "مستوى منخفض إلى معتدل (أعراض طفيفة)",
+        "description": "استجابة إيجابية للتقنيات السلوكية والأنشطة الترفيهية اليومية.",
+        "recommendation": "الاستمرار في تمارين التنفس والمتابعة في الجلسة القادمة.",
+        "date": "٩ نوفمبر ٢٠٢٦",
+        "timestamp": "2026-11-09T18:30:00.000Z"
       }
     ],
-    "createdAt": "2026-11-02T22:43:56.522428+00:00"
-  },
-  {
-    "id": "6c4a87af-2574-4d1b-a2c3-55540ebcc78c",
-    "name": "فاطمة مصطفى",
-    "phone": "01005566074",
-    "email": "fgaomsb.171985@gmail.com",
-    "role": "client",
-    "gender": "female",
-    "ageGroup": "36-45",
-    "maritalStatus": "married",
-    "country": "مصر",
-    "city": "",
-    "clinicalNotes": "حالة مستقرة، تم استعراض المشكلة وتحديد خطة التدخل.",
-    "homework": [
-      {
-        "id": "hw-1793717939111-933",
-        "title": "حبيني اكتر واكتر عشان حالتك تتحسن وتكوني كويسه",
-        "link": "",
-        "completed": true,
-        "assignedAt": "2026-11-03",
-        "status": "completed"
-      },
-      {
-        "id": "hw-1793717875483-194",
-        "title": "مفكرة الامتنان وبصائر الرضا اليومية (Daily Gratitude Journal)",
-        "link": "/aqwameyat-quran",
-        "completed": true,
-        "assignedAt": "2026-11-03",
-        "status": "completed"
-      },
-      {
-        "id": "hw-1793667998276-585",
-        "title": "اسمعي سلسلة مع نفسي للدكتور عبدالرحمن ذاكر كل يوم حلقتين بالكتير",
-        "link": "",
-        "completed": true,
-        "assignedAt": "2026-11-03",
-        "status": "completed"
-      },
-      {
-        "id": "hw-1",
-        "title": "تمرين إعادة بناء جسور الحوار",
-        "link": "/articles/marital-communication-bridges",
-        "completed": true,
-        "assignedAt": "2026-11-03",
-        "status": "completed"
-      }
-    ],
-    "courses": [
-      {
-        "id": "marital-peace-blueprint",
-        "title": "فقه الخلافات الزوجية",
-        "progress": 15
-      }
-    ],
-    "readingPlan": [],
-    "testResults": [
-      {
-        "id": "tr-1793661148",
-        "testId": "love",
-        "testTitle": "اختبار الحب",
-        "score": 10,
-        "scorePercent": 83,
-        "level": "مستوى مرتفع يستدعي الرعاية",
-        "description": "",
-        "recommendation": "يُوصى بشدة بطلب استشارة متخصصة لتقديم خطة دعم ملائمة.",
-        "date": "٣ نوفمبر ٢٠٢٦",
-        "timestamp": "2026-11-02T23:12:28.102492+00:00"
-      }
-    ],
-    "createdAt": "2026-11-02T22:54:20.232525+00:00"
+    "createdAt": "2026-11-09T12:00:00.000Z"
   }
 ]

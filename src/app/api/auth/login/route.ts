@@ -32,23 +32,23 @@ export async function POST(request: Request) {
     const cleanPhone = normalizePhone(cleanInput);
     const cleanEmail = cleanInput.toLowerCase();
 
-    // 0. MASTER COUNSELOR ACCOUNT ( أحـمد شخصياً)
-    // حساب المعالج المعتمد للدخول المباشر إلى مساحة العمل الإكلينيكية ولوحة الإدارة
+    // ==========================================================
+    // 1. حساب المعالج الخاص (د. جلال أحمد) — مساحة العمل الإكلينيكية
+    // ==========================================================
     const isCounselorIdentifier = 
       cleanInput === '01014876666' || 
       cleanPhone === '01014876666' || 
       cleanEmail === 'counselor@galalahmad.com' || 
-      cleanEmail === 'galal@admin.com' ||
       cleanInput.toLowerCase() === 'galal';
 
-    const validCounselorPasswords = ['Galal@2026', 'galalahmad2026', 'galal2026', 'admin@galal', 'galal@admin2026'];
+    const validCounselorPasswords = ['Galal@2026', 'galalahmad2026', 'galal2026'];
 
     if (isCounselorIdentifier && validCounselorPasswords.includes(password.trim())) {
       return NextResponse.json({
         success: true,
         user: {
           id: 'counselor-galal-ahmad',
-          name: ' أحـمد',
+          name: 'د. جلال أحمد',
           phone: '01014876666',
           email: 'counselor@galalahmad.com',
           gender: 'male',
@@ -56,7 +56,66 @@ export async function POST(request: Request) {
           maritalStatus: 'متزوج',
           country: 'مصر',
           city: 'القاهرة',
-          role: 'counselor', // دور المعالج المعتمد
+          role: 'counselor', // دور المعالج المعتمد — يوجهه مباشرة إلى /counselor
+          createdAt: new Date().toISOString(),
+        },
+      });
+    }
+
+    // ==========================================================
+    // 2. حساب إدارة الموقع (الأدمن) — لوحة تحكم محتويات المنصة
+    // ==========================================================
+    const isAdminIdentifier = 
+      cleanInput.toLowerCase() === 'admin' || 
+      cleanEmail === 'admin@galalahmad.com' || 
+      cleanPhone === '01000000099';
+
+    const validAdminPasswords = ['Admin@2026', 'GalalAdmin@2026', 'admin2026', 'Galal@2026'];
+
+    if (isAdminIdentifier && validAdminPasswords.includes(password.trim())) {
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: 'admin-site-manager',
+          name: 'مدير المنصة',
+          phone: '01000000099',
+          email: 'admin@galalahmad.com',
+          gender: 'male',
+          ageGroup: '36-45',
+          maritalStatus: 'متزوج',
+          country: 'مصر',
+          city: 'القاهرة',
+          role: 'admin', // دور الأدمن — يوجهه مباشرة إلى /admin
+          createdAt: new Date().toISOString(),
+        },
+      });
+    }
+
+    // ==========================================================
+    // 3. الحساب التجريبي المعتمد للعميل (لتجربة رحلة العميل)
+    // ==========================================================
+    const isTestClientIdentifier =
+      cleanInput === '01000000000' ||
+      cleanPhone === '01000000000' ||
+      cleanEmail === 'client@test.com' ||
+      cleanInput.toLowerCase() === 'client';
+
+    const validTestClientPasswords = ['Client@2026', 'client2026', '123456'];
+
+    if (isTestClientIdentifier && validTestClientPasswords.includes(password.trim())) {
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: 'client-test-01',
+          name: 'عميل تجريبي',
+          phone: '01000000000',
+          email: 'client@test.com',
+          gender: 'male',
+          ageGroup: '26-35',
+          maritalStatus: 'متزوج',
+          country: 'مصر',
+          city: 'القاهرة',
+          role: 'client', // دور العميل — يوجهه مباشرة إلى /profile
           createdAt: new Date().toISOString(),
         },
       });

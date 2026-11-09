@@ -478,7 +478,7 @@ export default function AdminCoursesView({
   const openWhatsAppStudent = (student: any) => {
     const cleanPhone = (student.studentPhone || '').replace(/[^\d]/g, '');
     const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أستاذ(ة) ${student.studentName} الكريم(ة) 🌿
-معك  أحمد بخصوص متابعة دورتك التدريبية (${student.courseTitle}) ضمن أكاديمية المنصة.
+معك د. جلال أحمد بخصوص متابعة دورتك التدريبية (${student.courseTitle}) ضمن أكاديمية المنصة.
 
 يسعدني تواصلك وتزويدك بأي مساندة أو استفسار بخصوص محطات البرنامج ومواعيد اللقاءات المباشرة.
 أهلاً بك دائماً.`;

@@ -58,14 +58,14 @@ export default function MobileAppSplash() {
           
           <img
             src={theme === 'dark' ? '/assets/logo-white.png' : '/assets/logo.png'}
-            alt="شعار  أحمد"
+            alt="شعار د. جلال أحمد"
             className="h-20 sm:h-24 w-auto object-contain relative z-10 transition-transform duration-700 ease-out transform scale-100 animate-zoomIn"
           />
         </div>
 
         <div className="space-y-1.5 pt-2">
           <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-wide">
-             أحـمد
+            د. جـلال أحـمد
           </h2>
           <p className="text-xs text-[#4E7E76] dark:text-[#5E988E] font-bold">
             المنصة الرسمية للاستشارات والتمكين النفسي والأسري

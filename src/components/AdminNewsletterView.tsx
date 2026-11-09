@@ -109,7 +109,7 @@ export default function AdminNewsletterView() {
       setTitle('انطلاق الدفعة القادمة من رحلة رِفق وميثاق للأسرة');
       setBadge('إعلان دفعة تدريبية');
       setContent(
-        'نعلن عن فتح باب الانضمام للدفعة القادمة من برنامج ميثاق لبناء الأسرة والزواج. يتضمن المسار محطات تطبيقية أسبوعية مباشرة عبر زووم مع  أحمد وتطبيقات عملية لكل محطة.'
+        'نعلن عن فتح باب الانضمام للدفعة القادمة من برنامج ميثاق لبناء الأسرة والزواج. يتضمن المسار محطات تطبيقية أسبوعية مباشرة عبر زووم مع د. جلال أحمد وتطبيقات عملية لكل محطة.'
       );
       setActionUrl('https://galalahmad.com/courses/family/mithaq');
       setActionText('الاطلاع على تفاصيل البرنامج والتسجيل ←');
@@ -484,7 +484,7 @@ export default function AdminNewsletterView() {
                 {/* Email Footer */}
                 <div className="pt-3 border-t border-slate-200 text-center text-[10px] text-slate-400 space-y-0.5">
                   <p>تصلك هذه الرسالة لاشتراكك في نشرة galalahmad.com</p>
-                  <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
+                  <p>© 2026 د. جلال أحمد — جميع الحقوق محفوظة</p>
                 </div>
               </div>
             </div>

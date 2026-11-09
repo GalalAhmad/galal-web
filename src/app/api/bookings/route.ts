@@ -159,32 +159,36 @@ export async function GET(request: Request) {
       const { data, error } = await query;
 
       if (!error && Array.isArray(data)) {
-        const formatted = data.map(toFrontendBooking);
-        return NextResponse.json(
-          { success: true, bookings: formatted },
-          { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-        );
+        if (data.length > 0) {
+          const formatted = data.map(toFrontendBooking);
+          return NextResponse.json(
+            { success: true, bookings: formatted },
+            { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+          );
+        }
       } else if (error) {
         console.error('Supabase GET bookings error:', error);
         return NextResponse.json({ error: 'تعذر استرجاع الحجوزات من قاعدة البيانات' }, { status: 500 });
       }
     }
 
-    // Local Fallback (only if Supabase is unconfigured)
+    // Local Fallback (only if Supabase is unconfigured or returns empty/null)
     const localData = await readBookingsLocal();
     let filtered = localData;
     if (!isAdmin) {
       filtered = localData.filter((b: any) => {
-        const bPhone = (b.clientPhone || '').replace(/[^\d]/g, '');
-        const bEmail = (b.clientEmail || '').trim().toLowerCase();
-        if (cleanPhone && (bPhone === cleanPhone || bPhone.slice(-8) === cleanPhone.slice(-8))) return true;
+        const bPhone = (b.clientPhone || b.client_phone || '').replace(/[^\d]/g, '');
+        const bEmail = (b.clientEmail || b.client_email || '').trim().toLowerCase();
+        if (cleanPhone && (bPhone === cleanPhone || (bPhone.length >= 8 && cleanPhone.length >= 8 && bPhone.slice(-8) === cleanPhone.slice(-8)))) return true;
         if (cleanEmail && bEmail === cleanEmail) return true;
         return false;
       });
     }
 
+    const formatted = filtered.map(toFrontendBooking);
+
     return NextResponse.json(
-      { success: true, bookings: filtered },
+      { success: true, bookings: formatted },
       { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
     );
   } catch (error) {

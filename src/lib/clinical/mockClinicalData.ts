@@ -24,6 +24,7 @@ export interface ClinicalClient {
   lastSessionDate: string;
   nextSessionDate?: string;
   mentalStatusSummary: string;
+  homework?: any[];
 }
 
 export const INITIAL_CLINICAL_CLIENTS: ClinicalClient[] = [
@@ -46,7 +47,34 @@ export const INITIAL_CLINICAL_CLIENTS: ClinicalClient[] = [
     sessionsCount: 3,
     lastSessionDate: '2026-11-02',
     nextSessionDate: '2026-11-10 16:00',
-    mentalStatusSummary: 'هندام مرتب، اتصال بصري متقطع عند التحدث عن الخلافات، استبصار ممتاز بالمشكلة.'
+    mentalStatusSummary: 'هندام مرتب، اتصال بصري متقطع عند التحدث عن الخلافات، استبصار ممتاز بالمشكلة.',
+    homework: [
+      {
+        id: 'hw-sample-1',
+        exerciseSlug: 'cbt-thought-record',
+        title: 'سجل رصد وتفنيد الأفكار التلقائية (7 أعمدة)',
+        category: 'CBT',
+        categoryLabel: 'علاج معرفي سلوكي',
+        description: 'تفكيك التشوهات المعرفية واستبدالها بأفكار واقعية متزنة.',
+        estimatedMinutes: 15,
+        icon: '📝',
+        status: 'submitted',
+        completed: true,
+        assignedAt: '2026-11-03T10:00:00Z',
+        submittedAt: '2026-11-05T14:30:00Z',
+        clientAnswers: {
+          situation: 'أثناء اجتماع الإدارة السنوي، طُلب مني عرض النتائج وتلعثمت في البداية.',
+          emotions: 'خجل 85%، قلق وتوتر 90%',
+          automatic_thought: 'الجميع يعتقد الآن أنني غير كفء ولن يتم ترقيتي أبداً.',
+          cognitive_distortion: 'التهويل والكارثية (Catastrophizing)',
+          evidence_against: 'العرض نجح في النهاية، والمدير شكرني، وتلعثم البداية طبيعي ويحدث مع أمهر المتحدثين.',
+          balanced_thought: 'مجرد التلعثم لبضع ثوان لا يعني الفشل؛ الأرقام كانت دقيقة والعرض حاز إعجاب الفريق.',
+          re_rate_emotions: 'انخفض القلق إلى 20% والخجل إلى 15% وزادت ثقتي بنفسي.',
+        },
+        counselorFeedback: '',
+        counselorReviewedAt: null,
+      },
+    ],
   },
   {
     id: 'cl-102',

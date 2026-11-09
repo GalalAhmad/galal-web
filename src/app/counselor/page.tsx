@@ -54,6 +54,7 @@ import ConsultationStudio from '@/components/clinical/ConsultationStudio';
 import { DSM5Disorder } from '@/lib/dsm5/types';
 import { DSM5_DISORDERS } from '@/lib/dsm5/knowledgeBase';
 import { CLINICAL_EXERCISES_LIBRARY } from '@/lib/clinical/exercisesLibrary';
+import CounselorHomeworkReviewModal from '@/components/clinical/CounselorHomeworkReviewModal';
 import {
   INITIAL_CLINICAL_CLIENTS,
   INITIAL_CLINICAL_SESSIONS,
@@ -127,6 +128,8 @@ export default function CounselorWorkspacePage() {
 
   // Saved Feedback Alert
   const [toastMessage, setToastMessage] = useState('');
+  const [reviewingHomework, setReviewingHomework] = useState<any | null>(null);
+  const [assigningLoadingSlug, setAssigningLoadingSlug] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -159,7 +162,8 @@ export default function CounselorWorkspacePage() {
           intakeDate: p.created_at ? p.created_at.split('T')[0] : '2026-11-01',
           sessionsCount: Array.isArray(p.tests) ? p.tests.length : 0,
           lastSessionDate: '—',
-          mentalStatusSummary: 'تمت المزامنة اللحظية من بوابة المستفيدين الرسمية.'
+          mentalStatusSummary: 'تمت المزامنة اللحظية من بوابة المستفيدين الرسمية.',
+          homework: Array.isArray(p.homework) ? p.homework : []
         }));
 
         setClients((prev) => {
@@ -364,6 +368,54 @@ export default function CounselorWorkspacePage() {
     setNewClientPhone('');
     setNewClientEmail('');
     setNewClientComplaint('');
+  };
+
+  // إسناد تمرين من المكتبة إلى ملف العميل الحالي وحفظه سحابياً ومحلياً
+  const handleAssignExerciseToCurrentClient = async (ex: any) => {
+    setAssigningLoadingSlug(ex.slug);
+    try {
+      const res = await fetch('/api/clinical/homework', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'assign',
+          exerciseSlug: ex.slug,
+          clientId: currentClient.id,
+          phone: currentClient.phone,
+          email: currentClient.email,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        showToast(data.error || 'تعذر إسناد التمرين');
+        return;
+      }
+
+      showToast(`تم إسناد تمرين "${ex.titleAr}" إلى ملف العميل ${currentClient.fullName} بنجاح ✓`);
+
+      // Update state locally so UI updates instantly
+      if (data.item) {
+        setClients((prev) =>
+          prev.map((c) => {
+            if (c.id === currentClient.id) {
+              return {
+                ...c,
+                homework: [data.item, ...(c.homework || [])],
+              };
+            }
+            return c;
+          })
+        );
+      }
+
+      setDossierTab('homework');
+      setActiveTab('dossier');
+    } catch (err) {
+      showToast('حدث خطأ أثناء الاتصال بالخادم');
+    } finally {
+      setAssigningLoadingSlug(null);
+    }
   };
 
   // حفظ الجلسة من الاستوديو المباشر
@@ -1187,25 +1239,118 @@ export default function CounselorWorkspacePage() {
             {dossierTab === 'homework' && (
               <div className="p-6 rounded-3xl bg-white dark:bg-[#0E1524] border border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white">التكليفات والواجبات الإرشادية للعميل</h3>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 dark:text-white">التكليفات والواجبات الإرشادية للعميل</h3>
+                    <p className="text-xs text-slate-400 mt-0.5">التمارين المعرفية والسلوكية المسندة ومتابعة إجابات وتطبيقات الحالة</p>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setActiveTab('exercises')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#4E7E76] text-white text-xs font-bold hover:bg-[#3D645E] transition cursor-pointer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#4E7E76] text-white text-xs font-bold hover:bg-[#3D645E] transition cursor-pointer shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>إسناد تمرين جديد من المكتبة</span>
                   </button>
                 </div>
-                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-slate-900 dark:text-white text-sm">📝 سجل رصد وتفنيد الأفكار التلقائية (CBT)</strong>
-                    <span className="text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded font-bold">تم تسليم الإجابة ✓</span>
+
+                {!currentClient.homework || currentClient.homework.length === 0 ? (
+                  <div className="p-8 text-center rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+                    <p className="text-xs text-slate-500">لا توجد واجبات مسندة لهذا العميل حالياً.</p>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('exercises')}
+                      className="text-xs font-bold text-[#4E7E76] dark:text-teal-400 underline hover:opacity-80"
+                    >
+                      تصفح مكتبة التمارين وإسناد تمرين الآن ←
+                    </button>
                   </div>
-                  <p className="text-slate-500">
-                    قام العميل بتسجيل موقف اجتماع العمل وتفنيد فكرة "الجميع يراني عاجزاً"، وانخفضت نسبة التوتر لديه إلى 25%.
-                  </p>
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    {currentClient.homework.map((hw: any) => {
+                      const isSubmitted = hw.status === 'submitted' || hw.status === 'reviewed';
+                      const isReviewed = hw.status === 'reviewed';
+
+                      return (
+                        <div
+                          key={hw.id}
+                          className={`p-4 rounded-2xl border transition-all space-y-3 ${
+                            isReviewed
+                              ? 'border-teal-500/30 bg-teal-50/20 dark:bg-teal-950/20'
+                              : isSubmitted
+                              ? 'border-amber-500/40 bg-amber-50/25 dark:bg-amber-950/25'
+                              : 'border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60'
+                          }`}
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-2xl">{hw.icon || '📝'}</span>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                    {hw.categoryLabel || 'تمرين إرشادي'}
+                                  </span>
+                                  {hw.assignedAt && (
+                                    <span className="text-[10px] text-slate-400">
+                                      تاريخ الإسناد: {new Date(hw.assignedAt).toLocaleDateString('ar-EG')}
+                                    </span>
+                                  )}
+                                </div>
+                                <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mt-0.5">
+                                  {hw.title}
+                                </h4>
+                              </div>
+                            </div>
+
+                            {/* Status badge */}
+                            <div>
+                              {isReviewed ? (
+                                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 flex items-center gap-1">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
+                                  <span>تمت المراجعة والاعتماد ✓</span>
+                                </span>
+                              ) : isSubmitted ? (
+                                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1 animate-pulse">
+                                  <span>تم تسليم الإجابة من العميل 📬</span>
+                                </span>
+                              ) : (
+                                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                  بانتظار حل العميل
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Counselor Feedback display if reviewed */}
+                          {isReviewed && hw.counselorFeedback && (
+                            <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 text-xs text-teal-900 dark:text-teal-200 leading-relaxed">
+                              <strong className="font-bold block mb-0.5">توجيهك المعتمد للعميل:</strong>
+                              <span>{hw.counselorFeedback}</span>
+                            </div>
+                          )}
+
+                          {/* Action Button */}
+                          <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                            <span className="text-[11px] text-slate-400">
+                              {hw.submittedAt ? `تاريخ التسليم: ${new Date(hw.submittedAt).toLocaleDateString('ar-EG')}` : 'لم يسلّم بعد'}
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={() => setReviewingHomework(hw)}
+                              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                                isSubmitted
+                                  ? 'bg-[#4E7E76] hover:bg-[#3D645E] text-white shadow-2xs'
+                                  : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
+                              }`}
+                            >
+                              <span>{isSubmitted ? 'مراجعة وتوجيه إجابات العميل 🔍' : 'معاينة هيكل التمرين 👁️'}</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
@@ -1452,12 +1597,15 @@ export default function CounselorWorkspacePage() {
 
                   <button
                     type="button"
-                    onClick={() => {
-                      showToast(`تم إسناد تمرين "${ex.titleAr}" للعميل ${currentClient.fullName} بنجاح ✓`);
-                    }}
-                    className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[#4E7E76] dark:text-teal-300 text-xs font-bold border border-slate-200 dark:border-slate-700 transition cursor-pointer flex items-center justify-center gap-1.5"
+                    disabled={assigningLoadingSlug === ex.slug}
+                    onClick={() => handleAssignExerciseToCurrentClient(ex)}
+                    className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-[#4E7E76] hover:text-white text-[#4E7E76] dark:text-teal-300 text-xs font-bold border border-slate-200 dark:border-slate-700 transition cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
                   >
-                    <span>إسناد للعميل الحالي ({currentClient.clientCode}) ←</span>
+                    {assigningLoadingSlug === ex.slug ? (
+                      <span className="inline-block animate-pulse">جاري الإسناد والتسجيل...</span>
+                    ) : (
+                      <span>إسناد للعميل الحالي ({currentClient.clientCode}) ←</span>
+                    )}
                   </button>
                 </div>
               ))}
@@ -1711,6 +1859,19 @@ export default function CounselorWorkspacePage() {
           showToast(`تم نسخ تشخيص ${disorder.titleAr} (${disorder.icd10}) ✓`);
         }}
       />
+
+      {/* COUNSELOR HOMEWORK REVIEW MODAL */}
+      {reviewingHomework && (
+        <CounselorHomeworkReviewModal
+          homework={reviewingHomework}
+          client={currentClient}
+          onClose={() => setReviewingHomework(null)}
+          onReviewSuccess={() => {
+            fetchRealtimeData();
+            showToast('تم اعتماد التمرين وتوجيه العميل بنجاح ✓');
+          }}
+        />
+      )}
 
       {/* 5. MOBILE APP BOTTOM TAB BAR (Always accessible on Mobile devices) */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0D1117]/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-lg px-2 py-1.5 flex items-center justify-around text-center">

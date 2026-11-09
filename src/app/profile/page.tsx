@@ -53,6 +53,7 @@ import {
   Play,
 } from 'lucide-react';
 import { getIntakeSummaryPills } from '@/data/intakeQuestions';
+import ClientExerciseModal from '@/components/clinical/ClientExerciseModal';
 
 // Google & Apple OAuth removed per policy
 
@@ -82,6 +83,7 @@ export default function ClientProfilePage() {
   const [clientTests, setClientTests] = useState<any[]>([]);
   const [clientCourses, setClientCourses] = useState<any[]>([]);
   const [clientHomework, setClientHomework] = useState<any[]>([]);
+  const [activeExerciseModal, setActiveExerciseModal] = useState<any | null>(null);
   const [clientReadingPlan, setClientReadingPlan] = useState<any[]>([]);
   const [clinicalNotes, setClinicalNotes] = useState<string>('');
 
@@ -2223,52 +2225,113 @@ export default function ClientProfilePage() {
                   </div>
 
                   {clientHomework.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-4 text-center">لا توجد واجبات مطلوبة حالياً.</p>
+                    <p className="text-xs text-slate-400 italic py-6 text-center">لا توجد واجبات أو تكليفات مطلوبة منك حالياً.</p>
                   ) : (
-                    <div className="space-y-2.5">
-                      {clientHomework.map((hw: any) => (
-                        <div
-                          key={hw.id}
-                          onClick={() => handleToggleHomework(hw.id)}
-                          className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 cursor-pointer ${
-                            hw.completed
-                              ? 'border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10'
-                              : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <button type="button" className="text-emerald-500 shrink-0">
-                              {hw.completed ? (
-                                <CheckSquare className="w-5 h-5" />
-                              ) : (
-                                <Square className="w-5 h-5 text-slate-400" />
-                              )}
-                            </button>
-                            <div>
-                              <span
-                                className={`text-xs font-bold block ${
-                                  hw.completed ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white'
+                    <div className="space-y-3">
+                      {clientHomework.map((hw: any) => {
+                        const isSubmitted = hw.status === 'submitted' || hw.status === 'reviewed';
+                        const isReviewed = hw.status === 'reviewed';
+
+                        return (
+                          <div
+                            key={hw.id}
+                            className={`p-4 rounded-2xl border transition-all space-y-3 ${
+                              isReviewed
+                                ? 'border-teal-500/30 bg-teal-50/20 dark:bg-teal-950/20'
+                                : isSubmitted
+                                ? 'border-amber-500/30 bg-amber-50/20 dark:bg-amber-950/20'
+                                : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300'
+                            }`}
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <div className="flex items-center gap-2.5">
+                                <span className="text-2xl">{hw.icon || '📝'}</span>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                      {hw.categoryLabel || 'تمرين إرشادي'}
+                                    </span>
+                                    {hw.assignedAt && (
+                                      <span className="text-[10px] text-slate-400">
+                                        تاريخ التكليف: {new Date(hw.assignedAt).toLocaleDateString('ar-EG')}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white mt-0.5">
+                                    {hw.title}
+                                  </h4>
+                                </div>
+                              </div>
+
+                              {/* Status Badge */}
+                              <div>
+                                {isReviewed ? (
+                                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 flex items-center gap-1">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
+                                    <span>تمت المراجعة والاعتماد ✓</span>
+                                  </span>
+                                ) : isSubmitted ? (
+                                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 flex items-center gap-1">
+                                    <span>تم تسليم الإجابة • بانتظار المراجعة ⏳</span>
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                                    بانتظار تطبيقك للواجب
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Description */}
+                            {hw.description && (
+                              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                                {hw.description}
+                              </p>
+                            )}
+
+                            {/* Counselor Feedback Preview if reviewed */}
+                            {isReviewed && hw.counselorFeedback && (
+                              <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 text-xs text-teal-900 dark:text-teal-200 leading-relaxed">
+                                <strong className="font-bold block mb-0.5">توجيه المعالج جلال أحمد:</strong>
+                                <span>{hw.counselorFeedback}</span>
+                              </div>
+                            )}
+
+                            {/* Interactive Runner Button */}
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                              <span className="text-[11px] text-slate-400">
+                                {hw.estimatedMinutes ? `المدة المقدرة: ${hw.estimatedMinutes} دقيقة` : 'استمارة تفاعلية'}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => setActiveExerciseModal(hw)}
+                                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs ${
+                                  isSubmitted
+                                    ? 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200'
+                                    : 'bg-[#4E7E76] hover:bg-[#3D645E] text-white'
                                 }`}
                               >
-                                {hw.title}
-                              </span>
-                              <span className="text-[10px] text-slate-400">تاريخ التكليف: {hw.assignedAt}</span>
+                                <span>{isSubmitted ? 'عرض إجاباتي والتوجيهات 🔍' : 'بدء تطبيق التمرين الآن ✍️'}</span>
+                              </button>
                             </div>
                           </div>
-
-                          {hw.link && (
-                            <Link
-                              href={hw.link}
-                              onClick={(e) => e.stopPropagation()}
-                              className="text-xs text-[#154F9C] dark:text-[#60A5FA] font-bold hover:underline shrink-0 flex items-center gap-1"
-                            >
-                              <span>فتح التمرين</span>
-                              <ExternalLink className="w-3 h-3" />
-                            </Link>
-                          )}
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
+                  )}
+
+                  {/* Client Exercise Runner Modal */}
+                  {activeExerciseModal && (
+                    <ClientExerciseModal
+                      homework={activeExerciseModal}
+                      userPhone={authUser?.phone}
+                      userEmail={authUser?.email}
+                      onClose={() => setActiveExerciseModal(null)}
+                      onSubmitSuccess={() => {
+                        fetchClientData(authUser);
+                      }}
+                    />
                   )}
                 </div>
 

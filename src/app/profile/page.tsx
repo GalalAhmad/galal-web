@@ -884,7 +884,7 @@ export default function ClientProfilePage() {
                       <span>متتبع المزاج والسكينة التفاعلي اليومي</span>
                     </h3>
                     <p className="text-xs text-slate-600 dark:text-slate-400">
-                      كل اختيار تقوم به يُسجل فوراً في ملفك السريري ويظهر للمستشار جلال أحمد لمتابعة استقرارك واتزانك.
+                      كل اختيار تقوم به يُسجل فوراً في ملفك السريري ويظهر لد. جلال أحمد لمتابعة استقرارك واتزانك.
                     </p>
                   </div>
                   <div className="flex items-center gap-2 bg-white dark:bg-[#161B22] px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-800 dark:text-slate-200 shrink-0">
@@ -1069,10 +1069,10 @@ export default function ClientProfilePage() {
                   <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                       <MessageSquare className="w-4 h-4 text-[#4E7E76]" />
-                      <span>تدوين خاطرة أو رسالة للمستشار جلال أحمد</span>
+                      <span>تدوين خاطرة أو رسالة لد. جلال أحمد</span>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      دوّن مشاعرك وأسئلتك بحرية؛ يمكنك إتاحتها للمستشار في ملفك الإكلينيكي لمناقشتها في الجلسة.
+                      دوّن مشاعرك وأسئلتك بحرية؛ يمكنك إتاحتها للمعالج في ملفك الإكلينيكي لمناقشتها في الجلسة.
                     </p>
                   </div>
 
@@ -1109,7 +1109,7 @@ export default function ClientProfilePage() {
                         >
                           <option value="ملاحظة بعد الجلسة">ملاحظة بعد الجلسة</option>
                           <option value="تفريغ مشاعر وأفكار">تفريغ مشاعر وأفكار</option>
-                          <option value="استفسار للمستشار">استفسار للمستشار</option>
+                          <option value="استفسار للمعالج">استفسار للمعالج</option>
                           <option value="سؤال عن الواجب">سؤال عن الواجب</option>
                           <option value="لحظة إنجاز وامتنان">لحظة إنجاز وامتنان</option>
                         </select>
@@ -1164,7 +1164,7 @@ export default function ClientProfilePage() {
 
                   {journalEntries.length === 0 ? (
                     <p className="text-xs text-slate-400 py-6 text-center">
-                      لا توجد تدوينات سابقة بعد. اكتب أول خاطرة أو رسالة للمستشار أعلاه.
+                      لا توجد تدوينات سابقة بعد. اكتب أول خاطرة أو رسالة للمعالج أعلاه.
                     </p>
                   ) : (
                     <div className="space-y-3">
@@ -1341,7 +1341,7 @@ export default function ClientProfilePage() {
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-black transition shadow-xs cursor-pointer"
                               >
                                 <Send className="w-3.5 h-3.5" />
-                                <span>إرسال إشعار السداد للمستشار عبر واتساب لتسريع الاعتماد</span>
+                                <span>إرسال إشعار السداد لد. جلال عبر واتساب لتسريع الاعتماد</span>
                               </a>
                               <span className="text-[11px] text-slate-500">
                                 رابط القاعة مقفل حتى التحقق المالي

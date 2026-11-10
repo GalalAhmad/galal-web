@@ -70,17 +70,29 @@ function LoginContent() {
   const [regError, setRegError] = useState('');
   const [regSuccess, setRegSuccess] = useState('');
 
+  // Role-safe destination resolver to completely prevent redirect loops
+  const resolveSafeDestination = (role?: string, target?: string | null): string => {
+    if (role === 'counselor') {
+      if (target && (target.startsWith('/counselor') || target.startsWith('/admin'))) {
+        return target;
+      }
+      return '/counselor';
+    }
+    if (role === 'admin') {
+      return '/admin';
+    }
+    // Clients must never be forwarded to admin or counselor workspaces
+    if (target && !target.startsWith('/admin') && !target.startsWith('/counselor')) {
+      return target;
+    }
+    return '/profile';
+  };
+
   // Auto redirect if already logged in
   useEffect(() => {
     if (user?.name) {
-      const redirectTarget = searchParams.get('redirect');
-      if (user.role === 'counselor') {
-        router.replace(redirectTarget || '/counselor');
-      } else if (user.role === 'admin') {
-        router.replace(redirectTarget || '/admin');
-      } else {
-        router.replace(redirectTarget || '/profile');
-      }
+      const dest = resolveSafeDestination(user.role, searchParams.get('redirect'));
+      router.replace(dest);
     }
   }, [user, searchParams, router]);
 
@@ -158,21 +170,15 @@ function LoginContent() {
       // Save user session into AuthContext
       login(data.user);
 
-      // Role-based smart redirect with replace to avoid history loops
-      const redirectTarget = searchParams.get('redirect');
-      if (data.user.role === 'counselor') {
+      if (data.user.role === 'counselor' || data.user.role === 'admin') {
         try {
           localStorage.setItem('galal_admin_session', 'active');
         } catch (e) {}
-        router.replace(redirectTarget || '/counselor');
-      } else if (data.user.role === 'admin') {
-        try {
-          localStorage.setItem('galal_admin_session', 'active');
-        } catch (e) {}
-        router.replace(redirectTarget || '/admin');
-      } else {
-        router.replace(redirectTarget || '/profile');
       }
+
+      // Role-safe redirect with replace to avoid history loops
+      const dest = resolveSafeDestination(data.user.role, searchParams.get('redirect'));
+      router.replace(dest);
     } catch (err) {
       setLoginError('تعذر الاتصال بالخادم، يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.');
       setLoginLoading(false);

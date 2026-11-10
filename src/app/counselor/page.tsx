@@ -70,8 +70,12 @@ export default function CounselorWorkspacePage() {
   // Route Protection: Counselor Workspace is strictly for Dr. Galal Ahmad
   useEffect(() => {
     if (!authLoading) {
-      if (!user || user.role !== 'counselor') {
+      if (!user) {
         router.replace('/login?redirect=/counselor');
+      } else if (user.role === 'admin') {
+        router.replace('/admin');
+      } else if (user.role !== 'counselor') {
+        router.replace('/profile');
       }
     }
   }, [user, authLoading, router]);
@@ -221,8 +225,8 @@ export default function CounselorWorkspacePage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Selected client object
-  const currentClient = clients.find((c) => c.id === selectedClientId) || clients[0];
+  // Selected client object with safe fallback
+  const currentClient = clients.find((c) => c.id === selectedClientId) || clients[0] || INITIAL_CLINICAL_CLIENTS[0];
 
   // 2. إقرار وتأكيد الحجز وتوليد رابط Google Meet
   const handleConfirmBooking = async (booking: any) => {
@@ -614,7 +618,7 @@ export default function CounselorWorkspacePage() {
                 <div className="flex items-center gap-2">
                   <span className="text-xl">🌿</span>
                   <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                    أهلاً بك يا مستشار جـلال في عيادتك الرقمية المعتمدة
+                    أهلاً بك د. جلال أحمد في عيادتك الرقمية المعتمدة
                   </h1>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
@@ -921,6 +925,23 @@ export default function CounselorWorkspacePage() {
                               <button
                                 type="button"
                                 onClick={() => {
+                                  const matched = clients.find((c) => (b.clientPhone && c.phone === b.clientPhone) || c.fullName === b.clientName);
+                                  if (matched) {
+                                    setSelectedClientId(matched.id);
+                                    setActiveTab('dossier');
+                                  } else {
+                                    setActiveTab('clients');
+                                  }
+                                }}
+                                className="px-2 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900 border border-teal-200 dark:border-teal-800 text-teal-800 dark:text-teal-300 font-bold text-[11px]"
+                                title="فتح الملف الإكلينيكي للحالة"
+                              >
+                                الملف 📂
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
                                   setRescheduleBooking(b);
                                   setNewSlotDate(b.slotDate || '');
                                   setNewSlotTime(b.slotTime || '');
@@ -1189,7 +1210,7 @@ export default function CounselorWorkspacePage() {
                 { id: 'homework', label: '4. الواجبات والتكليفات الإرشادية' },
                 { id: 'soap_notes', label: '5. السجل الإكلينيكي (SOAP)' },
                 { id: 'assessments', label: '6. المقاييس والاختبارات' },
-                { id: 'private_vault', label: '7. الملاحظات السرية للمستشار' }
+                { id: 'private_vault', label: '7. الملاحظات السرية للمعالج' }
               ].map((sub) => (
                 <button
                   key={sub.id}

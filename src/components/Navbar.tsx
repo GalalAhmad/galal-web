@@ -96,7 +96,7 @@ export default function Navbar() {
             <Link
               href="/counselor"
               className="hidden xl:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-black bg-teal-50 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800/80 hover:bg-teal-100 transition whitespace-nowrap shrink-0"
-              title="مساحة العمل الإكلينيكية للمستشار جلال"
+              title="مساحة العمل الإكلينيكية لد. جلال أحمد"
             >
               <span className="whitespace-nowrap shrink-0">مساحة المعالج 🩺</span>
             </Link>

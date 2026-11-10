@@ -1902,7 +1902,7 @@ function BookingWizardContent() {
                 className="inline-flex items-center justify-center gap-2.5 w-full sm:w-auto px-8 py-4 bg-[#25D366] hover:bg-[#20BD5A] text-white font-extrabold text-sm rounded-2xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5"
               >
                 <Phone className="w-5 h-5" />
-                <span>إرسال إشعار الحجز ورابط السداد للمستشار عبر واتساب فوراً</span>
+                <span>إرسال إشعار الحجز ورابط السداد لد. جلال عبر واتساب فوراً</span>
               </a>
               <p className="text-xs text-slate-500 mt-2">
                 ضغطة واحدة تفتح محادثة واتساب جاهزة ومجهزة برقم حجزك لتسريع اعتماد الموعد وتزويدك برابط الجلسة.

@@ -3,7 +3,7 @@
 import UnifiedClientTimeline from '@/components/UnifiedClientTimeline';
 import ClinicalProgressCharts from '@/components/ClinicalProgressCharts';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -72,8 +72,8 @@ function phonesMatch(phone1?: string, phone2?: string): boolean {
 
 export default function ClientProfilePage() {
   const router = useRouter();
-  const { user: authUser, logout, login } = useAuth();
-  const [userSession, setUserSession] = useState<any>(null);
+  const { user, isLoading, logout, updateUser } = useAuth();
+  const fetchedUserKeyRef = useRef<string | null>(null);
 
   // App Tabs: consultations | courses | assessments | homework | timeline | settings | wellbeing | journal
   const [activeTab, setActiveTab] = useState<'consultations' | 'courses' | 'assessments' | 'homework' | 'timeline' | 'settings' | 'wellbeing' | 'journal'>('consultations');
@@ -113,24 +113,6 @@ export default function ClientProfilePage() {
   const [enrollingCourseId, setEnrollingCourseId] = useState<string | null>(null);
   const [enrollSuccessMsg, setEnrollSuccessMsg] = useState<string>('');
 
-  // Authentication UI State for non-logged-in users
-  const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
-  const [loginIdentifier, setLoginIdentifier] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [showLoginPassword, setShowLoginPassword] = useState(false);
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [loginError, setLoginError] = useState('');
-
-  // Register inputs
-  const [regName, setRegName] = useState('');
-  const [regPhone, setRegPhone] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regConfirmPassword, setRegConfirmPassword] = useState('');
-  const [showRegPassword, setShowRegPassword] = useState(false);
-  const [regLoading, setRegLoading] = useState(false);
-  const [regError, setRegError] = useState('');
-
   // Edit Profile Info State
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
@@ -145,32 +127,39 @@ export default function ClientProfilePage() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSuccessMsg, setProfileSuccessMsg] = useState('');
 
-  // Check login on mount and whenever authUser updates:
-  // Strict Role Separation: Counselor redirects to /counselor, Admin redirects to /admin
+  // Strict Auth Protection & Single Data Fetch
   useEffect(() => {
-    if (authUser?.name) {
-      if (authUser.role === 'counselor') {
-        router.replace('/counselor');
-        return;
-      }
-      if (authUser.role === 'admin') {
-        router.replace('/admin');
-        return;
-      }
+    if (isLoading) return;
 
-      setUserSession(authUser);
-      setEditName(authUser.name || '');
-      setEditPhone(authUser.phone || '');
-      setEditEmail(authUser.email || '');
-      setEditCity(authUser.city || '');
-      setEditMaritalStatus(authUser.maritalStatus || 'غير محدد');
-      setEditAgeGroup(authUser.ageGroup || '');
-      if (authUser.gender) setEditGender(authUser.gender === 'female' || authUser.gender === 'أنثى' ? 'female' : 'male');
-      fetchClientData(authUser);
-    } else {
-      setUserSession(null);
+    if (!user?.name) {
+      router.replace('/login?redirect=/profile');
+      return;
     }
-  }, [authUser, router]);
+
+    if (user.role === 'counselor') {
+      router.replace('/counselor');
+      return;
+    }
+
+    if (user.role === 'admin') {
+      router.replace('/admin');
+      return;
+    }
+
+    setEditName(user.name || '');
+    setEditPhone(user.phone || '');
+    setEditEmail(user.email || '');
+    setEditCity(user.city || '');
+    setEditMaritalStatus(user.maritalStatus || 'غير محدد');
+    setEditAgeGroup(user.ageGroup || '');
+    if (user.gender) setEditGender(user.gender === 'female' || user.gender === 'أنثى' ? 'female' : 'male');
+
+    const userKey = `${user.id || ''}-${user.phone || ''}-${user.email || ''}`;
+    if (fetchedUserKeyRef.current !== userKey) {
+      fetchedUserKeyRef.current = userKey;
+      fetchClientData(user);
+    }
+  }, [user, isLoading, router]);
 
   // Fetch client bookings, test records, courses, and homework
   const fetchClientData = async (user: any) => {
@@ -282,8 +271,8 @@ export default function ClientProfilePage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: userSession?.phone || authUser?.phone,
-          email: userSession?.email || authUser?.email,
+          phone: user?.phone,
+          email: user?.email,
           updateHomeworkId: hwId,
           updateHomeworkStatus: newStatus,
           clientNotes,
@@ -299,7 +288,7 @@ export default function ClientProfilePage() {
 
   // Toggle Homework Completion Status
   const handleToggleHomework = async (hwId: string) => {
-    if (!userSession) return;
+    if (!user) return;
     try {
       setClientHomework(prev => prev.map(hw => hw.id === hwId ? { ...hw, completed: !hw.completed } : hw));
 
@@ -307,8 +296,8 @@ export default function ClientProfilePage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: userSession.phone,
-          email: userSession.email,
+          phone: user.phone,
+          email: user.email,
           toggleHomeworkId: hwId,
         }),
       });
@@ -319,7 +308,7 @@ export default function ClientProfilePage() {
 
   // Toggle Reading Plan Item Status
   const handleToggleReading = async (rpId: string) => {
-    if (!userSession) return;
+    if (!user) return;
     try {
       setClientReadingPlan(prev => prev.map(rp => rp.id === rpId ? { ...rp, completed: !rp.completed } : rp));
 
@@ -327,8 +316,8 @@ export default function ClientProfilePage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: userSession.phone,
-          email: userSession.email,
+          phone: user.phone,
+          email: user.email,
           toggleReadingPlanId: rpId,
         }),
       });
@@ -339,7 +328,7 @@ export default function ClientProfilePage() {
 
   // Handle 1-Click Course Enrollment
   const handleEnrollCourse = async (course: any) => {
-    if (!userSession) return;
+    if (!user) return;
     setEnrollingCourseId(course.id);
     setEnrollSuccessMsg('');
 
@@ -355,7 +344,7 @@ export default function ClientProfilePage() {
       const newCourseEntry = {
         id: course.id,
         title: course.title,
-        instructor: course.instructor || ' أحمد',
+        instructor: course.instructor || 'د. جلال أحمد',
         progress: 0,
         enrolledAt: new Date().toISOString(),
       };
@@ -367,8 +356,8 @@ export default function ClientProfilePage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: userSession.phone,
-          email: userSession.email,
+          phone: user.phone,
+          email: user.email,
           courses: updatedCourses,
         }),
       });
@@ -392,9 +381,9 @@ export default function ClientProfilePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: userSession?.phone || authUser?.phone,
-          email: userSession?.email || authUser?.email,
-          name: userSession?.name || authUser?.name,
+          phone: user?.phone,
+          email: user?.email,
+          name: user?.name,
           moodId: item.id,
           moodLabel: item.label,
           moodScore: item.id === 'peaceful' ? 5 : item.id === 'calm' ? 4 : item.id === 'neutral' ? 3 : item.id === 'anxious' ? 2 : 1,
@@ -404,7 +393,7 @@ export default function ClientProfilePage() {
       });
       setWellbeingSavedMsg(`تم توثيق حالتك المزاجية (${item.label}) في سجلك ومشاركتها في ملفك الإكلينيكي 🌿`);
       setTimeout(() => setWellbeingSavedMsg(''), 4000);
-      fetchClientData(userSession || authUser);
+      if (user) fetchClientData(user);
     } catch (e) {
       console.error('Error saving mood:', e);
     } finally {
@@ -423,9 +412,9 @@ export default function ClientProfilePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: userSession?.phone || authUser?.phone,
-          email: userSession?.email || authUser?.email,
-          name: userSession?.name || authUser?.name,
+          phone: user?.phone,
+          email: user?.email,
+          name: user?.name,
           moodId: dailyMood?.id || 'neutral',
           moodLabel: dailyMood?.label || 'مستقر وعادي',
           moodScore: dailyMood?.id === 'peaceful' ? 5 : dailyMood?.id === 'calm' ? 4 : 3,
@@ -440,133 +429,7 @@ export default function ClientProfilePage() {
     }
   };
 
-  // Real Login Handler
-  const handleRealLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-    setLoginLoading(true);
 
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: loginIdentifier.trim(),
-          password: loginPassword,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        setLoginError(data.error || 'حدث خطأ في تسجيل الدخول');
-        setLoginLoading(false);
-        return;
-      }
-
-      // Role-based smart redirect
-      if (data.user.role === 'counselor') {
-        login(data.user);
-        router.replace('/counselor');
-        return;
-      }
-      if (data.user.role === 'admin') {
-        login(data.user);
-        router.replace('/admin');
-        return;
-      }
-
-      login(data.user);
-      setUserSession(data.user);
-      setEditName(data.user.name || '');
-      setEditPhone(data.user.phone || '');
-      setEditEmail(data.user.email || '');
-      fetchClientData(data.user);
-    } catch (err) {
-      setLoginError('تعذر الاتصال بالخادم');
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
-  // Real Register Handler
-  const handleRealRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setRegError('');
-
-    if (regPassword !== regConfirmPassword) {
-      setRegError('كلمة المرور وتأكيدها غير متطابقين');
-      return;
-    }
-
-    if (regPassword.length < 6) {
-      setRegError('كلمة المرور يجب أن لا تقل عن 6 خانات أو أحرف');
-      return;
-    }
-
-    setRegLoading(true);
-
-    try {
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: regName.trim(),
-          phone: regPhone.trim(),
-          email: regEmail.trim(),
-          password: regPassword,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        setRegError(data.error || 'تعذر إنشاء الحساب');
-        setRegLoading(false);
-        return;
-      }
-
-      login(data.user);
-      setUserSession(data.user);
-      setEditName(data.user.name || '');
-      setEditPhone(data.user.phone || '');
-      setEditEmail(data.user.email || '');
-      fetchClientData(data.user);
-    } catch (err) {
-      setRegError('حدث خطأ غير متوقع أثناء إنشاء الحساب');
-    } finally {
-      setRegLoading(false);
-    }
-  };
-
-  // Demo Login (عميل تجريبي)
-  const handleQuickDemoLogin = async () => {
-    setLoginIdentifier('01000000000');
-    setLoginPassword('Client@2026');
-    setLoginLoading(true);
-
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          identifier: '01000000000',
-          password: 'Client@2026',
-        }),
-      });
-      const data = await res.json();
-      if (data.success && data.user) {
-        login(data.user);
-        setUserSession(data.user);
-        setEditName(data.user.name || '');
-        setEditPhone(data.user.phone || '');
-        setEditEmail(data.user.email || '');
-        fetchClientData(data.user);
-      }
-    } catch (e) {
-      setLoginError('تعذر تسجيل الدخول بالحساب التجريبي');
-    } finally {
-      setLoginLoading(false);
-    }
-  };
 
   // Save Client Journal / Reflection / Message
   const handleSaveJournalEntry = async (e: React.FormEvent) => {
@@ -579,9 +442,9 @@ export default function ClientProfilePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: userSession?.phone || authUser?.phone,
-          email: userSession?.email || authUser?.email,
-          name: userSession?.name || authUser?.name,
+          phone: user?.phone,
+          email: user?.email,
+          name: user?.name,
           title: journalTitle.trim() || 'تدوينة إرشادية',
           content: journalContent.trim(),
           sharedWithAdvisor: journalShared,
@@ -594,7 +457,7 @@ export default function ClientProfilePage() {
         setJournalSuccessMsg(journalShared ? 'تم إرسال تدوينتك وحفظها في ملفك المشترك مع د. جلال أحمد ✓' : 'تم حفظ الخاطرة في مفكرتك السرية الخاصة ✓');
         setTimeout(() => setJournalSuccessMsg(''), 5000);
         // Refresh journal entries
-        const jRes = await fetch(`/api/user/journal?phone=${encodeURIComponent(userSession?.phone || authUser?.phone || '')}&email=${encodeURIComponent(userSession?.email || authUser?.email || '')}`);
+        const jRes = await fetch(`/api/user/journal?phone=${encodeURIComponent(user?.phone || '')}&email=${encodeURIComponent(user?.email || '')}`);
         const jData = await jRes.json();
         if (jData.entries) setJournalEntries(jData.entries);
       }
@@ -616,8 +479,8 @@ export default function ClientProfilePage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: editPhone.trim() || userSession?.phone,
-          email: editEmail.trim() || userSession?.email,
+          phone: editPhone.trim() || user?.phone,
+          email: editEmail.trim() || user?.email,
           name: editName.trim(),
           newPassword: editNewPassword.trim() ? editNewPassword.trim() : undefined,
           city: editCity.trim(),
@@ -633,7 +496,7 @@ export default function ClientProfilePage() {
       const data = await res.json();
       if (data.success) {
         const updated = {
-          ...userSession,
+          ...user,
           name: editName.trim(),
           phone: editPhone.trim(),
           email: editEmail.trim(),
@@ -642,8 +505,7 @@ export default function ClientProfilePage() {
           ageGroup: editAgeGroup,
           gender: editGender,
         };
-        setUserSession(updated);
-        localStorage.setItem('galal_user_session', JSON.stringify(updated));
+        updateUser(updated);
         setEditNewPassword('');
         setProfileSuccessMsg('تم حفظ وتحديث كافة بيانات الحساب والإعدادات بنجاح ✓');
         setTimeout(() => setProfileSuccessMsg(''), 4000);
@@ -655,16 +517,45 @@ export default function ClientProfilePage() {
     }
   };
 
-  // Sign out
+  // Sign out cleanly
   const handleSignOut = () => {
-    setUserSession(null);
-    setClientBookings([]);
-    setClientTests([]);
-    setClientCourses([]);
-    setClientHomework([]);
-    setClientReadingPlan([]);
-    localStorage.removeItem('galal_user_session');
+    logout();
+    router.replace('/login');
   };
+
+  // 1. Loading State (Prevents any hydration flicker or jump)
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#FDFDFC] dark:bg-[#0B0F15] text-slate-800 dark:text-slate-100 flex flex-col justify-between transition-colors antialiased">
+        <Navbar />
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-24 flex flex-col items-center justify-center text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#4E7E76]/10 text-[#4E7E76] flex items-center justify-center mb-4 shadow-xs">
+            <RefreshCw className="w-7 h-7 animate-spin" />
+          </div>
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">جارٍ تجهيز مساحة المستفيد...</h2>
+          <p className="text-xs text-slate-400 mt-1">يتم التحقق من الجلسة وتحديث ملفك الإرشادي بأمان</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // 2. Unauthenticated State (Clean redirect to unified login portal)
+  if (!user?.name) {
+    return (
+      <div className="min-h-screen bg-[#FDFDFC] dark:bg-[#0B0F15] text-slate-800 dark:text-slate-100 flex flex-col justify-between transition-colors antialiased">
+        <Navbar />
+        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-24 flex flex-col items-center justify-center text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[#4E7E76]/10 text-[#4E7E76] flex items-center justify-center mb-4 shadow-xs">
+            <LogIn className="w-7 h-7" />
+          </div>
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">جارٍ توجيهك إلى بوابة الدخول الموحدة...</h2>
+          <p className="text-xs text-slate-400 mt-1">يرجى تسجيل الدخول للوصول إلى مساحتك الإرشادية الخاصة</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FDFDFC] dark:bg-[#0B0F15] text-slate-800 dark:text-slate-100 flex flex-col justify-between transition-colors antialiased">
@@ -672,220 +563,7 @@ export default function ClientProfilePage() {
 
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10 text-right">
 
-        {/* 1. NOT LOGGED IN VIEW */}
-        {!userSession ? (
-          <div className="max-w-md mx-auto bg-white dark:bg-[#161B22] p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6 text-center animate-fadeIn">
-            <div className="w-14 h-14 rounded-2xl bg-[#4E7E76]/10 text-[#4E7E76] dark:text-[#5E988E] flex items-center justify-center mx-auto shadow-xs">
-              <User className="w-7 h-7" />
-            </div>
-
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                بوابة المستفيد • جلال أحمد
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
-                مساحتك المتكاملة لإدارة جلساتك، دوراتك، تكليفاتك المنزلية، ومتابعة القراءة ونتائج مقاييسك.
-              </p>
-            </div>
-
-
-
-            {/* Tab Selector */}
-            <div className="grid grid-cols-2 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthTab('login');
-                  setLoginError('');
-                }}
-                className={`py-2 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer ${
-                  authTab === 'login'
-                    ? 'bg-white dark:bg-slate-800 text-[#4E7E76] dark:text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                <span>تسجيل الدخول</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setAuthTab('register');
-                  setRegError('');
-                }}
-                className={`py-2 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer ${
-                  authTab === 'register'
-                    ? 'bg-white dark:bg-slate-800 text-[#4E7E76] dark:text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                }`}
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>إنشاء حساب</span>
-              </button>
-            </div>
-
-            {/* LOGIN FORM */}
-            {authTab === 'login' && (
-              <form onSubmit={handleRealLogin} className="space-y-4 text-right animate-fadeIn">
-                {loginError && (
-                  <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{loginError}</span>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    رقم الهاتف أو البريد الإلكتروني <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    dir="ltr"
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder="01000000000 أو user@example.com"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    كلمة المرور <span className="text-rose-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showLoginPassword ? 'text' : 'password'}
-                      required
-                      dir="ltr"
-                      value={loginPassword}
-                      onChange={(e) => setLoginPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowLoginPassword(!showLoginPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 transition cursor-pointer"
-                    >
-                      {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loginLoading}
-                  className="w-full py-3.5 rounded-2xl bg-[#4E7E76] hover:bg-[#3D645E] disabled:bg-slate-400 text-white font-extrabold text-sm transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {loginLoading ? (
-                    <>
-                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      <span>جارٍ تسجيل الدخول...</span>
-                    </>
-                  ) : (
-                    <>
-                      <LogIn className="w-4 h-4" />
-                      <span>تسجيل الدخول</span>
-                    </>
-                  )}
-                </button>
-
-                <div className="pt-2 text-center">
-                  <button
-                    type="button"
-                    onClick={handleQuickDemoLogin}
-                    className="text-xs text-slate-500 dark:text-slate-400 hover:text-[#4E7E76] dark:hover:text-[#5E988E] underline transition"
-                  >
-                    الدخول السريع بحساب تجريبي معتمد (عميل تجريبي)
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* REGISTER FORM */}
-            {authTab === 'register' && (
-              <form onSubmit={handleRealRegister} className="space-y-4 text-right animate-fadeIn">
-                {regError && (
-                  <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 text-rose-700 dark:text-rose-300 text-xs font-bold flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>{regError}</span>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    الاسم الكامل <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={regName}
-                    onChange={(e) => setRegName(e.target.value)}
-                    placeholder="مثال: عبد الرحمن محمد"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    رقم الهاتف / الواتساب <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    dir="ltr"
-                    value={regPhone}
-                    onChange={(e) => setRegPhone(e.target.value)}
-                    placeholder="01012345678"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    كلمة المرور (6 أحرف على الأقل) <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    dir="ltr"
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    تأكيد كلمة المرور <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    dir="ltr"
-                    value={regConfirmPassword}
-                    onChange={(e) => setRegConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white text-xs text-left focus:ring-2 focus:ring-[#4E7E76] focus:outline-hidden"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={regLoading}
-                  className="w-full py-3.5 rounded-2xl bg-[#4E7E76] hover:bg-[#3D645E] disabled:bg-slate-400 text-white font-extrabold text-sm transition shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  <span>{regLoading ? 'جارٍ إنشاء الحساب...' : 'إنشاء حساب ومتابعة'}</span>
-                </button>
-              </form>
-            )}
-          </div>
-        ) : (
-          /* 2. FLAGSHIP MOBILE-FIRST CLIENT DASHBOARD (عوافي / داعم / فامكير STYLE) */
+          {/* FLAGSHIP MOBILE-FIRST CLIENT DASHBOARD */}
           <div className="space-y-6 animate-fadeIn">
 
             {/* App Top Bar & User Welcome Card */}
@@ -893,7 +571,7 @@ export default function ClientProfilePage() {
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-linear-to-br from-[#154F9C] to-[#3B82F6] text-white font-black text-xl sm:text-2xl flex items-center justify-center shadow-md shrink-0">
-                    {userSession.name.charAt(0)}
+                    {user.name.charAt(0)}
                   </div>
                   <span className="absolute -bottom-1 -left-1 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#161B22]" />
                 </div>
@@ -901,7 +579,7 @@ export default function ClientProfilePage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                      أهلاً بك، {userSession.name} 🌿
+                      أهلاً بك، {user.name} 🌿
                     </h1>
                   </div>
 
@@ -910,10 +588,10 @@ export default function ClientProfilePage() {
                       <ShieldCheck className="w-3 h-3" />
                       <span>مستفيد معتمد</span>
                     </span>
-                    {userSession.phone && (
+                    {user.phone && (
                       <span className="flex items-center gap-1 font-mono" dir="ltr">
                         <Phone className="w-3 h-3 text-[#154F9C]" />
-                        <span>{userSession.phone}</span>
+                        <span>{user.phone}</span>
                       </span>
                     )}
                   </div>
@@ -923,7 +601,7 @@ export default function ClientProfilePage() {
               {/* Quick Actions */}
               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <a
-                  href={`https://wa.me/201014876666?text=${encodeURIComponent(`السلام عليكم أستاذ جلال أحمد، أنا ${userSession.name} من المنصة الرسمية.`)}`}
+                  href={`https://wa.me/201014876666?text=${encodeURIComponent(`السلام عليكم د. جلال أحمد، أنا ${user.name} من المنصة الرسمية.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-extrabold rounded-xl transition shadow-xs"
@@ -937,10 +615,10 @@ export default function ClientProfilePage() {
                   type="button"
                   onClick={() => setActiveTab('journal')}
                   className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-extrabold rounded-xl transition shadow-xs cursor-pointer"
-                  title="مراسلة  أحمد وتدوين الخواطر الإرشادية"
+                  title="مراسلة د. جلال أحمد وتدوين الخواطر الإرشادية"
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
-                  <span>مراسلة  والخواطر</span>
+                  <span>مراسلة د. جلال والخواطر</span>
                 </button>
 
                 <Link
@@ -1140,7 +818,7 @@ export default function ClientProfilePage() {
                 }`}
               >
                 <MessageSquare className="w-3.5 h-3.5 text-[#4E7E76]" />
-                <span>مراسلة  والخواطر ({journalEntries.length})</span>
+                <span>مراسلة د. جلال والخواطر ({journalEntries.length})</span>
               </button>
 
               <button
@@ -1376,7 +1054,7 @@ export default function ClientProfilePage() {
                     </p>
                   </div>
                   <a
-                    href={`https://wa.me/201014876666?text=${encodeURIComponent(`السلام عليكم أستاذ جلال أحمد، أنا ${userSession?.name} من المنصة الرسمية.`)}`}
+                    href={`https://wa.me/201014876666?text=${encodeURIComponent(`السلام عليكم د. جلال أحمد، أنا ${user?.name} من المنصة الرسمية.`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-[#25D366] hover:bg-[#20BD5A] text-white text-xs font-extrabold transition shadow-md shrink-0"
@@ -1548,11 +1226,11 @@ export default function ClientProfilePage() {
                     const isPending = !isConfirmed && !isCancelled && !isCompleted;
 
                     const whatsappPendingUrl = `https://wa.me/201014876666?text=${encodeURIComponent(
-                      `السلام عليكم ورحمة الله وبركاته أستاذ جلال أحمد 🌿\nمعك ${userSession?.name || 'مستفيد'}. قمت بحجز جلسة استشارية (${b.trackLabel || 'استشارة متخصصة'}) برقم مرجعي: ${b.id}\nالموعد المحدد: ${b.slotDate} في تمام ${b.slotTime}.\nأرسل لكم هذا الإشعار لتأكيد التحقق من إيصال السداد واعتماد الموعد وتزويدي برابط الجلسة.`
+                      `السلام عليكم ورحمة الله وبركاته د. جلال أحمد 🌿\nمعك ${user?.name || 'مستفيد'}. قمت بحجز جلسة استشارية (${b.trackLabel || 'استشارة متخصصة'}) برقم مرجعي: ${b.id}\nالموعد المحدد: ${b.slotDate} في تمام ${b.slotTime}.\nأرسل لكم هذا الإشعار لتأكيد التحقق من إيصال السداد واعتماد الموعد وتزويدي برابط الجلسة.`
                     )}`;
 
                     const whatsappSessionUrl = `https://wa.me/201014876666?text=${encodeURIComponent(
-                      `السلام عليكم أستاذ جلال أحمد 🌿\nمعك ${userSession?.name || 'مستفيد'} بخصوص جلستي المعتمدة (${b.trackLabel || 'استشارة'}) برقم: ${b.id} في موعد: ${b.slotDate} - ${b.slotTime}.`
+                      `السلام عليكم د. جلال أحمد 🌿\nمعك ${user?.name || 'مستفيد'} بخصوص جلستي المعتمدة (${b.trackLabel || 'استشارة'}) برقم: ${b.id} في موعد: ${b.slotDate} - ${b.slotTime}.`
                     )}`;
 
                     return (
@@ -1649,7 +1327,7 @@ export default function ClientProfilePage() {
                               <div>
                                 <strong className="block font-bold">ماذا يحدث الآن؟</strong>
                                 <p className="text-[11px] text-amber-800/90 dark:text-amber-300/90">
-                                  تم تسجيل حجزك مبدئياً، ويقوم  أحمد بمراجعة إيصال السداد واعتماد الموعد النهائي.
+                                  تم تسجيل حجزك مبدئياً، ويقوم د. جلال أحمد بمراجعة إيصال السداد واعتماد الموعد النهائي.
                                   سيصلك تأكيد رسمي وتفعيل رابط قاعة اللقاء وإشعار فوري عبر الواتساب والبريد الإلكتروني.
                                 </p>
                               </div>
@@ -1957,7 +1635,7 @@ export default function ClientProfilePage() {
                       {t.recommendation && (
                         <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs space-y-1">
                           <strong className="text-slate-900 dark:text-white block font-bold">
-                            توصية  أحمد:
+                            توصية د. جلال أحمد:
                           </strong>
                           <p className="text-slate-600 dark:text-slate-300">{t.recommendation}</p>
                         </div>
@@ -2089,11 +1767,11 @@ export default function ClientProfilePage() {
                   {activeExerciseModal && (
                     <ClientExerciseModal
                       homework={activeExerciseModal}
-                      userPhone={authUser?.phone}
-                      userEmail={authUser?.email}
+                      userPhone={user?.phone}
+                      userEmail={user?.email}
                       onClose={() => setActiveExerciseModal(null)}
                       onSubmitSuccess={() => {
-                        fetchClientData(authUser);
+                        if (user) fetchClientData(user);
                       }}
                     />
                   )}
@@ -2363,7 +2041,6 @@ export default function ClientProfilePage() {
               </div>
             )}
           </div>
-        )}
 
         </main>
 

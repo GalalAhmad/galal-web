@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     const targetEmail = to ? to.trim() : 'galalahmad1201@gmail.com';
-    const emailSubject = subject || 'رسالة تجريبية من لوحة إدارة  أحمد';
+    const emailSubject = subject || 'رسالة تجريبية من لوحة إدارة د. جلال أحمد';
     const fromAddress = process.env.RESEND_FROM_EMAIL || ' أحمد <onboarding@resend.dev>';
 
     const htmlContent = `
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
             </p>
           </div>
           <div class="footer">
-            <p>© 2026  أحمد — جميع الحقوق محفوظة</p>
+            <p>© 2026 د. جلال أحمد — جميع الحقوق محفوظة</p>
           </div>
         </div>
       </body>

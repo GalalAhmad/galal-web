@@ -227,7 +227,7 @@ export default function InstitutionsTrackPage() {
                   تم استلام طلبكم المؤسسي بنجاح
                 </h4>
                 <p className="text-xs text-emerald-700 dark:text-emerald-400 leading-relaxed max-w-md mx-auto">
-                  وصل إشعار بالطلب مباشرة إلى إدارة  أحمد، وسيقوم فريق العمل بالتواصل معكم هاتفياً لمناقشة الاحتياجات وتصميم البرنامج المناسب.
+                  وصل إشعار بالطلب مباشرة إلى إدارة د. جلال أحمد، وسيقوم فريق العمل بالتواصل معكم هاتفياً لمناقشة الاحتياجات وتصميم البرنامج المناسب.
                 </p>
                 <button
                   type="button"

@@ -41,7 +41,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.name) {
-          setUser(parsed);
+          setUser((prev) => {
+            if (
+              prev &&
+              prev.name === parsed.name &&
+              prev.phone === parsed.phone &&
+              prev.email === parsed.email &&
+              prev.role === parsed.role
+            ) {
+              return prev; // keep identical object reference to avoid downstream re-renders
+            }
+            return parsed;
+          });
         } else {
           setUser(null);
         }

@@ -261,7 +261,7 @@ export default function PsychologicalTestsPage() {
         level: res.title,
         color: idx >= activeTest.scoreResults.length - 1 ? 'text-rose-600 dark:text-rose-400' : 'text-[#154F9C] dark:text-[#60A5FA]',
         desc: res.text || 'تشير إجاباتك إلى مؤشرات تتطلب الانتباه والوعي بمسببات الضغط.',
-        rec: res.recommendation || 'جلسة استشارية خاصة مع  أحمد تساعدك على فهم الجذور ووضع خطة متوازنة.'
+        rec: res.recommendation || 'جلسة استشارية خاصة مع د. جلال أحمد تساعدك على فهم الجذور ووضع خطة متوازنة.'
       };
     }
 
@@ -284,7 +284,7 @@ export default function PsychologicalTestsPage() {
         level: 'مستوى ملحوظ / يُنصح بالدعم الاستشاري',
         color: 'text-rose-600 dark:text-rose-400',
         desc: 'تشير نتائجك إلى ضغوط أو أعراض واضحة ومستمرة قد تؤثر بشكل ملحوظ على راحتك واستقرارك.',
-        rec: 'حجز جلسة استشارية متخصصة مع  أحمد يساعدك على استعادة الاتزان والأمان النفسي.'
+        rec: 'حجز جلسة استشارية متخصصة مع د. جلال أحمد يساعدك على استعادة الاتزان والأمان النفسي.'
       };
     }
   }, [activeTest, scorePercent]);

@@ -120,7 +120,7 @@ export default function FeedbackPage() {
                 شكراً جزيلاً لصدقك ومشاركتك!
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-md mx-auto">
-                تم استلام تقييمك بنجاح وسيرفع مباشرة إلى  أحمد وفريق الإشراف. نسأل الله لك دوام الطمأنينة والتوفيق.
+                تم استلام تقييمك بنجاح وسيرفع مباشرة إلى د. جلال أحمد وفريق الإشراف. نسأل الله لك دوام الطمأنينة والتوفيق.
               </p>
 
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -214,7 +214,7 @@ export default function FeedbackPage() {
                 {/* 3. Written Review */}
                 <div>
                   <label className="block text-xs font-bold text-slate-900 dark:text-slate-200 mb-1.5">
-                    رأيك وتجربتك مع  أحمد *
+                    رأيك وتجربتك مع د. جلال أحمد *
                   </label>
                   <textarea
                     rows={4}

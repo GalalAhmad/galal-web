@@ -83,7 +83,7 @@ export default function CoursesCatalogPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#154F9C]/10 dark:bg-[#154F9C]/30 text-[#154F9C] dark:text-sky-300 border border-[#154F9C]/20 text-xs font-bold shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-[#154F9C] dark:text-sky-400" />
-            <span>أكاديمية  أحمد للتمكين الإنساني والأسري</span>
+            <span>أكاديمية د. جلال أحمد للتمكين الإنساني والأسري</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white leading-tight">
@@ -324,7 +324,7 @@ export default function CoursesCatalogPage() {
             هل تحتاج إلى خطة إرشادية فردية أو استشارة خاصة؟
           </h3>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl mx-auto leading-relaxed">
-            بالإضافة إلى البرامج التدريبية الجماعية، يقدم  أحمد جلسات استشارية فردية وزوجية عبر قاعة Google Meet الآمنة لمناقشة التحديات الخاصة بمنتهى الخصوصية والسرية.
+            بالإضافة إلى البرامج التدريبية الجماعية، يقدم د. جلال أحمد جلسات استشارية فردية وزوجية عبر قاعة Google Meet الآمنة لمناقشة التحديات الخاصة بمنتهى الخصوصية والسرية.
           </p>
           <div className="pt-2">
             <Link

@@ -73,12 +73,13 @@ function LoginContent() {
   // Auto redirect if already logged in
   useEffect(() => {
     if (user?.name) {
+      const redirectTarget = searchParams.get('redirect');
       if (user.role === 'counselor') {
-        router.push(searchParams.get('redirect') || '/counselor');
+        router.replace(redirectTarget || '/counselor');
       } else if (user.role === 'admin') {
-        router.push(searchParams.get('redirect') || '/admin');
+        router.replace(redirectTarget || '/admin');
       } else {
-        router.push(searchParams.get('redirect') || '/profile');
+        router.replace(redirectTarget || '/profile');
       }
     }
   }, [user, searchParams, router]);
@@ -157,19 +158,20 @@ function LoginContent() {
       // Save user session into AuthContext
       login(data.user);
 
-      // Role-based smart redirect
+      // Role-based smart redirect with replace to avoid history loops
+      const redirectTarget = searchParams.get('redirect');
       if (data.user.role === 'counselor') {
         try {
           localStorage.setItem('galal_admin_session', 'active');
         } catch (e) {}
-        router.push(searchParams.get('redirect') || '/counselor');
+        router.replace(redirectTarget || '/counselor');
       } else if (data.user.role === 'admin') {
         try {
           localStorage.setItem('galal_admin_session', 'active');
         } catch (e) {}
-        router.push(searchParams.get('redirect') || '/admin');
+        router.replace(redirectTarget || '/admin');
       } else {
-        router.push(searchParams.get('redirect') || '/profile');
+        router.replace(redirectTarget || '/profile');
       }
     } catch (err) {
       setLoginError('تعذر الاتصال بالخادم، يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.');
@@ -226,8 +228,8 @@ function LoginContent() {
       setRegSuccess('تم إنشاء حسابك بنجاح! جاري توجيهك...');
 
       setTimeout(() => {
-        router.push(redirectPath);
-      }, 800);
+        router.replace(redirectPath);
+      }, 500);
     } catch (err) {
       setRegError('حدث خطأ غير متوقع، يرجى المحاولة مرة أخرى.');
       setRegLoading(false);

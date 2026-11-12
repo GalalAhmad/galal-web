@@ -32,7 +32,7 @@ export default function AboutPage() {
     {
       name: 'منصة وصلة',
       country: 'منصة إقليمية رقمية',
-      role: 'مؤسس ومستشار',
+      role: 'مؤسس وخبير إرشادي',
       desc: 'منصة متخصصة في الدعم الأسري والزواجي، وتجسير الفجوات التواصلية بين الأزواج عبر أدوات إرشادية نوعية.',
       bg: 'bg-[#EDF5FD] dark:bg-[#122238]',
       border: 'border-[#D6E6F8] dark:border-[#1E3A5F]',
@@ -81,7 +81,7 @@ export default function AboutPage() {
                   <span className="block text-[#4E7E76] dark:text-[#5E988E]">والوعي بداية كل اتزان»</span>
                 </h1>
                 <p className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 leading-relaxed">
-                  جـلال أحـمد | مستشار نفسي وتربوي، ومختص في الإرشاد الأسري والبرامج التعليمية
+                  د. جـلال أحـمد | باحث وأخصائي نفسي وتربوي، ومختص في الإرشاد الأسري والبرامج التعليمية
                 </p>
               </div>
 
@@ -140,7 +140,7 @@ export default function AboutPage() {
               <div className="relative w-64 sm:w-80 aspect-square rounded-3xl overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl bg-slate-100 dark:bg-slate-900">
                 <img
                   src="/assets/galal-formal-suit.jpg"
-                  alt="جلال أحمد — مستشار الصحة النفسية والتربوية، مصنف من الهيئة السعودية للتخصصات الصحية ومؤسس منصتي رفق ووصلة"
+                  alt="د. جلال أحمد — أخصائي الصحة النفسية والتربوية، مصنف من الهيئة السعودية للتخصصات الصحية ومؤسس منصتي رفق ووصلة"
                   loading="lazy"
                   width={700}
                   height={1000}

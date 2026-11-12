@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 import { sendAdviceNotificationEmail } from '@/lib/email';
+import { requireRole } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -28,12 +29,9 @@ async function writeLocalAdvice(data: any[]) {
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
-
-    // Privacy Guard: Only admin can view submitted confidential advice messages
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'غير مصرح بالوصول لصندوق الاستشارات' }, { status: 403 });
+    const authCheck = requireRole(request, ['admin', 'counselor']);
+    if (!authCheck.user) {
+      return authCheck.response;
     }
 
     const itemsMap = new Map<string, any>();
@@ -153,13 +151,13 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin', 'counselor']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
-
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'غير مصرح بالحذف' }, { status: 403 });
-    }
 
     if (!id) {
       return NextResponse.json({ error: 'معرّف الرسالة مطلوب' }, { status: 400 });
@@ -183,11 +181,9 @@ export async function DELETE(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
-
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'غير مصرح بتعديل الحالة' }, { status: 403 });
+    const authCheck = requireRole(request, ['admin', 'counselor']);
+    if (!authCheck.user) {
+      return authCheck.response;
     }
 
     const body = await request.json();

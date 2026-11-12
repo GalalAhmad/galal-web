@@ -125,8 +125,8 @@ export default function UnifiedClientTimeline({
       type: 'clinical_note',
       date: new Date().toISOString().split('T')[0],
       timestamp: Date.now(),
-      title: 'ملاحظة سرية للمستشار (سجل الحالة السريري)',
-      subtitle: 'خاص بالمختص فقط ولا يظهر للمستفيد',
+      title: 'ملاحظة سرية للمعالج (سجل الحالة السريري)',
+      subtitle: 'خاص بالمعالج فقط ولا يظهر للمستفيد',
       status: 'confidential',
       data: { notes: clinicalNotes },
     });
@@ -294,7 +294,7 @@ export default function UnifiedClientTimeline({
                         {answeringHwId === evt.data.id ? (
                           <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-slate-700 space-y-2.5">
                             <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                              سجل إنجازك أو ملحوظتك على التمرين للمستشار:
+                              سجل إنجازك أو ملحوظتك على التمرين للمعالج:
                             </label>
                             <textarea
                               rows={2}
@@ -317,7 +317,7 @@ export default function UnifiedClientTimeline({
                                 className="px-4 py-1.5 rounded-lg bg-[#4E7E76] hover:bg-[#3D645E] text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                               >
                                 <Send className="w-3 h-3" />
-                                <span>{submittingNote ? 'جاري الحفظ...' : 'إرسال الرد للمستشار'}</span>
+                                <span>{submittingNote ? 'جاري الحفظ...' : 'إرسال الرد للمعالج'}</span>
                               </button>
                               <button
                                 type="button"

@@ -3,6 +3,15 @@ import fs from 'fs/promises';
 import path from 'path';
 import { sendBookingConfirmationEmail } from '@/lib/email';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
+import { getServerUserSession, requireAuth } from '@/lib/serverAuth';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+import { phonesMatch } from '@/lib/auth';
+import { storeReceiptFile } from '@/lib/storage';
+import {
+  createBookingSchema,
+  updateBookingSchema,
+  validateBookingTransition,
+} from '@/lib/validations/booking';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -123,64 +132,82 @@ async function syncProfile(name: string, phone: string, email?: string) {
 
 export async function GET(request: Request) {
   try {
+    const authCheck = requireAuth(request);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+    const sessionUser = authCheck.user;
+
     const { searchParams } = new URL(request.url);
     const phone = searchParams.get('phone');
     const email = searchParams.get('email');
-    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
 
     const cleanPhone = phone ? phone.replace(/[^\d]/g, '') : '';
     const cleanEmail = email ? email.trim().toLowerCase() : '';
 
-    // Privacy guard: Unauthenticated visitors must never receive full booking database
-    if (!isAdmin && !cleanPhone && !cleanEmail) {
-      return NextResponse.json(
-        { success: true, bookings: [] },
-        { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-      );
+    const isManagement = sessionUser.role === 'counselor' || sessionUser.role === 'admin';
+
+    // If client, restrict strictly to own phone or email
+    let filterPhone = cleanPhone;
+    let filterEmail = cleanEmail;
+
+    if (!isManagement) {
+      filterPhone = (sessionUser.phone || '').replace(/[^\d]/g, '');
+      filterEmail = (sessionUser.email || '').trim().toLowerCase();
     }
 
-    if (isSupabaseConfigured) {
+    if (isSupabaseConfigured && supabaseAdmin) {
       let query = supabaseAdmin
         .from('bookings')
         .select('*')
         .order('created_at', { ascending: false });
 
-      // If not admin, restrict to owner's phone or email only
-      if (!isAdmin) {
-        if (cleanPhone && cleanEmail) {
-          query = query.or(`client_phone.eq.${cleanPhone},client_email.eq.${cleanEmail}`);
-        } else if (cleanPhone) {
-          query = query.eq('client_phone', cleanPhone);
-        } else if (cleanEmail) {
-          query = query.eq('client_email', cleanEmail);
+      if (!isManagement) {
+        if (filterPhone && filterEmail) {
+          query = query.or(`client_phone.eq.${filterPhone},client_email.eq.${filterEmail}`);
+        } else if (filterPhone) {
+          query = query.eq('client_phone', filterPhone);
+        } else if (filterEmail) {
+          query = query.eq('client_email', filterEmail);
+        } else {
+          // Client with no phone or email has no bookings
+          return NextResponse.json({ success: true, bookings: [] });
+        }
+      } else {
+        // Management may optionally filter by phone or email if provided
+        if (filterPhone && filterEmail) {
+          query = query.or(`client_phone.eq.${filterPhone},client_email.eq.${filterEmail}`);
+        } else if (filterPhone) {
+          query = query.eq('client_phone', filterPhone);
+        } else if (filterEmail) {
+          query = query.eq('client_email', filterEmail);
         }
       }
 
       const { data, error } = await query;
 
       if (!error && Array.isArray(data)) {
-        if (data.length > 0) {
-          const formatted = data.map(toFrontendBooking);
-          return NextResponse.json(
-            { success: true, bookings: formatted },
-            { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
-          );
-        }
+        const formatted = data.map(toFrontendBooking);
+        return NextResponse.json(
+          { success: true, bookings: formatted },
+          { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }
+        );
       } else if (error) {
         console.error('Supabase GET bookings error:', error);
         return NextResponse.json({ error: 'تعذر استرجاع الحجوزات من قاعدة البيانات' }, { status: 500 });
       }
     }
 
-    // Local Fallback (only if Supabase is unconfigured or returns empty/null)
+    // Local Fallback
     const localData = await readBookingsLocal();
     let filtered = localData;
-    if (!isAdmin) {
+
+    if (!isManagement) {
       filtered = localData.filter((b: any) => {
         const bPhone = (b.clientPhone || b.client_phone || '').replace(/[^\d]/g, '');
         const bEmail = (b.clientEmail || b.client_email || '').trim().toLowerCase();
-        if (cleanPhone && (bPhone === cleanPhone || (bPhone.length >= 8 && cleanPhone.length >= 8 && bPhone.slice(-8) === cleanPhone.slice(-8)))) return true;
-        if (cleanEmail && bEmail === cleanEmail) return true;
+        if (filterPhone && (bPhone === filterPhone || (bPhone.length >= 8 && filterPhone.length >= 8 && bPhone.slice(-8) === filterPhone.slice(-8)))) return true;
+        if (filterEmail && bEmail === filterEmail) return true;
         return false;
       });
     }
@@ -199,7 +226,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const rawBody = await request.json();
+
+    // 1. Zod Input Validation
+    const parseResult = createBookingSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      const issues = parseResult.error.issues || (parseResult.error as any).errors || [];
+      const firstError = issues[0]?.message || 'البيانات المدخلة لحجز الموعد غير مكتملة أو غير صالحة';
+      return NextResponse.json({ error: firstError }, { status: 400 });
+    }
+
     const {
       clientName,
       clientPhone,
@@ -215,40 +251,23 @@ export async function POST(request: Request) {
       receiptNote,
       receiptImage,
       fee,
-    } = body;
+    } = parseResult.data;
 
-    if (!clientName || !clientPhone || !slotDate || !slotTime) {
-      return NextResponse.json(
-        { error: 'الاسم ورقم الهاتف والموعد محددات أساسية لإتمام الحجز' },
-        { status: 400 }
-      );
-    }
-
-    // Receipt Validation (Size < 5MB and allowed mime types)
-    if (receiptImage && typeof receiptImage === 'string') {
-      if (receiptImage.length > 7.5 * 1024 * 1024) {
+    // 2. Receipt Storage & Magic-Bytes Validation
+    let storedReceiptRef = '';
+    if (receiptImage && receiptImage.trim()) {
+      try {
+        const tempId = `BK-${Date.now().toString().slice(-4)}`;
+        storedReceiptRef = await storeReceiptFile(tempId, receiptImage);
+      } catch (receiptErr: any) {
         return NextResponse.json(
-          { error: 'حجم إيصال السداد المرفق كبير جداً. يرجى إرفاق صورة أصغر من 5 ميجابايت لتسريع الاعتماد.' },
+          { error: receiptErr.message || 'الملف المرفق لإيصال السداد غير صالح' },
           { status: 400 }
         );
       }
-      if (receiptImage.startsWith('data:')) {
-        const isAllowedMime = 
-          receiptImage.startsWith('data:image/jpeg') ||
-          receiptImage.startsWith('data:image/jpg') ||
-          receiptImage.startsWith('data:image/png') ||
-          receiptImage.startsWith('data:image/webp') ||
-          receiptImage.startsWith('data:application/pdf');
-        if (!isAllowedMime) {
-          return NextResponse.json(
-            { error: 'صيغة ملف الإيصال غير مدعومة. يرجى إرفاق صورة (JPG, PNG, WEBP) أو ملف PDF.' },
-            { status: 400 }
-          );
-        }
-      }
     }
 
-    // Idempotency / Double-Submit Protection: Check if same client booked same slot in last 3 minutes
+    // 3. Idempotency / Double-Submit Protection: Check if same client booked same slot recently
     const cleanPhoneDigits = clientPhone.replace(/[^\d]/g, '');
     if (isSupabaseConfigured && supabaseAdmin) {
       const { data: recentDup } = await supabaseAdmin
@@ -257,6 +276,7 @@ export async function POST(request: Request) {
         .eq('slot_date', slotDate)
         .eq('slot_time', slotTime)
         .neq('status', 'cancelled')
+        .neq('status', 'rejected')
         .order('created_at', { ascending: false })
         .limit(1);
 
@@ -267,19 +287,20 @@ export async function POST(request: Request) {
           return NextResponse.json({
             success: true,
             booking: toFrontendBooking(existing),
-            message: 'تم استلام هذا الحجز مسبقاً وتأكيده في النظام',
+            message: 'تم استلام هذا الحجز مسبقاً وهو مسجل في النظام',
           });
         }
       }
     }
 
-    // 1. Conflict check on Supabase
-    if (isSupabaseConfigured) {
+    // 4. Conflict check on Supabase & Local
+    if (isSupabaseConfigured && supabaseAdmin) {
       const { data: conflicts } = await supabaseAdmin
         .from('bookings')
         .select('id, slot_date, slot_time, status')
         .eq('slot_date', slotDate)
-        .neq('status', 'cancelled');
+        .neq('status', 'cancelled')
+        .neq('status', 'rejected');
 
       const isConflict = (conflicts || []).some((b: any) => {
         const timeA = (b.slot_time || '').trim();
@@ -296,7 +317,7 @@ export async function POST(request: Request) {
     } else {
       const localList = await readBookingsLocal();
       const isConflict = localList.some((b: any) => {
-        if (b.status === 'cancelled') return false;
+        if (b.status === 'cancelled' || b.status === 'rejected') return false;
         if (b.slotDate !== slotDate) return false;
         const timeA = (b.slotTime || '').trim();
         const timeB = (slotTime || '').trim();
@@ -317,15 +338,15 @@ export async function POST(request: Request) {
 
     let createdBooking: any = null;
 
-    // 2. Insert into Supabase (Single Source of Truth)
-    if (isSupabaseConfigured) {
+    // 5. Insert into Supabase (Single Source of Truth)
+    if (isSupabaseConfigured && supabaseAdmin) {
       const { data, error } = await supabaseAdmin
         .from('bookings')
         .insert({
           id: bookingId,
-          client_name: clientName.trim(),
-          client_phone: clientPhone.trim(),
-          client_email: clientEmail ? clientEmail.trim() : null,
+          client_name: clientName,
+          client_phone: clientPhone,
+          client_email: clientEmail || null,
           track: track || 'psychological',
           track_label: trackLabel || 'استشارة نفسية فردية',
           age: age || null,
@@ -337,7 +358,7 @@ export async function POST(request: Request) {
           payment_method: paymentMethod || 'instapay',
           fee: fee || '250 ر.س',
           receipt_note: receiptNote || '',
-          receipt_image: receiptImage || '',
+          receipt_image: storedReceiptRef,
           answers: answers || {},
         })
         .select()
@@ -345,6 +366,12 @@ export async function POST(request: Request) {
 
       if (error) {
         console.error('Supabase booking insert error:', error);
+        if (error.code === '23505') {
+          return NextResponse.json(
+            { error: 'عذراً، هذا الموعد تم حجزه للتو من قِبل مستفيد آخر. يرجى اختيار موعد آخر متاح.' },
+            { status: 409 }
+          );
+        }
         return NextResponse.json(
           { error: 'تعذر تسجيل الحجز في قاعدة البيانات السحابية، يرجى مراجعة الاتصال والمحاولة ثانية.' },
           { status: 500 }
@@ -357,9 +384,9 @@ export async function POST(request: Request) {
     } else {
       createdBooking = {
         id: bookingId,
-        clientName: clientName.trim(),
-        clientPhone: clientPhone.trim(),
-        clientEmail: clientEmail ? clientEmail.trim() : '',
+        clientName,
+        clientPhone,
+        clientEmail: clientEmail || '',
         track: track || 'psychological',
         trackLabel: trackLabel || 'استشارة نفسية فردية',
         age: age || null,
@@ -369,7 +396,7 @@ export async function POST(request: Request) {
         slotTime,
         paymentMethod: paymentMethod || 'instapay',
         receiptNote: receiptNote || '',
-        receiptImage: receiptImage || '',
+        receiptImage: storedReceiptRef,
         fee: fee || '250 ر.س',
         status: 'pending_verification',
         meetLink: initialMeetLink,
@@ -448,14 +475,95 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    const body = await request.json();
-    const { id, status, slotDate, slotTime, meetLink, notes, action } = body;
+    const authCheck = requireAuth(request);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+    const sessionUser = authCheck.user;
+    const isManagement = sessionUser.role === 'counselor' || sessionUser.role === 'admin';
 
-    if (!id) {
-      return NextResponse.json({ error: 'معرّف الحجز مطلوب' }, { status: 400 });
+    const rawBody = await request.json();
+    const parseResult = updateBookingSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      const issues = parseResult.error.issues || (parseResult.error as any).errors || [];
+      const firstError = issues[0]?.message || 'بيانات تعديل الحجز غير صالحة';
+      return NextResponse.json({ error: firstError }, { status: 400 });
     }
 
-    if (isSupabaseConfigured) {
+    const { id, status, slotDate, slotTime, meetLink, notes, action } = parseResult.data;
+
+    // Fetch existing booking to verify existence and check ownership
+    let existingBooking: any = null;
+    if (isSupabaseConfigured && supabaseAdmin) {
+      const { data: found } = await supabaseAdmin
+        .from('bookings')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+      if (found) existingBooking = found;
+    }
+
+    if (!existingBooking) {
+      const localList = await readBookingsLocal();
+      existingBooking = localList.find((b: any) => b.id === id);
+    }
+
+    if (!existingBooking) {
+      return NextResponse.json({ error: 'الحجز غير موجود' }, { status: 404 });
+    }
+
+    // Role-based authorization & ownership checks
+    if (action === 'delete') {
+      if (!isManagement) {
+        return NextResponse.json(
+          { error: 'ممنوع: حذف الحجوزات يقتصر على المعالج والإدارة فقط', code: 'FORBIDDEN' },
+          { status: 403 }
+        );
+      }
+    }
+
+    if (!isManagement) {
+      const bPhone = existingBooking.client_phone || existingBooking.clientPhone;
+      const bEmail = (existingBooking.client_email || existingBooking.clientEmail || '').trim().toLowerCase();
+      const userPhone = sessionUser.phone;
+      const userEmail = (sessionUser.email || '').trim().toLowerCase();
+
+      const phoneMatches = bPhone && userPhone ? phonesMatch(bPhone, userPhone) : false;
+      const emailMatches = bEmail && userEmail ? bEmail === userEmail : false;
+
+      if (!phoneMatches && !emailMatches) {
+        return NextResponse.json(
+          { error: 'غير مصرّح لك بتعديل بيانات هذا الحجز', code: 'FORBIDDEN' },
+          { status: 403 }
+        );
+      }
+
+      // Clients can only cancel, cannot set meetLink, notes, or advance state
+      if (meetLink !== undefined || notes !== undefined) {
+        return NextResponse.json(
+          { error: 'غير مصرّح للمستفيد بتعديل رابط الاجتماع أو ملاحظات الجلسة السريرية', code: 'FORBIDDEN' },
+          { status: 403 }
+        );
+      }
+
+      if (status !== undefined && status !== 'cancelled') {
+        return NextResponse.json(
+          { error: 'عذراً، يقتصر حق اعتماد أو تأكيد أو تغيير موعد الجلسة على المعالج فقط', code: 'FORBIDDEN' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Explicit State Machine Lifecycle Validation
+    if (status !== undefined) {
+      const currentStatus = existingBooking.status || 'pending_verification';
+      const transitionCheck = validateBookingTransition(currentStatus, status, sessionUser.role);
+      if (!transitionCheck.allowed) {
+        return NextResponse.json({ error: transitionCheck.error }, { status: 400 });
+      }
+    }
+
+    if (isSupabaseConfigured && supabaseAdmin) {
       if (action === 'delete') {
         await supabaseAdmin.from('bookings').delete().eq('id', id);
         try {
@@ -465,18 +573,22 @@ export async function PUT(request: Request) {
         return NextResponse.json({ success: true, message: 'تم حذف الحجز بنجاح' });
       }
 
-      // Check conflict if rescheduling
-      if ((slotDate || slotTime) && status !== 'cancelled') {
+      // Check conflict if rescheduling to a new slot
+      if ((slotDate || slotTime) && status !== 'cancelled' && status !== 'rejected') {
+        const targetDate = slotDate || existingBooking.slot_date;
+        const targetTime = slotTime || existingBooking.slot_time;
+
         const { data: conflicts } = await supabaseAdmin
           .from('bookings')
           .select('id, slot_date, slot_time, status')
           .neq('id', id)
           .neq('status', 'cancelled')
-          .eq('slot_date', slotDate);
+          .neq('status', 'rejected')
+          .eq('slot_date', targetDate);
 
         const isConflict = (conflicts || []).some((b: any) => {
           const timeA = (b.slot_time || '').trim();
-          const timeB = (slotTime || '').trim();
+          const timeB = (targetTime || '').trim();
           return timeA === timeB || timeA.includes(timeB) || timeB.includes(timeA);
         });
 
@@ -587,6 +699,25 @@ export async function PUT(request: Request) {
       currentList.splice(idx, 1);
       await writeBookingsLocal(currentList);
       return NextResponse.json({ success: true, message: 'تم حذف الحجز بنجاح' });
+    }
+
+    if ((slotDate || slotTime) && status !== 'cancelled' && status !== 'rejected') {
+      const targetDate = slotDate || currentList[idx].slotDate;
+      const targetTime = slotTime || currentList[idx].slotTime;
+      const isConflict = currentList.some((b: any) => {
+        if (b.id === id) return false;
+        if (b.status === 'cancelled' || b.status === 'rejected') return false;
+        if (b.slotDate !== targetDate) return false;
+        const timeA = (b.slotTime || '').trim();
+        const timeB = (targetTime || '').trim();
+        return timeA === timeB || timeA.includes(timeB) || timeB.includes(timeA);
+      });
+      if (isConflict) {
+        return NextResponse.json(
+          { error: 'عذراً، هذا الموعد البديل محجوز بالفعل لحجز آخر. يرجى اختيار موعد شاغر.' },
+          { status: 409 }
+        );
+      }
     }
 
     if (status !== undefined) currentList[idx].status = status;

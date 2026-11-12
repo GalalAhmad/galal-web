@@ -1,16 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
+import { getServerUserSession, requireAuth } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
   try {
+    const authCheck = requireAuth(req);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+    const sessionUser = authCheck.user;
+    const isManagement = sessionUser.role === 'counselor' || sessionUser.role === 'admin';
+
     const { searchParams } = new URL(req.url);
     const phone = searchParams.get('phone');
     const email = searchParams.get('email');
 
-    if (!phone && !email) {
+    let filterPhone = phone;
+    let filterEmail = email;
+
+    if (!isManagement) {
+      filterPhone = sessionUser.phone || null;
+      filterEmail = sessionUser.email || null;
+    }
+
+    if (!filterPhone && !filterEmail) {
       return NextResponse.json({ success: true, logs: [], today: null });
     }
 
@@ -24,12 +40,12 @@ export async function GET(req: NextRequest) {
       .eq('test_id', 'daily_wellbeing')
       .order('created_at', { ascending: false });
 
-    if (phone && email) {
-      query = query.or(`client_phone.eq.${phone},client_email.eq.${email}`);
-    } else if (phone) {
-      query = query.eq('client_phone', phone);
-    } else if (email) {
-      query = query.eq('client_email', email);
+    if (filterPhone && filterEmail) {
+      query = query.or(`client_phone.eq.${filterPhone},client_email.eq.${filterEmail}`);
+    } else if (filterPhone) {
+      query = query.eq('client_phone', filterPhone);
+    } else if (filterEmail) {
+      query = query.eq('client_email', filterEmail);
     }
 
     const { data, error } = await query.limit(30);
@@ -42,7 +58,7 @@ export async function GET(req: NextRequest) {
       let parsedHabits = [];
       try {
         parsedHabits = JSON.parse(row.recommendation || '[]');
-      } catch (e) {
+      } catch {
         parsedHabits = [];
       }
 
@@ -50,9 +66,9 @@ export async function GET(req: NextRequest) {
         id: row.id,
         date: row.created_at.split('T')[0],
         createdAt: row.created_at,
-        moodId: row.test_title, // e.g. 'peaceful', 'calm', etc.
-        moodLabel: row.level, // e.g. 'مطمئن ومبتهج'
-        moodScore: row.score, // 1 to 5
+        moodId: row.test_title,
+        moodLabel: row.level,
+        moodScore: row.score,
         note: row.description || '',
         habits: parsedHabits,
       };
@@ -69,11 +85,21 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const authCheck = requireAuth(req);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+    const sessionUser = authCheck.user;
+
     const body = await req.json();
-    const { phone, email, name, moodId, moodLabel, moodScore, note, habits } = body;
+    const { moodId, moodLabel, moodScore, note, habits } = body;
+
+    const phone = sessionUser.phone || '';
+    const email = sessionUser.email || '';
+    const name = sessionUser.name || 'مستفيد';
 
     if (!phone && !email) {
-      return NextResponse.json({ error: 'بيانات الحساب (الهاتف أو البريد) مطلوبة' }, { status: 400 });
+      return NextResponse.json({ error: 'بيانات الحساب (الهاتف أو البريد) غير مكتملة' }, { status: 400 });
     }
 
     if (!isSupabaseConfigured || !supabaseAdmin) {
@@ -105,7 +131,7 @@ export async function POST(req: NextRequest) {
           score: moodScore || 3,
           description: note || '',
           recommendation: habitsJson,
-          client_name: name || 'مستفيد',
+          client_name: name,
         })
         .eq('id', existingToday.id)
         .select()
@@ -120,9 +146,9 @@ export async function POST(req: NextRequest) {
         .from('test_results')
         .insert({
           id: newId,
-          client_name: name || 'مستفيد',
-          client_phone: phone || '',
-          client_email: email || '',
+          client_name: name,
+          client_phone: phone,
+          client_email: email,
           test_id: 'daily_wellbeing',
           test_title: moodId,
           level: moodLabel,

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import { initialArticles } from '@/data/articles';
+import { requireRole } from '@/lib/serverAuth';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'articles.json');
 
@@ -13,7 +14,7 @@ async function readArticles() {
     const data = await fs.readFile(filePath, 'utf-8');
     const parsed = JSON.parse(data);
     return Array.isArray(parsed) && parsed.length > 0 ? parsed : initialArticles;
-  } catch (err) {
+  } catch {
     return initialArticles;
   }
 }
@@ -26,7 +27,7 @@ async function writeArticles(data: any[]) {
   }
 }
 
-// GET: Return all articles
+// GET: Return all published articles (Public)
 export async function GET() {
   try {
     const articles = await readArticles();
@@ -38,14 +39,19 @@ export async function GET() {
         },
       }
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to read articles' }, { status: 500 });
   }
 }
 
-// POST: Add new article or delete by action
+// POST: Add new article or delete by action (Admin Only)
 export async function POST(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const body = await request.json();
 
     if (body.action === 'delete' && body.id) {
@@ -58,90 +64,33 @@ export async function POST(request: Request) {
     const { title, category, categoryLabel, summary, content, readTime, author } = body;
 
     if (!title || !content) {
-      return NextResponse.json({ error: 'عنوان المقال والمحتوى مطلوبان' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'عنوان المقال والمحتوى حقول إلزامية' },
+        { status: 400 }
+      );
     }
 
     const newArticle = {
-      id: body.id || `art-${Date.now()}`,
-      title: title.trim(),
-      category: category || 'psychology',
-      categoryLabel: categoryLabel || 'صحة نفسية واتزان',
-      author: author || 'جلال أحمد',
-      summary: summary || (Array.isArray(content) ? content[0]?.slice(0, 160) : content.slice(0, 160)) + '...',
-      content: Array.isArray(content) ? content : [content],
+      id: `art-${Date.now()}`,
+      title,
+      slug: `art-${Date.now()}`,
+      category: category || 'family',
+      categoryLabel: categoryLabel || 'التربية واليافعين',
+      summary: summary || '',
+      content,
       readTime: readTime || '5 دقائق قراءة',
-      publishDate: new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }),
-      readersCount: 1,
-      rating: 5.0,
-      ratingsCount: 1,
-      commentsCount: 0,
-      comments: [],
+      author: author || 'د. جلال أحمد',
+      date: new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }),
+      publishedAt: new Date().toISOString(),
     };
 
     const articles = await readArticles();
-    const updated = [newArticle, ...articles];
-    await writeArticles(updated);
-
-    return NextResponse.json({ success: true, article: newArticle, articles: updated });
-  } catch (error) {
-    console.error('Articles POST error:', error);
-    return NextResponse.json({ error: 'Failed to save article' }, { status: 500 });
-  }
-}
-
-// PUT: Edit existing article
-export async function PUT(request: Request) {
-  try {
-    const body = await request.json();
-    const { id, title, category, categoryLabel, summary, content, readTime } = body;
-
-    if (!id) {
-      return NextResponse.json({ error: 'معرف المقال مطلوب' }, { status: 400 });
-    }
-
-    const articles = await readArticles();
-    const idx = articles.findIndex((a: any) => a.id === id);
-
-    if (idx === -1) {
-      return NextResponse.json({ error: 'المقال غير موجود' }, { status: 404 });
-    }
-
-    const existing = articles[idx];
-    articles[idx] = {
-      ...existing,
-      title: title !== undefined ? title.trim() : existing.title,
-      category: category !== undefined ? category : existing.category,
-      categoryLabel: categoryLabel !== undefined ? categoryLabel : existing.categoryLabel,
-      summary: summary !== undefined ? summary : existing.summary,
-      content: content !== undefined ? (Array.isArray(content) ? content : [content]) : existing.content,
-      readTime: readTime !== undefined ? readTime : existing.readTime,
-    };
-
+    articles.unshift(newArticle);
     await writeArticles(articles);
-    return NextResponse.json({ success: true, article: articles[idx], articles });
+
+    return NextResponse.json({ success: true, article: newArticle, articles });
   } catch (error) {
-    console.error('Articles PUT error:', error);
-    return NextResponse.json({ error: 'Failed to update article' }, { status: 500 });
-  }
-}
-
-// DELETE: Remove article by ID
-export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ error: 'معرف المقال مطلوب' }, { status: 400 });
-    }
-
-    const articles = await readArticles();
-    const updated = articles.filter((a: any) => a.id !== id);
-    await writeArticles(updated);
-
-    return NextResponse.json({ success: true, articles: updated });
-  } catch (error) {
-    console.error('Articles DELETE error:', error);
-    return NextResponse.json({ error: 'Failed to delete article' }, { status: 500 });
+    console.error('Error in POST articles:', error);
+    return NextResponse.json({ error: 'Failed to save article' }, { status: 500 });
   }
 }

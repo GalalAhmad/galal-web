@@ -239,7 +239,7 @@ export const intakeTracks: TrackConfig[] = [
         options: [
           { id: 'alone', label: 'لا، لم أشارك هذه المشاعر مع أحد بعد' },
           { id: 'shared_friends', label: 'تحدثت مع أصدقاء أو أهل دون الوصول لحل مريح' },
-          { id: 'sought_specialist', label: 'تحدثت مع مستشار أو مرشد سابقاً' },
+          { id: 'sought_specialist', label: 'تحدثت مع معالج أو أخصائي سابقاً' },
         ],
       },
       {

@@ -30,7 +30,7 @@ export default function About() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-100 dark:text-slate-100 text-slate-900">
-                    أخصائي معتمد ومستشار تربوي
+                    أخصائي معتمد وخبير تربوي
                   </h3>
                   <p className="text-[11px] text-slate-400 mt-1 max-w-[220px] mx-auto leading-relaxed">
                     تصنيف الهيئة السعودية للتخصصات الصحية وماجستير علم النفس التربوي

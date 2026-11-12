@@ -456,7 +456,7 @@ export default function ClinicalDossierView({
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-black text-white flex items-center gap-2">
                   <Lock className="w-4 h-4 text-rose-400" />
-                  <span>الملاحظات السريرية السرية للمستشار (خاصة بالمعالج فقط):</span>
+                  <span>الملاحظات السريرية السرية للمعالج (خاصة بد. جلال فقط):</span>
                 </h4>
                 {notesSavedSuccess && (
                   <span className="text-xs text-emerald-400 flex items-center gap-1 font-bold animate-fadeIn">

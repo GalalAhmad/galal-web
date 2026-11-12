@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 
 export interface UserSession {
   id?: string;
@@ -22,7 +22,7 @@ interface AuthContextType {
   isLoading: boolean;
   loading: boolean;
   login: (userData: UserSession) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateUser: (updatedData: Partial<UserSession>) => void;
 }
 
@@ -35,43 +35,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserSession | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const loadSession = () => {
+  // Sync server session status with client state
+  const syncServerSession = useCallback(async () => {
     try {
-      const saved = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.name) {
-          setUser((prev) => {
-            if (
-              prev &&
-              prev.name === parsed.name &&
-              prev.phone === parsed.phone &&
-              prev.email === parsed.email &&
-              prev.role === parsed.role
-            ) {
-              return prev; // keep identical object reference to avoid downstream re-renders
-            }
-            return parsed;
-          });
-        } else {
-          setUser(null);
+      const res = await fetch('/api/auth/me', {
+        headers: { 'Cache-Control': 'no-cache' },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          // Merge with any cached profile fields
+          let cached: any = {};
+          try {
+            cached = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || '{}');
+          } catch {}
+
+          const merged: UserSession = {
+            ...cached,
+            id: data.user.id,
+            name: data.user.name,
+            role: data.user.role,
+            phone: data.user.phone || cached.phone,
+            email: data.user.email || cached.email,
+          };
+
+          setUser(merged);
+          try {
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(merged));
+          } catch {}
+          return;
         }
-      } else {
-        setUser(null);
       }
-    } catch (e) {
+
+      // If server says not authenticated, clear user and local cache
       setUser(null);
+      try {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      } catch {}
+    } catch {
+      // In case of network interruption, fallback gracefully to cached session
+      try {
+        const saved = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.name) {
+            setUser(parsed);
+          }
+        }
+      } catch {}
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadSession();
+    syncServerSession();
 
-    // Listen to local storage changes across tabs & custom internal auth events
     const handleAuthChange = () => {
-      loadSession();
+      syncServerSession();
     };
 
     window.addEventListener(AUTH_EVENT_NAME, handleAuthChange);
@@ -81,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener(AUTH_EVENT_NAME, handleAuthChange);
       window.removeEventListener('storage', handleAuthChange);
     };
-  }, []);
+  }, [syncServerSession]);
 
   const login = (userData: UserSession) => {
     try {
@@ -93,8 +115,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     try {
+      await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
       localStorage.removeItem(AUTH_STORAGE_KEY);
       setUser(null);
       window.dispatchEvent(new Event(AUTH_EVENT_NAME));
@@ -115,15 +138,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated: !!user,
-      isLoading,
-      loading: isLoading,
-      login,
-      logout,
-      updateUser
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        loading: isLoading,
+        login,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

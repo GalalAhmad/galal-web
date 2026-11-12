@@ -38,3 +38,7 @@ next-env.d.ts
 # local resources
 Resourses/
 resources/
+
+# local vaults
+src/data/receipts_vault/*
+!src/data/receipts_vault/.gitkeep

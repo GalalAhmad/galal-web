@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import { requireRole } from '@/lib/serverAuth';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'feedback.json');
 
@@ -82,6 +83,11 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const body = await request.json();
     const { id, isPublished, action } = body;
 

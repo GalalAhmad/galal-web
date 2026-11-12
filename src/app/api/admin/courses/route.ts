@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 import { allCoursesData, tracksData, Course, TrackInfo } from '@/data/coursesData';
+import { requireRole } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -109,6 +110,11 @@ export async function GET() {
 // POST: Add a new course or track
 export async function POST(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const body = await request.json();
     const catalog = await readCatalog();
 
@@ -145,7 +151,7 @@ export async function POST(request: Request) {
       trackLabel: courseData.trackLabel || 'مسار تدريبي',
       instructor: courseData.instructor || {
         name: 'جلال أحمد',
-        title: 'مستشار نفسي وأسري',
+        title: 'أخصائي نفسي وأسري',
       },
       badge: courseData.badge || 'برنامج جديد',
       level: courseData.level || 'شامل لكافة المستويات',
@@ -209,6 +215,11 @@ export async function POST(request: Request) {
 // PUT: Update an existing course
 export async function PUT(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const body = await request.json();
     const catalog = await readCatalog();
     const updatedCourse: Course = body.course || body;
@@ -249,6 +260,11 @@ export async function PUT(request: Request) {
 // DELETE: Delete a course
 export async function DELETE(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
+import { requireRole } from '@/lib/serverAuth';
 
 const availPath = path.join(process.cwd(), 'src', 'data', 'availability.json');
 const bookingsPath = path.join(process.cwd(), 'src', 'data', 'bookings.json');
@@ -88,6 +89,11 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const authCheck = requireRole(request, ['counselor', 'admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const body = await request.json();
     const { workingDays, timeSlots, blockedDates } = body;
 

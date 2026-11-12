@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
+import { requireAuth } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const phone = searchParams.get('phone');
-    const email = searchParams.get('email');
-    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
-
-    if (!isAdmin && !phone && !email) {
-      return NextResponse.json({ success: true, notifications: [] });
+    const authCheck = requireAuth(request);
+    if (!authCheck.user) {
+      return authCheck.response;
     }
+    const sessionUser = authCheck.user;
+    const isManagement = sessionUser.role === 'counselor' || sessionUser.role === 'admin';
 
     if (!isSupabaseConfigured || !supabaseAdmin) {
       return NextResponse.json({ success: true, notifications: [] });
@@ -25,14 +24,23 @@ export async function GET(request: Request) {
       .eq('test_id', 'user_notification')
       .order('created_at', { ascending: false });
 
-    if (!isAdmin) {
-      if (email && phone) {
-        query = query.or(`client_email.eq.${email},client_phone.eq.${phone}`);
-      } else if (email) {
-        query = query.eq('client_email', email);
-      } else if (phone) {
-        query = query.eq('client_phone', phone);
+    if (!isManagement) {
+      const uPhone = sessionUser.phone || '';
+      const uEmail = sessionUser.email || '';
+      if (uPhone && uEmail) {
+        query = query.or(`client_email.eq.${uEmail},client_phone.eq.${uPhone}`);
+      } else if (uEmail) {
+        query = query.eq('client_email', uEmail);
+      } else if (uPhone) {
+        query = query.eq('client_phone', uPhone);
+      } else {
+        return NextResponse.json({ success: true, notifications: [] });
       }
+    } else {
+      // Management receives management/admin notifications
+      const { searchParams } = new URL(request.url);
+      const roleFilter = searchParams.get('role') || sessionUser.role;
+      query = query.or(`client_phone.eq.${roleFilter},client_phone.eq.admin,client_phone.eq.counselor`);
     }
 
     const { data, error } = await query.limit(30);
@@ -58,6 +66,11 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authCheck = requireAuth(request);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const body = await request.json();
     const { phone, email, title, message, link } = body;
 
@@ -97,25 +110,37 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
+    const authCheck = requireAuth(request);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+    const sessionUser = authCheck.user;
+
     const body = await request.json();
-    const { id, markAll, phone, email } = body;
+    const { id, markAll } = body;
 
     if (!isSupabaseConfigured || !supabaseAdmin) {
       return NextResponse.json({ success: true });
     }
 
-    if (markAll && (phone || email)) {
+    if (markAll) {
       let query = supabaseAdmin
         .from('test_results')
         .update({ level: 'read' })
         .eq('test_id', 'user_notification');
 
-      if (email && phone) {
-        query = query.or(`client_email.eq.${email},client_phone.eq.${phone}`);
-      } else if (email) {
-        query = query.eq('client_email', email);
-      } else if (phone) {
-        query = query.eq('client_phone', phone);
+      if (sessionUser.role === 'client') {
+        const uPhone = sessionUser.phone || '';
+        const uEmail = sessionUser.email || '';
+        if (uEmail && uPhone) {
+          query = query.or(`client_email.eq.${uEmail},client_phone.eq.${uPhone}`);
+        } else if (uEmail) {
+          query = query.eq('client_email', uEmail);
+        } else if (uPhone) {
+          query = query.eq('client_phone', uPhone);
+        }
+      } else {
+        query = query.or(`client_phone.eq.${sessionUser.role},client_phone.eq.admin,client_phone.eq.counselor`);
       }
 
       await query;

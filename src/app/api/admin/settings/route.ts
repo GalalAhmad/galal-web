@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
+import { requireRole } from '@/lib/serverAuth';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'siteSettings.json');
 
@@ -11,9 +12,9 @@ async function readSettings() {
   try {
     const data = await fs.readFile(filePath, 'utf-8');
     return JSON.parse(data);
-  } catch (err) {
+  } catch {
     return {
-      siteName: "جلال أحمد",
+      siteName: "د. جلال أحمد",
       phone: "+20 101 487 6666",
       whatsapp: "201014876666",
       email: "info@galalahmad.com",
@@ -40,12 +41,17 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const body = await request.json();
     const current = await readSettings();
     const updated = { ...current, ...body };
     await writeSettings(updated);
     return NextResponse.json({ success: true, settings: updated });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 });
   }
 }

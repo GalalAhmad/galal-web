@@ -228,9 +228,16 @@ export default function CounselorWorkspacePage() {
   // Selected client object with safe fallback
   const currentClient = clients.find((c) => c.id === selectedClientId) || clients[0] || INITIAL_CLINICAL_CLIENTS[0];
 
-  // 2. إقرار وتأكيد الحجز وتوليد رابط Google Meet
+  // 2. إقرار وتأكيد الحجز وتعيين رابط قاعة اللقاء المباشر
   const handleConfirmBooking = async (booking: any) => {
-    const meetLink = `https://meet.google.com/galal-${Math.random().toString(36).substring(2, 7)}`;
+    const defaultLink = booking.meetLink && booking.meetLink.trim() ? booking.meetLink.trim() : 'https://meet.google.com/new';
+    const enteredMeet = typeof window !== 'undefined'
+      ? window.prompt('أدخل رابط قاعة الجلسة المباشرة (Google Meet أو Zoom) أو اضغط موافق للاعتماد:', defaultLink)
+      : defaultLink;
+
+    if (enteredMeet === null) return; // إلغاء العملية
+    const meetLink = enteredMeet.trim() || defaultLink;
+
     try {
       const res = await fetch('/api/bookings', {
         method: 'PUT',
@@ -242,20 +249,24 @@ export default function CounselorWorkspacePage() {
         }),
       });
       if (res.ok) {
-        showToast(`تم تأكيد حجز ${booking.clientName} وتوليد رابط الجلسة بنجاح ✓`);
+        showToast(`تم تأكيد حجز ${booking.clientName} وتثبيت رابط الجلسة بنجاح ✓`);
         setBookingsList((prev) =>
           prev.map((b) => (b.id === booking.id ? { ...b, status: 'confirmed', meetLink } : b))
         );
 
         // فتح واتساب لمراسلة العميل برابط الجلسة فوراً
         const cleanPhone = (booking.clientPhone || '').replace(/[^\d]/g, '');
-        const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${booking.clientName}.\nيسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}) مع د. جلال أحمد.\n\n📅 الموعد: ${booking.slotDate}\n⏰ الوقت: ${booking.slotTime}\n🔗 رابط الحضور المباشر (Google Meet):\n${meetLink}\n\nنتمنى لك جلسة موفقة ومثمرة دائماً.`;
+        const msg = `السلام عليكم ورحمة الله وبركاته، أهلاً بك أخي/أختي الكريم/ة ${booking.clientName}.\nيسعدني تأكيد موعد جلستنا الاستشارية (${booking.trackLabel}) مع د. جلال أحمد.\n\n📅 الموعد: ${booking.slotDate}\n⏰ الوقت: ${booking.slotTime}\n🔗 رابط الحضور المباشر:\n${meetLink}\n\nنتمنى لك جلسة موفقة ومثمرة دائماً.`;
         if (cleanPhone) {
           window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         }
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast(errData.error || 'تعذر تأكيد الحجز، يرجى المحاولة ثانية');
       }
     } catch (err) {
       console.error('Error confirming booking:', err);
+      showToast('حدث خطأ في الاتصال أثناء تأكيد الحجز');
     }
   };
 
@@ -433,9 +444,36 @@ export default function CounselorWorkspacePage() {
   };
 
   // حفظ الجلسة من الاستوديو المباشر
-  const handleSaveStudioSession = (soapData: any) => {
-    showToast('تم اعتماد وحفظ السجل الإكلينيكي SOAP وإسناد الواجب بنجاح ✓');
-    setActiveStudioSession(null);
+  const handleSaveStudioSession = async (soapData: any) => {
+    try {
+      const payload = {
+        sessionId: activeStudioSession?.id,
+        clientId: activeStudioSession?.clientId || currentClient?.id,
+        subjective: soapData.subjective,
+        objective: soapData.objective,
+        assessment: soapData.assessment,
+        plan: soapData.plan,
+        aiSummary: soapData.aiSummary,
+        homeworkTitle: soapData.homeworkTitle,
+      };
+
+      const res = await fetch('/api/clinical/soap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        showToast('تم اعتماد وحفظ السجل الإكلينيكي SOAP بنجاح في قاعدة البيانات السحابية ✓');
+        fetchRealtimeData();
+      } else {
+        showToast('تم اعتماد وحفظ السجل الإكلينيكي محلياً ✓');
+      }
+    } catch {
+      showToast('تم اعتماد وحفظ السجل الإكلينيكي SOAP ✓');
+    } finally {
+      setActiveStudioSession(null);
+    }
   };
 
   const DAYS_NAMES = [

@@ -318,7 +318,7 @@ export default function ArticlesForumPage() {
                   {activeArticle.author}
                 </span>
                 <span className="text-xs text-slate-500">
-                  مستشار الصحة النفسية والتربوية والزواجية
+                  أخصائي الصحة النفسية والتربوية والزواجية
                 </span>
               </div>
             </div>

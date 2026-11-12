@@ -274,7 +274,7 @@ export default function HomePage() {
               جـلال أحـمد
             </h1>
             <p className="text-sm sm:text-base md:text-lg font-bold text-[#4E7E76] dark:text-[#5E988E] max-w-3xl mx-auto leading-relaxed">
-              اختصاصي نفسي | استشاري تربوي | إرشاد أسري | إرشاد زواجي | مستشار تعليمي
+              اختصاصي نفسي | استشاري تربوي | إرشاد أسري | إرشاد زواجي | خبير تعليمي
             </p>
           </div>
 

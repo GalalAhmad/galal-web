@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 import { sendNewsletterBroadcastEmail } from '@/lib/email';
+import { requireRole } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -20,6 +21,11 @@ async function readLocalSubscribers(): Promise<any[]> {
 
 export async function POST(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin', 'counselor']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const body = await request.json();
     const {
       subject,

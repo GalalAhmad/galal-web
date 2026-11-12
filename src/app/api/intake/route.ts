@@ -1,8 +1,18 @@
 import { NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateCheck = checkRateLimit(`intake:${ip}`, 10, 15 * 60);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ error: 'تم تجاوز الحد المسموح لإرسال الطلبات', code: 'RATE_LIMITED' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { full_name, whatsapp, email, track, delivery_mode, preferred_time, notes } = body;
 
@@ -28,7 +38,7 @@ export async function POST(request: Request) {
       ]).select();
 
       if (error) {
-        console.error('Supabase error inserting intake request:', error);
+        console.error('Supabase error inserting intake request:', error.message);
         return NextResponse.json(
           { error: 'تعذر حفظ الطلب في قاعدة البيانات' },
           { status: 500 }
@@ -38,15 +48,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, data });
     }
 
-    // Local / Dev Fallback
-    console.log('Intake received (local fallback):', { full_name, whatsapp, email, track });
     return NextResponse.json({
       success: true,
       message: 'تم استلام طلبك بنجاح وسيتواصل معك فريق التنسيق'
     });
 
   } catch (error) {
-    console.error('Intake route error:', error);
+    console.error('Intake route error');
     return NextResponse.json(
       { error: 'حدث خطأ غير متوقع أثناء معالجة الطلب' },
       { status: 500 }

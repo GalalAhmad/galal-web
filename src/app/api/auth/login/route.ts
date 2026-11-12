@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
-import { verifyPassword, hashPassword, phonesMatch, normalizePhone } from '@/lib/auth';
+import { verifyPassword, hashPassword, isLegacyHash, phonesMatch, normalizePhone } from '@/lib/auth';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
+import { signSessionToken, createSessionCookie, ServerSessionUser } from '@/lib/serverAuth';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'userProfiles.json');
 
@@ -11,17 +13,18 @@ export const revalidate = 0;
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const ip = getClientIp(request);
+    const body = await request.json().catch(() => ({}));
     const { identifier, password } = body;
 
-    if (!identifier || !identifier.trim()) {
+    if (!identifier || typeof identifier !== 'string' || !identifier.trim()) {
       return NextResponse.json(
         { error: 'يرجى إدخال رقم الهاتف أو البريد الإلكتروني المسجل' },
         { status: 400 }
       );
     }
 
-    if (!password || !password.trim()) {
+    if (!password || typeof password !== 'string' || !password.trim()) {
       return NextResponse.json(
         { error: 'يرجى إدخال كلمة المرور' },
         { status: 400 }
@@ -32,205 +35,140 @@ export async function POST(request: Request) {
     const cleanPhone = normalizePhone(cleanInput);
     const cleanEmail = cleanInput.toLowerCase();
 
-    // ==========================================================
-    // 1. حساب المعالج الخاص (د. جلال أحمد) — مساحة العمل الإكلينيكية
-    // ==========================================================
-    const isCounselorIdentifier = 
-      cleanInput === '01014876666' || 
-      cleanPhone === '01014876666' || 
-      cleanEmail === 'counselor@galalahmad.com' || 
-      cleanInput.toLowerCase() === 'galal';
-
-    const validCounselorPasswords = ['Galal@2026', 'galalahmad2026', 'galal2026'];
-
-    if (isCounselorIdentifier && validCounselorPasswords.includes(password.trim())) {
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: 'counselor-galal-ahmad',
-          name: 'د. جلال أحمد',
-          phone: '01014876666',
-          email: 'counselor@galalahmad.com',
-          gender: 'male',
-          ageGroup: '36-45',
-          maritalStatus: 'متزوج',
-          country: 'مصر',
-          city: 'القاهرة',
-          role: 'counselor', // دور المعالج المعتمد — يوجهه مباشرة إلى /counselor
-          createdAt: new Date().toISOString(),
-        },
-      });
-    }
-
-    // ==========================================================
-    // 2. حساب إدارة الموقع (الأدمن) — لوحة تحكم محتويات المنصة
-    // ==========================================================
-    const isAdminIdentifier = 
-      cleanInput.toLowerCase() === 'admin' || 
-      cleanEmail === 'admin@galalahmad.com' || 
-      cleanPhone === '01000000099';
-
-    const validAdminPasswords = ['Admin@2026', 'GalalAdmin@2026', 'admin2026', 'Galal@2026'];
-
-    if (isAdminIdentifier && validAdminPasswords.includes(password.trim())) {
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: 'admin-site-manager',
-          name: 'مدير المنصة',
-          phone: '01000000099',
-          email: 'admin@galalahmad.com',
-          gender: 'male',
-          ageGroup: '36-45',
-          maritalStatus: 'متزوج',
-          country: 'مصر',
-          city: 'القاهرة',
-          role: 'admin', // دور الأدمن — يوجهه مباشرة إلى /admin
-          createdAt: new Date().toISOString(),
-        },
-      });
-    }
-
-    // ==========================================================
-    // 3. الحساب التجريبي المعتمد للعميل (لتجربة رحلة العميل)
-    // ==========================================================
-    const isTestClientIdentifier =
-      cleanInput === '01000000000' ||
-      cleanPhone === '01000000000' ||
-      cleanEmail === 'client@test.com' ||
-      cleanInput.toLowerCase() === 'client';
-
-    const validTestClientPasswords = ['Client@2026', 'client2026', '123456'];
-
-    if (isTestClientIdentifier && validTestClientPasswords.includes(password.trim())) {
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: 'client-test-01',
-          name: 'عميل تجريبي',
-          phone: '01000000000',
-          email: 'client@test.com',
-          gender: 'male',
-          ageGroup: '26-35',
-          maritalStatus: 'متزوج',
-          country: 'مصر',
-          city: 'القاهرة',
-          role: 'client', // دور العميل — يوجهه مباشرة إلى /profile
-          createdAt: new Date().toISOString(),
-        },
-      });
-    }
-
-    // 1. Check in Supabase if configured
-    if (isSupabaseConfigured) {
-      let query = supabaseAdmin.from('profiles').select('*');
-      if (cleanPhone && cleanEmail) {
-        query = query.or(`phone.eq.${cleanPhone},email.eq.${cleanEmail}`);
-      } else if (cleanPhone) {
-        query = query.eq('phone', cleanPhone);
-      } else {
-        query = query.eq('email', cleanEmail);
-      }
-
-      const { data: users, error: dbErr } = await query;
-      if (!dbErr && users && users.length > 0) {
-        const user = users[0];
-
-        if (user.password_hash) {
-          const isMatch = verifyPassword(password, user.password_hash);
-          if (!isMatch) {
-            return NextResponse.json(
-              { error: 'كلمة المرور غير صحيحة. يرجى التأكد وإعادة المحاولة.' },
-              { status: 401 }
-            );
-          }
-        } else {
-          // If no password set yet, set it now
-          await supabaseAdmin
-            .from('profiles')
-            .update({ password_hash: hashPassword(password), updated_at: new Date().toISOString() })
-            .eq('id', user.id);
-        }
-
-        return NextResponse.json({
-          success: true,
-          user: {
-            id: user.id,
-            name: user.name,
-            phone: user.phone || '',
-            email: user.email || '',
-            gender: user.gender || '',
-            ageGroup: user.age_group || '',
-            maritalStatus: user.marital_status || '',
-            country: user.country || '',
-            city: user.city || '',
-            role: user.role || 'client',
-            createdAt: user.created_at,
-          },
-        });
-      }
-    }
-
-    // 2. Local Fallback
-    let profiles: any[] = [];
-    try {
-      profiles = JSON.parse(await fs.readFile(filePath, 'utf-8'));
-    } catch (e) {
-      profiles = [];
-    }
-
-    const userIndex = profiles.findIndex((p: any) => {
-      const pEmail = (p.email || '').trim().toLowerCase();
-      if (cleanPhone && p.phone && phonesMatch(p.phone, cleanPhone)) return true;
-      if (cleanEmail && pEmail && cleanEmail === pEmail) return true;
-      return false;
-    });
-
-    if (userIndex === -1) {
+    // 1. Rate limiting: 10 attempts per 15 minutes per IP+Identifier
+    const rateLimitKey = `login:${ip}:${cleanPhone || cleanEmail}`;
+    const rateCheck = checkRateLimit(rateLimitKey, 10, 15 * 60);
+    if (!rateCheck.allowed) {
       return NextResponse.json(
-        { error: 'لم نتمكن من العثور على حساب مطابق لرقم الهاتف أو البريد المدخل. يمكنك إنشاء حساب جديد.' },
-        { status: 404 }
+        {
+          error: `تم تجاوز الحد المسموح لمحاولات تسجيل الدخول. يرجى الانتظار لمدة ${Math.ceil(
+            rateCheck.resetInSeconds / 60
+          )} دقيقة قبل المحاولة مجدداً.`,
+          code: 'RATE_LIMITED',
+        },
+        { status: 429 }
       );
     }
 
-    const user = profiles[userIndex];
+    let authenticatedUser: ServerSessionUser | null = null;
+    let fullUserProfile: any = null;
 
-    if (user.passwordHash) {
-      const isMatch = verifyPassword(password, user.passwordHash);
-      if (!isMatch) {
-        return NextResponse.json(
-          { error: 'كلمة المرور غير صحيحة. يرجى التأكد وإعادة المحاولة.' },
-          { status: 401 }
-        );
-      }
-    } else {
-      user.passwordHash = hashPassword(password);
-      profiles[userIndex] = user;
+    // 2. Query Supabase profiles table
+    if (isSupabaseConfigured && supabaseAdmin) {
       try {
-        await fs.writeFile(filePath, JSON.stringify(profiles, null, 2), 'utf-8');
-      } catch (e) {}
+        let query = supabaseAdmin.from('profiles').select('*');
+        if (cleanPhone && cleanEmail) {
+          query = query.or(`phone.eq.${cleanPhone},email.eq.${cleanEmail}`);
+        } else if (cleanPhone) {
+          query = query.eq('phone', cleanPhone);
+        } else {
+          query = query.eq('email', cleanEmail);
+        }
+
+        const { data: users, error: dbErr } = await query;
+        if (!dbErr && users && users.length > 0) {
+          const user = users[0];
+          if (user.password_hash && verifyPassword(password, user.password_hash)) {
+            // Automatically upgrade legacy hash to PBKDF2 upon successful verification
+            if (isLegacyHash(user.password_hash)) {
+              const upgradedHash = hashPassword(password);
+              await supabaseAdmin
+                .from('profiles')
+                .update({ password_hash: upgradedHash, updated_at: new Date().toISOString() })
+                .eq('id', user.id);
+            }
+
+            authenticatedUser = {
+              id: user.id,
+              name: user.name,
+              role: (user.role as any) || 'client',
+              phone: user.phone || undefined,
+              email: user.email || undefined,
+            };
+            fullUserProfile = user;
+          }
+        }
+      } catch (sbErr) {
+        console.error('Supabase login check error:', sbErr);
+      }
     }
 
-    return NextResponse.json({
+    // 3. Fallback to local user store if not resolved in Supabase
+    if (!authenticatedUser) {
+      try {
+        const raw = await fs.readFile(filePath, 'utf-8');
+        const profiles: any[] = JSON.parse(raw);
+
+        const foundIndex = profiles.findIndex((p: any) => {
+          const pEmail = (p.email || '').trim().toLowerCase();
+          if (cleanPhone && p.phone && phonesMatch(p.phone, cleanPhone)) return true;
+          if (cleanEmail && pEmail && cleanEmail === pEmail) return true;
+          return false;
+        });
+
+        if (foundIndex !== -1) {
+          const localUser = profiles[foundIndex];
+          if (localUser.passwordHash && verifyPassword(password, localUser.passwordHash)) {
+            // Upgrade legacy hash in local store
+            if (isLegacyHash(localUser.passwordHash)) {
+              localUser.passwordHash = hashPassword(password);
+              profiles[foundIndex] = localUser;
+              await fs.writeFile(filePath, JSON.stringify(profiles, null, 2), 'utf-8').catch(() => {});
+            }
+
+            authenticatedUser = {
+              id: localUser.id,
+              name: localUser.name,
+              role: localUser.role || 'client',
+              phone: localUser.phone || undefined,
+              email: localUser.email || undefined,
+            };
+            fullUserProfile = localUser;
+          }
+        }
+      } catch {
+        // Local store read error
+      }
+    }
+
+    // 4. Verification failed or user not found
+    if (!authenticatedUser) {
+      return NextResponse.json(
+        { error: 'بيانات تسجيل الدخول غير صحيحة. يرجى التأكد من رقم الهاتف أو البريد وكلمة المرور.' },
+        { status: 401 }
+      );
+    }
+
+    // 5. Issue cryptographically signed session token and HttpOnly cookie
+    const token = signSessionToken(authenticatedUser);
+    const cookieHeader = createSessionCookie(token);
+
+    const safeUser = {
+      id: authenticatedUser.id,
+      name: authenticatedUser.name,
+      role: authenticatedUser.role,
+      phone: authenticatedUser.phone || '',
+      email: authenticatedUser.email || '',
+      gender: fullUserProfile?.gender || '',
+      ageGroup: fullUserProfile?.age_group || fullUserProfile?.ageGroup || '',
+      maritalStatus: fullUserProfile?.marital_status || fullUserProfile?.maritalStatus || '',
+      country: fullUserProfile?.country || '',
+      city: fullUserProfile?.city || '',
+      createdAt: fullUserProfile?.created_at || fullUserProfile?.createdAt || new Date().toISOString(),
+    };
+
+    const response = NextResponse.json({
       success: true,
-      user: {
-        id: user.id,
-        name: user.name,
-        phone: user.phone || '',
-        email: user.email || '',
-        gender: user.gender || '',
-        ageGroup: user.ageGroup || '',
-        maritalStatus: user.maritalStatus || '',
-        country: user.country || '',
-        city: user.city || '',
-        role: user.role || 'client',
-        createdAt: user.createdAt,
-      },
+      user: safeUser,
+      token,
     });
+
+    response.headers.set('Set-Cookie', cookieHeader);
+    return response;
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login route error:', error);
     return NextResponse.json(
-      { error: 'حدث خطأ في الخادم أثناء تسجيل الدخول، يرجى المحاولة لاحقاً.' },
+      { error: 'حدث خطأ في الخادم أثناء معالجة الطلب، يرجى المحاولة لاحقاً.' },
       { status: 500 }
     );
   }

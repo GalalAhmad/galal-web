@@ -3,6 +3,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { hashPassword, phonesMatch, normalizePhone } from '@/lib/auth';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
+import { signSessionToken, createSessionCookie } from '@/lib/serverAuth';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 const filePath = path.join(process.cwd(), 'src', 'data', 'userProfiles.json');
 
@@ -11,7 +13,23 @@ export const revalidate = 0;
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const ip = getClientIp(request);
+
+    // Rate Limiting: max 5 registration attempts per 15 minutes per IP
+    const rateCheck = checkRateLimit(`register:${ip}`, 5, 15 * 60);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: `تم تجاوز الحد المسموح للتسجيل. يرجى الانتظار لمدة ${Math.ceil(
+            rateCheck.resetInSeconds / 60
+          )} دقيقة قبل المحاولة مجدداً.`,
+          code: 'RATE_LIMITED',
+        },
+        { status: 429 }
+      );
+    }
+
+    const body = await request.json().catch(() => ({}));
     const { 
       name, 
       phone, 
@@ -25,7 +43,7 @@ export async function POST(request: Request) {
     } = body;
 
     // 1. Validation
-    if (!name || name.trim().length < 2) {
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
       return NextResponse.json(
         { error: 'يرجى كتابة الاسم الكريم (حرفين على الأقل)' },
         { status: 400 }
@@ -39,7 +57,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!password || password.length < 6) {
+    if (!password || typeof password !== 'string' || password.length < 6) {
       return NextResponse.json(
         { error: 'كلمة المرور يجب أن لا تقل عن 6 خانات أو أحرف' },
         { status: 400 }
@@ -51,7 +69,7 @@ export async function POST(request: Request) {
     const pwdHash = hashPassword(password);
 
     // 2. Check for duplicate account in Supabase
-    if (isSupabaseConfigured) {
+    if (isSupabaseConfigured && supabaseAdmin) {
       let query = supabaseAdmin.from('profiles').select('id, phone, email');
       if (cleanPhone && cleanEmail) {
         query = query.or(`phone.eq.${cleanPhone},email.eq.${cleanEmail}`);
@@ -72,7 +90,7 @@ export async function POST(request: Request) {
         );
       }
 
-      // Insert into Supabase
+      // Insert into Supabase - strictly with role 'client'
       const { data: inserted, error: insErr } = await supabaseAdmin
         .from('profiles')
         .insert({
@@ -91,22 +109,38 @@ export async function POST(request: Request) {
         .single();
 
       if (!insErr && inserted) {
-        return NextResponse.json({
+        const sessionUser = {
+          id: inserted.id,
+          name: inserted.name,
+          role: 'client' as const,
+          phone: inserted.phone || undefined,
+          email: inserted.email || undefined,
+        };
+
+        const token = signSessionToken(sessionUser);
+        const cookieHeader = createSessionCookie(token);
+
+        const safeUser = {
+          id: inserted.id,
+          name: inserted.name,
+          phone: inserted.phone || '',
+          email: inserted.email || '',
+          gender: inserted.gender || '',
+          ageGroup: inserted.age_group || '',
+          maritalStatus: inserted.marital_status || '',
+          country: inserted.country || '',
+          city: inserted.city || '',
+          role: 'client',
+          createdAt: inserted.created_at,
+        };
+
+        const res = NextResponse.json({
           success: true,
-          user: {
-            id: inserted.id,
-            name: inserted.name,
-            phone: inserted.phone || '',
-            email: inserted.email || '',
-            gender: inserted.gender || '',
-            ageGroup: inserted.age_group || '',
-            maritalStatus: inserted.marital_status || '',
-            country: inserted.country || '',
-            city: inserted.city || '',
-            role: inserted.role || 'client',
-            createdAt: inserted.created_at,
-          },
+          user: safeUser,
+          token,
         });
+        res.headers.set('Set-Cookie', cookieHeader);
+        return res;
       }
     }
 
@@ -114,7 +148,7 @@ export async function POST(request: Request) {
     let profiles: any[] = [];
     try {
       profiles = JSON.parse(await fs.readFile(filePath, 'utf-8'));
-    } catch (e) {
+    } catch {
       profiles = [];
     }
 
@@ -147,7 +181,7 @@ export async function POST(request: Request) {
       maritalStatus: maritalStatus || '',
       country: country || '',
       city: city || '',
-      role: 'client',
+      role: 'client' as const,
       clinicalNotes: '',
       homework: [],
       testResults: [],
@@ -157,24 +191,40 @@ export async function POST(request: Request) {
     profiles.unshift(newProfile);
     try {
       await fs.writeFile(filePath, JSON.stringify(profiles, null, 2), 'utf-8');
-    } catch (e) {}
+    } catch {}
 
-    return NextResponse.json({
+    const sessionUser = {
+      id: newProfile.id,
+      name: newProfile.name,
+      role: 'client' as const,
+      phone: newProfile.phone || undefined,
+      email: newProfile.email || undefined,
+    };
+
+    const token = signSessionToken(sessionUser);
+    const cookieHeader = createSessionCookie(token);
+
+    const safeUser = {
+      id: newProfile.id,
+      name: newProfile.name,
+      phone: newProfile.phone,
+      email: newProfile.email,
+      gender: newProfile.gender,
+      ageGroup: newProfile.ageGroup,
+      maritalStatus: newProfile.maritalStatus,
+      country: newProfile.country,
+      city: newProfile.city,
+      role: 'client',
+      createdAt: newProfile.createdAt,
+    };
+
+    const res = NextResponse.json({
       success: true,
-      user: {
-        id: newProfile.id,
-        name: newProfile.name,
-        phone: newProfile.phone,
-        email: newProfile.email,
-        gender: newProfile.gender,
-        ageGroup: newProfile.ageGroup,
-        maritalStatus: newProfile.maritalStatus,
-        country: newProfile.country,
-        city: newProfile.city,
-        role: 'client',
-        createdAt: newProfile.createdAt,
-      },
+      user: safeUser,
+      token,
     });
+    res.headers.set('Set-Cookie', cookieHeader);
+    return res;
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json(

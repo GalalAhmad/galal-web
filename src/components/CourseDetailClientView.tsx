@@ -466,7 +466,7 @@ export default function CourseDetailClientView({ course }: CourseDetailClientVie
 
               <div className="sm:col-span-2">
                 <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                  ملاحظات أو استفسار تود طرحه للمستشار (اختياري):
+                  ملاحظات أو استفسار تود طرحه للمعالج د. جلال (اختياري):
                 </label>
                 <textarea
                   rows={2}

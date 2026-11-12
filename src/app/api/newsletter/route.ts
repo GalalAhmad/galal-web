@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 import { sendNewsletterWelcomeEmail } from '@/lib/email';
+import { requireRole } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -28,11 +29,9 @@ async function writeLocalSubscribers(data: any[]): Promise<void> {
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
-
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'غير مصرح باستعراض قائمة المشتركين' }, { status: 403 });
+    const authCheck = requireRole(request, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
     }
 
     const itemsMap = new Map<string, any>();
@@ -178,14 +177,14 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const { searchParams } = new URL(request.url);
     const email = searchParams.get('email');
     const id = searchParams.get('id');
-    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
-
-    if (!isAdmin && !email) {
-      return NextResponse.json({ error: 'غير مصرح بهذا الإجراء' }, { status: 403 });
-    }
 
     const cleanEmail = email ? email.trim().toLowerCase() : '';
 

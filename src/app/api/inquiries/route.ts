@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase/client';
+import { requireRole } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -12,7 +13,7 @@ async function readInquiries() {
   try {
     const data = await fs.readFile(filePath, 'utf-8');
     return JSON.parse(data);
-  } catch (err) {
+  } catch {
     return [];
   }
 }
@@ -25,8 +26,14 @@ async function writeInquiries(data: any[]) {
   }
 }
 
-export async function GET() {
+// GET: List all inquiries (Admin Only)
+export async function GET(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     if (isSupabaseConfigured && supabase) {
       const { data, error } = await supabase
         .from('institutional_inquiries')
@@ -40,11 +47,12 @@ export async function GET() {
 
     const localData = await readInquiries();
     return NextResponse.json({ success: true, inquiries: localData });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to read inquiries' }, { status: 500 });
   }
 }
 
+// POST: Public submission of institutional inquiries
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -62,21 +70,30 @@ export async function POST(request: Request) {
       instName,
       contactPerson,
       phone,
-      instType: instType || 'مدرسة / مجمع تعليمي',
+      instType: instType || 'other',
       inquiry: inquiry || '',
-      status: 'new',
+      status: 'pending',
       created_at: new Date().toISOString(),
     };
 
-    // Save locally
     const current = await readInquiries();
-    const updated = [newInquiry, ...current];
-    await writeInquiries(updated);
+    current.unshift(newInquiry);
+    await writeInquiries(current);
 
-    // Save to Supabase if configured
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('institutional_inquiries').insert([newInquiry]);
+        await supabase.from('institutional_inquiries').insert([
+          {
+            id: newInquiry.id,
+            inst_name: instName,
+            contact_person: contactPerson,
+            phone: phone,
+            inst_type: instType || 'other',
+            inquiry: inquiry || '',
+            status: 'pending',
+            created_at: newInquiry.created_at,
+          },
+        ]);
       } catch (sbError) {
         console.error('Supabase error inserting inquiry:', sbError);
       }
@@ -93,8 +110,14 @@ export async function POST(request: Request) {
   }
 }
 
+// PATCH: Update or delete inquiry (Admin Only)
 export async function PATCH(request: Request) {
   try {
+    const authCheck = requireRole(request, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const body = await request.json();
     const { id, status, action } = body;
 
@@ -115,7 +138,7 @@ export async function PATCH(request: Request) {
 
     await writeInquiries(updated);
     return NextResponse.json({ success: true, inquiries: updated });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to update inquiry' }, { status: 500 });
   }
 }

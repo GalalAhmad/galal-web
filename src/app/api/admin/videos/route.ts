@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { initialVideos, VideoItem } from '@/data/videos';
+import { requireRole } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -42,6 +43,11 @@ export async function GET() {
 // POST /api/admin/videos - Add or delete video
 export async function POST(req: Request) {
   try {
+    const authCheck = requireRole(req, ['admin']);
+    if (!authCheck.user) {
+      return authCheck.response;
+    }
+
     const body = await req.json();
     let videos = getVideos();
 

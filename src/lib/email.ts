@@ -1,6 +1,6 @@
 /**
  * خدمة إرسال البريد الإلكتروني والإشعارات الرسمية
- * تدعم مزود Resend المعتمد مع قوالب HTML أنيقة وتنبيهات فورية للمستشار والعملاء
+ * تدعم مزود Resend المعتمد مع قوالب HTML أنيقة وتنبيهات فورية للمعالج والعملاء
  */
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || ' أحمد <appointments@galalahmad.com>';

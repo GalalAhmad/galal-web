@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
+import { requireRole } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function POST(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const isAdmin = searchParams.get('admin') === 'true' || request.headers.get('x-admin-role') === 'admin';
-
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'غير مصرح' }, { status: 403 });
+    const authCheck = requireRole(request, ['admin', 'counselor']);
+    if (!authCheck.user) {
+      return authCheck.response;
     }
 
     const body = await request.json();
@@ -22,7 +21,7 @@ export async function POST(request: Request) {
 
     const targetEmail = to ? to.trim() : 'galalahmad1201@gmail.com';
     const emailSubject = subject || 'رسالة تجريبية من لوحة إدارة د. جلال أحمد';
-    const fromAddress = process.env.RESEND_FROM_EMAIL || ' أحمد <onboarding@resend.dev>';
+    const fromAddress = process.env.RESEND_FROM_EMAIL || 'د. جلال أحمد <appointments@galalahmad.com>';
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -40,7 +39,7 @@ export async function POST(request: Request) {
       <body>
         <div class="container">
           <div class="header">
-            <h2 style="margin: 0; font-size: 20px;"> أحـمد</h2>
+            <h2 style="margin: 0; font-size: 20px;">د. جلال أحمد</h2>
             <p style="margin: 4px 0 0 0; font-size: 12px; opacity: 0.9;">اختبار نظام البريد الإلكتروني والإشعارات الرسمية</p>
           </div>
           <div class="content">
@@ -49,17 +48,15 @@ export async function POST(request: Request) {
               هذه رسالة اختبارية تم إرسالها من لوحة الإدارة للتأكد من ربط مفتاح Resend الخاص بك بنجاح.
             </p>
             <div class="card">
-              <strong style="color: #4E7E76; font-size: 13px;">نص الرسالة:</strong>
-              <p style="margin: 8px 0 0 0; font-size: 14px; color: #1E293B; line-height: 1.7;">
-                ${message || 'خدمة الإرسال اللحظي جاهزة لإرسال تأكيدات الحجوزات وروابط قاعات Google Meet وتكليفات المستفيدين.'}
-              </p>
+              <p style="margin: 0 0 8px 0; font-weight: bold; color: #4E7E76;">تفاصيل البث التجريبي:</p>
+              <p style="margin: 4px 0; font-size: 13px;"><strong>المرسل:</strong> ${fromAddress}</p>
+              <p style="margin: 4px 0; font-size: 13px;"><strong>المستلم:</strong> ${targetEmail}</p>
+              <p style="margin: 4px 0; font-size: 13px;"><strong>التوقيت:</strong> ${new Date().toLocaleString('ar-EG', { timeZone: 'Africa/Cairo' })}</p>
+              ${message ? `<p style="margin: 8px 0 0 0; padding-top: 8px; border-top: 1px dashed #CBD5E1; font-size: 13px;"><strong>رسالة مخصصة:</strong> ${message}</p>` : ''}
             </div>
-            <p style="font-size: 12px; color: #64748B;">
-              تاريخ الإرسال: ${new Date().toLocaleString('ar-EG')}
-            </p>
           </div>
           <div class="footer">
-            <p>© 2026 د. جلال أحمد — جميع الحقوق محفوظة</p>
+            منظومة د. جلال أحمد للاستشارات النفسية وتطوير الأسرة &copy; ${new Date().getFullYear()}
           </div>
         </div>
       </body>
@@ -81,21 +78,18 @@ export async function POST(request: Request) {
     });
 
     const data = await res.json();
-
     if (!res.ok) {
-      return NextResponse.json({
-        error: data.message || 'فشل إرسال البريد',
-        details: data,
-      }, { status: res.status });
+      console.error('Resend test API error:', data);
+      return NextResponse.json({ error: data.message || 'فشل إرسال البريد عبر Resend' }, { status: res.status });
     }
 
     return NextResponse.json({
       success: true,
-      id: data.id,
-      to: targetEmail,
-      message: 'تم إرسال الرسالة بنجاح عبر Resend',
+      messageId: data.id,
+      info: `تم إرسال بريد الاختبار بنجاح إلى ${targetEmail}`,
     });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (error: any) {
+    console.error('Email test route error:', error);
+    return NextResponse.json({ error: error?.message || 'حدث خطأ أثناء إرسال بريد الاختبار' }, { status: 500 });
   }
 }

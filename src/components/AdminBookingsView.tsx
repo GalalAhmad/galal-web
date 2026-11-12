@@ -939,13 +939,32 @@ ${meet}
 
               {activeReceiptModal.receiptImage && (
                 <div className="space-y-1.5">
-                  <span className="text-slate-400 font-bold block">صورة الإيصال المرفقة:</span>
-                  <div className="rounded-2xl border border-slate-800 overflow-hidden max-h-72 bg-black flex items-center justify-center">
-                    <img
-                      src={activeReceiptModal.receiptImage}
-                      alt="إيصال التحويل"
-                      className="max-h-72 object-contain"
-                    />
+                  <span className="text-slate-400 font-bold block">مستند الإيصال المرفق:</span>
+                  <div className="rounded-2xl border border-slate-800 overflow-hidden max-h-72 bg-black flex items-center justify-center p-2">
+                    {activeReceiptModal.receiptImage.includes('.pdf') ? (
+                      <a
+                        href={
+                          activeReceiptModal.receiptImage.startsWith('storage://') || activeReceiptModal.receiptImage.startsWith('vault://')
+                            ? `/api/bookings/receipt?id=${activeReceiptModal.id}`
+                            : activeReceiptModal.receiptImage
+                        }
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-400 text-xs font-bold flex items-center gap-2 transition"
+                      >
+                        <span>📄 عرض مستند إيصال السداد (PDF) في نافذة جديدة</span>
+                      </a>
+                    ) : (
+                      <img
+                        src={
+                          activeReceiptModal.receiptImage.startsWith('storage://') || activeReceiptModal.receiptImage.startsWith('vault://')
+                            ? `/api/bookings/receipt?id=${activeReceiptModal.id}`
+                            : activeReceiptModal.receiptImage
+                        }
+                        alt="إيصال التحويل"
+                        className="max-h-72 object-contain"
+                      />
+                    )}
                   </div>
                 </div>
               )}

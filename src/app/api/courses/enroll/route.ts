@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 import { parseClinicalDossier } from '@/lib/clinical/dossierParser';
+import { getServerUserSession } from '@/lib/serverAuth';
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateCheck = checkRateLimit(`enroll:${ip}`, 10, 15 * 60);
+    if (!rateCheck.allowed) {
+      return NextResponse.json({ error: 'تم تجاوز الحد المسموح لطلبات التسجيل', code: 'RATE_LIMITED' }, { status: 429 });
+    }
+
+    const sessionUser = getServerUserSession(request);
     const body = await request.json();
     const { courseId, courseTitle, name, phone, email, notes, batchDate } = body;
 
@@ -14,8 +23,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'معرّف واسم البرنامج مطلوبان' }, { status: 400 });
     }
 
-    const cleanPhone = (phone || '').trim();
-    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPhone = (sessionUser?.phone || phone || '').trim();
+    const cleanEmail = (sessionUser?.email || email || '').trim().toLowerCase();
+    const cleanName = sessionUser?.name || name || 'مستفيد جديد';
 
     if (!cleanPhone && !cleanEmail && !name) {
       return NextResponse.json({ error: 'بيانات التسجيل (الاسم أو الهاتف أو البريد) مطلوبة' }, { status: 400 });

@@ -121,7 +121,7 @@ export default function Footer() {
         {/* سطر الحقوق ورقم الإصدار */}
         <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-2">
-            <span>جميع الحقوق محفوظة © {new Date().getFullYear()} — جـلال أحـمد (galalahmad.com)</span>
+            <span>جميع الحقوق محفوظة © {new Date().getFullYear()} — د. جلال أحمد (galalahmad.com)</span>
             <span className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold">
               v1.2.0
             </span>

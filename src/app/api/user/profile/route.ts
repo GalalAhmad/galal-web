@@ -93,7 +93,7 @@ export async function GET(request: Request) {
                 maritalStatus: p.marital_status || '',
                 country: p.country || '',
                 city: p.city || '',
-                clinicalNotes: dossier.notes,
+                clinicalNotes: sessionUser.role === 'counselor' ? dossier.notes : '',
                 homework: dossier.homework,
                 courses: dossier.courses,
                 readingPlan: dossier.readingPlan,
@@ -122,7 +122,10 @@ export async function GET(request: Request) {
           total: filtered.length,
           totalPages: Math.ceil(filtered.length / limit),
         },
-        profiles: paginated.map(({ passwordHash, ...rest }: any) => rest),
+        profiles: paginated.map(({ passwordHash, clinicalNotes, ...rest }: any) => ({
+          ...rest,
+          clinicalNotes: sessionUser.role === 'counselor' ? clinicalNotes : '',
+        })),
       });
     }
 
@@ -176,7 +179,7 @@ export async function GET(request: Request) {
           maritalStatus: dbProfile.marital_status || '',
           country: dbProfile.country || '',
           city: dbProfile.city || '',
-          clinicalNotes: sessionUser.role === 'client' ? '' : dossier.notes,
+          clinicalNotes: sessionUser.role === 'counselor' ? dossier.notes : '',
           homework: dossier.homework,
           courses: dossier.courses,
           readingPlan: dossier.readingPlan,
@@ -212,7 +215,12 @@ export async function GET(request: Request) {
       return false;
     });
 
-    const safeProfile = localProfile ? (({ passwordHash, ...rest }: any) => rest)(localProfile) : null;
+    const safeProfile = localProfile
+      ? (({ passwordHash, clinicalNotes, ...rest }: any) => ({
+          ...rest,
+          clinicalNotes: sessionUser.role === 'counselor' ? clinicalNotes : '',
+        }))(localProfile)
+      : null;
     return NextResponse.json(
       { success: true, profile: safeProfile },
       { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate' } }

@@ -161,52 +161,45 @@ export default function ClientProfilePage() {
     }
   }, [user, isLoading, router]);
 
-  // Fetch client bookings, test records, courses, and homework
-  const fetchClientData = async (user: any) => {
-    if (!user) return;
+  // Fetch client bookings, test records, courses, and homework in parallel to eliminate layout flicker
+  const fetchClientData = async (activeUser: any) => {
+    if (!activeUser) return;
     setLoadingBookings(true);
 
     try {
-      // 1. Fetch Bookings securely strictly for this authenticated client only
-      const bookingUrl = `/api/bookings?phone=${encodeURIComponent(user?.phone || '')}&email=${encodeURIComponent(user?.email || '')}`;
-      const bookRes = await fetch(bookingUrl, { cache: 'no-store' });
-      const bookData = await bookRes.json();
-      if (bookData.bookings) {
-        setClientBookings(bookData.bookings);
-      }
+      const qPhone = encodeURIComponent(activeUser.phone || '');
+      const qEmail = encodeURIComponent(activeUser.email || '');
 
-      // 2. Fetch User Profile & Test Results & Courses & Homework
-      const profRes = await fetch(
-        `/api/user/profile?phone=${encodeURIComponent(user.phone || '')}&email=${encodeURIComponent(user.email || '')}`,
-        { cache: 'no-store' }
-      );
-      const profData = await profRes.json();
-      if (profData.profile) {
-        if (Array.isArray(profData.profile.testResults)) {
-          setClientTests(profData.profile.testResults);
-        }
-        if (Array.isArray(profData.profile.courses)) {
-          setClientCourses(profData.profile.courses);
-        }
-        if (Array.isArray(profData.profile.homework)) {
-          setClientHomework(profData.profile.homework);
-        }
-        if (Array.isArray(profData.profile.readingPlan)) {
-          setClientReadingPlan(profData.profile.readingPlan);
-        }
-        if (profData.profile.clinicalNotes) {
-          setClinicalNotes(profData.profile.clinicalNotes);
+      const [bookRes, profRes, wbRes, jRes] = await Promise.allSettled([
+        fetch(`/api/bookings?phone=${qPhone}&email=${qEmail}`, { cache: 'no-store' }),
+        fetch(`/api/user/profile?phone=${qPhone}&email=${qEmail}`, { cache: 'no-store' }),
+        fetch(`/api/user/wellbeing?phone=${qPhone}&email=${qEmail}`, { cache: 'no-store' }),
+        fetch(`/api/user/journal?phone=${qPhone}&email=${qEmail}`, { cache: 'no-store' }),
+      ]);
+
+      // 1. Process Bookings
+      if (bookRes.status === 'fulfilled' && bookRes.value.ok) {
+        const bookData = await bookRes.value.json().catch(() => ({}));
+        if (Array.isArray(bookData.bookings)) {
+          setClientBookings(bookData.bookings);
         }
       }
 
-      // 3. Fetch Wellbeing Data & Streak
-      try {
-        const wbRes = await fetch(
-          `/api/user/wellbeing?phone=${encodeURIComponent(user.phone || '')}&email=${encodeURIComponent(user.email || '')}`,
-          { cache: 'no-store' }
-        );
-        const wbData = await wbRes.json();
-        if (wbData.logs) {
+      // 2. Process Profile & Assessments
+      if (profRes.status === 'fulfilled' && profRes.value.ok) {
+        const profData = await profRes.value.json().catch(() => ({}));
+        if (profData.profile) {
+          if (Array.isArray(profData.profile.testResults)) setClientTests(profData.profile.testResults);
+          if (Array.isArray(profData.profile.courses)) setClientCourses(profData.profile.courses);
+          if (Array.isArray(profData.profile.homework)) setClientHomework(profData.profile.homework);
+          if (Array.isArray(profData.profile.readingPlan)) setClientReadingPlan(profData.profile.readingPlan);
+        }
+      }
+
+      // 3. Process Wellbeing & Habits
+      if (wbRes.status === 'fulfilled' && wbRes.value.ok) {
+        const wbData = await wbRes.value.json().catch(() => ({}));
+        if (Array.isArray(wbData.logs)) {
           setWellbeingLogs(wbData.logs);
           setWellbeingStreak(wbData.logs.length);
         }
@@ -228,22 +221,14 @@ export default function ClientProfilePage() {
             })));
           }
         }
-      } catch (e) {
-        console.error('Error fetching wellbeing:', e);
       }
 
-      // 4. Fetch Client Journal & Messages
-      try {
-        const jRes = await fetch(
-          `/api/user/journal?phone=${encodeURIComponent(user.phone || '')}&email=${encodeURIComponent(user.email || '')}`,
-          { cache: 'no-store' }
-        );
-        const jData = await jRes.json();
-        if (jData.entries) {
+      // 4. Process Journal Entries
+      if (jRes.status === 'fulfilled' && jRes.value.ok) {
+        const jData = await jRes.value.json().catch(() => ({}));
+        if (Array.isArray(jData.entries)) {
           setJournalEntries(jData.entries);
         }
-      } catch (e) {
-        console.error('Error fetching journal:', e);
       }
     } catch (err) {
       console.error('Error fetching client data:', err);

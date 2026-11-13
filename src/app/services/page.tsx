@@ -74,7 +74,7 @@ export default function ServicesPage() {
         'استراتيجيات عملية لإدارة نوبات التوتر والقلق اليومي',
         'بناء الصلابة النفسية ورفع تقدير الذات'
       ],
-      format: 'لقاء فيديو خاص ومشفر عبر Google Meet (أونلاين 100%)',
+      format: 'لقاء فيديو خاص عبر Google Meet (جلسات أونلاين)',
       bg: 'bg-[#FDF1EE] dark:bg-[#251816]/70',
       border: 'border-[#F8DDD9] dark:border-[#42221E]',
       tagBg: 'bg-white/80 dark:bg-black/30 text-[#CC4E46]',
@@ -163,7 +163,7 @@ export default function ServicesPage() {
       <section className="pt-12 pb-10 sm:pt-16 sm:pb-12 px-4 sm:px-6 text-center max-w-4xl mx-auto space-y-4">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EDF7F5] dark:bg-[#112924] border border-[#D6EEEA] dark:border-[#1F4A42] text-xs font-bold text-[#4E7E76] dark:text-[#5E988E]">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>استشارات فردية وأسرية وتربوية • أونلاين 100%</span>
+          <span>استشارات فردية وأسرية وتربوية • أونلاين عبر Google Meet</span>
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
@@ -178,7 +178,7 @@ export default function ServicesPage() {
         <div className="flex flex-wrap items-center justify-center gap-6 pt-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-[#4E7E76]" />
-            <span>سرية وخصوصية تامة 100%</span>
+            <span>سرية مهنية وخصوصية تامة</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Clock className="w-4 h-4 text-[#CC4E46]" />
@@ -265,11 +265,11 @@ export default function ServicesPage() {
                       </div>
                     ) : (
                       <div className="text-[11px] font-bold text-[#4E7E76] dark:text-[#5E988E]">
-                        مساحة آمنة وسرية 100%
+                        مساحة آمنة وسرية تامة
                       </div>
                     )}
                     <div className="text-[10px] text-slate-500 dark:text-slate-400">
-                      {srv.id === 'marital' ? 'جلسة ثنائية أو فردية 60-75 دقيقة • لقاء فيديو مشفر' : 'جلسة 50 دقيقة أونلاين عبر Google Meet'}
+                      {srv.id === 'marital' ? 'جلسة ثنائية أو فردية 60-75 دقيقة • لقاء فيديو آمن' : 'جلسة 50 دقيقة أونلاين عبر Google Meet'}
                     </div>
                   </div>
                 </div>
@@ -388,7 +388,7 @@ export default function ServicesPage() {
 
           <div className="p-4 rounded-2xl bg-[#EDF5FD] dark:bg-[#122238] border border-[#D6E6F8] dark:border-[#1E3A5F] space-y-1">
             <Video className="w-5 h-5 mx-auto text-[#154F9C]" />
-            <h4 className="text-xs font-black text-slate-900 dark:text-slate-100">أونلاين 100%</h4>
+            <h4 className="text-xs font-black text-slate-900 dark:text-slate-100">جلسات أونلاين</h4>
             <p className="text-[11px] text-slate-500 font-normal">Google Meet من أي مكان بالعالم</p>
           </div>
         </div>

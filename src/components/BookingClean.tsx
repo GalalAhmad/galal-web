@@ -68,7 +68,7 @@ export default function BookingClean() {
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-blue-400" />
-                <span>سرية مهنية وأمان 100%</span>
+                <span>سرية مهنية وأمان تام</span>
               </div>
             </div>
 

@@ -276,7 +276,7 @@ export default function FeedbackPage() {
                 {/* Privacy Guarantee Note */}
                 <div className="flex items-center gap-2 text-xs text-slate-500">
                   <ShieldCheck className="w-4 h-4 text-[#168962]" />
-                  <span>خصوصيتك وسريتك مصونة 100% وفق ميثاق الشرف المهني للاستشارات.</span>
+                  <span>خصوصيتك وسريتك مصونة وفق ميثاق الشرف المهني للاستشارات.</span>
                 </div>
 
                 {/* Submit Button */}

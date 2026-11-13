@@ -116,8 +116,8 @@ export default function HomePage() {
 
   const trustPillars = [
     {
-      title: 'سرية وأمان تام 100%',
-      desc: 'بياناتك ومحادثاتك مشفرة ومحمية بأعلى المعايير الأخلاقية والمهنية. مساحتك آمنة وخاصة تماماً.',
+      title: 'سرية وأمان مهني تام',
+      desc: 'بياناتك ومحادثاتك محمية وفق ميثاق الشرف المهني وأعلى معايير الخصوصية الرقمية. مساحتك آمنة وخاصة تماماً.',
       image: '/assets/arabtherapy/why-01.svg',
     },
     {
@@ -308,7 +308,7 @@ export default function HomePage() {
           <div className="flex flex-wrap items-center justify-center gap-6 pt-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76]" />
-              <span>سرية وخصوصية تامة 100%</span>
+              <span>سرية مهنية وخصوصية تامة</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-[#4E7E76]" />
@@ -691,7 +691,7 @@ export default function HomePage() {
                 اختبارات ومقاييس
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-                اختبارات مقننة ومجانية 100% تساعدك على قياس مستوى القلق، الاكتئاب، الضغوط، والرضى الزواجي بدقة وسرية
+                اختبارات مقننة ومجانية تماماً تساعدك على قياس مستوى القلق، الاكتئاب، الضغوط، والرضى الزواجي بدقة وسرية
               </p>
             </div>
             <Link 
@@ -883,8 +883,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 9. آراء وتجارب (Testimonials Section) */}
-      <section className="py-6">
+      {/* 10. آراء وتجارب (Testimonials Section) */}
+      <div className="py-2">
         <TestimonialsSection 
           title="آراء وتجارب" 
           subtitle="أصداء حقيقية من جلسات الاستشارة والبرامج التفاعلية (مع الالتزام الصارم بالسرية والخصوصية التامة)"
@@ -911,7 +911,7 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* 10. أسئلة شائعة (FAQ Accordion) */}
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-[#EDF5FD]/40 dark:bg-[#122238]/20 border-y border-slate-200/70 dark:border-slate-800">

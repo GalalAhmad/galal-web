@@ -309,7 +309,7 @@ export default function PsychologicalTestsPage() {
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
-            مكتبة علمية متخصصة تضم 41 مقياساً مقنناً لاكتشاف الذات وفحص مؤشرات الصحة النفسية، الأنماط الشخصية، والعلاقات الأسرية في بيئة آمنة وخاصة 100%.
+            مكتبة علمية متخصصة تضم 41 مقياساً مقنناً لاكتشاف الذات وفحص مؤشرات الصحة النفسية، الأنماط الشخصية، والعلاقات الأسرية في بيئة آمنة وخاصة تماماً.
           </p>
 
           {/* Pilot Phase Notice (مجانية لفترة تجريبية) */}
@@ -321,7 +321,7 @@ export default function PsychologicalTestsPage() {
               </span>
             </div>
             <span className="px-2.5 py-1 rounded-lg bg-amber-500 text-white font-black text-[10px] shrink-0">
-              مجاني 100%
+              مجاني بالكامل
             </span>
           </div>
 
@@ -655,7 +655,7 @@ export default function PsychologicalTestsPage() {
 
                 {/* Free Trial Banner */}
                 <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300/80 dark:border-amber-800/80 text-[11px] text-amber-900 dark:text-amber-200 leading-relaxed">
-                  💡 <strong>ملاحظة هامة:</strong> هذا المقياس متاح مجاناً 100% خلال المرحلة التجريبية للمنصة، وسيصبح لاحقاً بمقابل مادي وباقات اشتراك.
+                  💡 <strong>ملاحظة هامة:</strong> هذا المقياس متاح مجاناً بالكامل خلال المرحلة التجريبية للمنصة، وسيصبح لاحقاً بمقابل مادي وباقات اشتراك.
                 </div>
 
                 {/* Action Buttons */}

@@ -39,10 +39,17 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const phone = searchParams.get('phone');
     const email = searchParams.get('email');
-    const id = searchParams.get('id');
+    let id = searchParams.get('id');
 
-    const cleanPhone = phone ? normalizePhone(phone) : '';
-    const cleanEmail = email ? email.trim().toLowerCase() : '';
+    let cleanPhone = phone ? normalizePhone(phone) : '';
+    let cleanEmail = email ? email.trim().toLowerCase() : '';
+
+    // If an authenticated client queries their own profile without parameters, resolve to session user
+    if (!id && !cleanPhone && !cleanEmail && sessionUser.role === 'client') {
+      id = sessionUser.id;
+      cleanPhone = sessionUser.phone ? normalizePhone(sessionUser.phone) : '';
+      cleanEmail = sessionUser.email ? sessionUser.email.trim().toLowerCase() : '';
+    }
 
     // 1. Fetching all profiles — RESTRICTED TO COUNSELOR OR ADMIN
     if (!id && !cleanPhone && !cleanEmail) {

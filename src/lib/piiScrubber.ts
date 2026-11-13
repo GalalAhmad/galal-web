@@ -7,7 +7,7 @@
 const PHONE_REGEX = /(\+?\d{1,3}[-.\s]?)?(\(?\d{2,4}\)?[-.\s]?)?\d{3,4}[-.\s]?\d{4,6}/g;
 const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi;
 const BASE64_IMG_REGEX = /data:image\/[a-zA-Z]+;base64,[a-zA-Z0-9+/=]{50,}/gi;
-const SECRET_KEY_REGEX = /^(password|token|secret|receipt|auth|key|clinical_notes|soap|answers)$/i;
+const SECRET_KEY_REGEX = /^(password|token|secret|receipt|auth|key|clinical_notes|soap|answers|subjective|objective|assessment|plan|diagnosis|icd|dossier|session_soap|homework_answers)$/i;
 
 export function redactString(str: string): string {
   if (!str || typeof str !== 'string') return str;

@@ -15,7 +15,37 @@ AS $$
   SELECT role FROM public.profiles WHERE id = auth.uid()::text LIMIT 1;
 $$;
 
--- 2. دالة التحقق هل المستخدم معالج أو أدمن
+-- 2. دالة التحقق هل المستخدم معالج إكلينيكي حصراً (Doctor / Counselor)
+CREATE OR REPLACE FUNCTION public.is_counselor()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()::text
+      AND role = 'counselor'
+  );
+$$;
+
+-- 3. دالة التحقق هل المستخدم أدمن النظام (Platform Admin)
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()::text
+      AND role = 'admin'
+  );
+$$;
+
+-- 4. دالة التحقق هل المستخدم معالج أو أدمن (للعمليات الإدارية المشتركة غير السريرية)
 CREATE OR REPLACE FUNCTION public.is_counselor_or_admin()
 RETURNS BOOLEAN
 LANGUAGE sql
@@ -31,20 +61,21 @@ AS $$
 $$;
 
 -- ==============================================================================
--- جدول الملفات السريرية المتقدمة: clinical_clients
+-- جدول الملفات السريرية المتقدمة: clinical_clients (سرية تامة للمعالج والمستفيد)
 -- ==============================================================================
 ALTER TABLE public.clinical_clients ENABLE ROW LEVEL SECURITY;
 
 -- حذف السياسة القديمة غير الآمنة USING (true)
 DROP POLICY IF EXISTS "Allow counselor full access clinical_clients" ON public.clinical_clients;
+DROP POLICY IF EXISTS "counselor_admin_full_access_clinical_clients" ON public.clinical_clients;
 
--- سياسة المعالج والإدارة: صلاحية كاملة
-CREATE POLICY "counselor_admin_full_access_clinical_clients"
+-- سياسة المعالج: صلاحية كاملة على ملفات الحالات (الأدمن مستبعد لحماية الخصوصية الطبية)
+CREATE POLICY "counselor_full_access_clinical_clients"
 ON public.clinical_clients
 FOR ALL
 TO authenticated
-USING (public.is_counselor_or_admin())
-WITH CHECK (public.is_counselor_or_admin());
+USING (public.is_counselor())
+WITH CHECK (public.is_counselor());
 
 -- سياسة المستفيد: يمكن للمستفيد قراءة ملفه الشخصي فقط
 CREATE POLICY "client_read_own_clinical_dossier"
@@ -59,14 +90,15 @@ USING (user_id = auth.uid()::text);
 ALTER TABLE public.clinical_sessions ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow counselor full access clinical_sessions" ON public.clinical_sessions;
+DROP POLICY IF EXISTS "counselor_admin_full_access_clinical_sessions" ON public.clinical_sessions;
 
--- سياسة المعالج والإدارة
-CREATE POLICY "counselor_admin_full_access_clinical_sessions"
+-- سياسة المعالج حصراً (الأدمن مستبعد)
+CREATE POLICY "counselor_full_access_clinical_sessions"
 ON public.clinical_sessions
 FOR ALL
 TO authenticated
-USING (public.is_counselor_or_admin())
-WITH CHECK (public.is_counselor_or_admin());
+USING (public.is_counselor())
+WITH CHECK (public.is_counselor());
 
 -- سياسة المستفيد: قراءة جلساته فقط
 CREATE POLICY "client_read_own_clinical_sessions"
@@ -80,42 +112,45 @@ USING (
 );
 
 -- ==============================================================================
--- جدول سجلات SOAP الإكلينيكية: session_soap_notes (سرية طبية تامة)
+-- جدول سجلات SOAP الإكلينيكية: session_soap_notes (سرية طبية مشددة)
 -- ==============================================================================
 ALTER TABLE public.session_soap_notes ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow counselor full access session_soap_notes" ON public.session_soap_notes;
+DROP POLICY IF EXISTS "counselor_only_session_soap_notes" ON public.session_soap_notes;
 
--- سرية طبية تامة: محصورة بالمعالج الإكلينيكي فقط — العميل لا يطلع على سجل SOAP الداخلي
+-- سرية طبية تامة: محصورة بالمعالج الإكلينيكي فقط — العميل والأدمن محجوبان تماماً
 CREATE POLICY "counselor_only_session_soap_notes"
 ON public.session_soap_notes
 FOR ALL
 TO authenticated
-USING (public.is_counselor_or_admin())
-WITH CHECK (public.is_counselor_or_admin());
+USING (public.is_counselor())
+WITH CHECK (public.is_counselor());
 
 -- ==============================================================================
--- جدول خطط العلاج وصياغة الحالة: problem_mapping & treatment_plans
+-- جدول خطط العلاج وصياغة الحالة: problem_mapping & treatment_plans (سرية طبية)
 -- ==============================================================================
 ALTER TABLE public.problem_mapping ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.treatment_plans ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow counselor full access problem_mapping" ON public.problem_mapping;
 DROP POLICY IF EXISTS "Allow counselor full access treatment_plans" ON public.treatment_plans;
+DROP POLICY IF EXISTS "counselor_admin_problem_mapping" ON public.problem_mapping;
+DROP POLICY IF EXISTS "counselor_admin_treatment_plans" ON public.treatment_plans;
 
-CREATE POLICY "counselor_admin_problem_mapping"
+CREATE POLICY "counselor_only_problem_mapping"
 ON public.problem_mapping
 FOR ALL
 TO authenticated
-USING (public.is_counselor_or_admin())
-WITH CHECK (public.is_counselor_or_admin());
+USING (public.is_counselor())
+WITH CHECK (public.is_counselor());
 
-CREATE POLICY "counselor_admin_treatment_plans"
+CREATE POLICY "counselor_only_treatment_plans"
 ON public.treatment_plans
 FOR ALL
 TO authenticated
-USING (public.is_counselor_or_admin())
-WITH CHECK (public.is_counselor_or_admin());
+USING (public.is_counselor())
+WITH CHECK (public.is_counselor());
 
 -- ==============================================================================
 -- جدول الواجبات والتكليفات الإرشادية: client_assignments

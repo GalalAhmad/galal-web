@@ -6,6 +6,54 @@
 
 import assert from 'assert';
 import http from 'http';
+import crypto from 'crypto';
+import fs from 'fs';
+
+// Load .env.local safely without logging or exposing secrets
+if (fs.existsSync('.env.local')) {
+  const envContent = fs.readFileSync('.env.local', 'utf-8');
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim();
+    if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+      const idx = trimmed.indexOf('=');
+      const key = trimmed.slice(0, idx).trim();
+      const val = trimmed.slice(idx + 1).trim();
+      if (!process.env[key]) {
+        process.env[key] = val.replace(/^["']|["']$/g, '');
+      }
+    }
+  }
+}
+
+const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3005';
+
+// Safety check: ensure testing is strictly on localhost/staging, never production
+const parsedBase = new URL(BASE_URL);
+if (!['localhost', '127.0.0.1', '::1'].includes(parsedBase.hostname)) {
+  console.error('[CRITICAL] Tests cannot run against external/production hosts:', parsedBase.hostname);
+  process.exit(1);
+}
+
+const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET || SESSION_SECRET.length < 32) {
+  console.error('[CRITICAL] Valid SESSION_SECRET (>= 32 chars) required for integration testing.');
+  process.exit(1);
+}
+
+function createSessionCookie(user) {
+  const payload = {
+    v: 1,
+    ...user,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+  };
+  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto
+    .createHmac('sha256', SESSION_SECRET)
+    .update(payloadB64)
+    .digest('base64url');
+  return `galal_session=${payloadB64}.${signature}`;
+}
 
 // Helper for HTTP requests
 function makeRequest(url, options = {}, body = null) {
@@ -138,6 +186,91 @@ async function runTests() {
   await test('منع قراءة سجلات السكينة والمزاج اليومية دون مصادقة (401)', async () => {
     const res = await makeRequest(`${BASE_URL}/api/user/wellbeing?phone=01012345678`);
     assert.strictEqual(res.status, 401, `Expected 401 but received ${res.status}`);
+  });
+
+  // Prepare test role cookies
+  const adminCookie = createSessionCookie({
+    id: 'admin-platform',
+    name: 'مدير المنصة',
+    role: 'admin',
+    email: 'admin@galalahmad.com',
+  });
+
+  const counselorCookie = createSessionCookie({
+    id: 'counselor-galal',
+    name: 'د. جلال أحمد',
+    role: 'counselor',
+    email: 'counselor@galalahmad.com',
+  });
+
+  const client1Cookie = createSessionCookie({
+    id: 'client-test-01',
+    name: 'عميل 1',
+    phone: '01000000000',
+    role: 'client',
+  });
+
+  const client2Cookie = createSessionCookie({
+    id: 'client-test-02',
+    name: 'عميل 2',
+    phone: '01099998888',
+    role: 'client',
+  });
+
+  // Test 11: Admin strictly forbidden from clinical SOAP GET (403)
+  await test('حظر وصول الأدمن لسجلات التدوين السريري SOAP GET (403 Forbidden)', async () => {
+    const res = await makeRequest(`${BASE_URL}/api/clinical/soap?clientId=client-test-01`, {
+      headers: { Cookie: adminCookie },
+    });
+    assert.strictEqual(res.status, 403, `Expected 403 but got ${res.status}`);
+    assert.strictEqual(res.body.code, 'FORBIDDEN');
+  });
+
+  // Test 12: Admin strictly forbidden from clinical SOAP POST (403)
+  await test('حظر إدراج الأدمن لأي ملاحظات سريرية SOAP POST (403 Forbidden)', async () => {
+    const res = await makeRequest(
+      `${BASE_URL}/api/clinical/soap`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: adminCookie } },
+      { clientId: 'client-test-01', subjective: 'Attacker note' }
+    );
+    assert.strictEqual(res.status, 403, `Expected 403 but got ${res.status}`);
+    assert.strictEqual(res.body.code, 'FORBIDDEN');
+  });
+
+  // Test 13: Admin strictly forbidden from client journal (403)
+  await test('حظر وصول الأدمن لخواطر ويوميات المستفيدين السرية (403 Forbidden)', async () => {
+    const res = await makeRequest(`${BASE_URL}/api/user/journal?phone=01000000000`, {
+      headers: { Cookie: adminCookie },
+    });
+    assert.strictEqual(res.status, 403, `Expected 403 but got ${res.status}`);
+    assert.strictEqual(res.body.code, 'FORBIDDEN');
+  });
+
+  // Test 14: Admin strictly forbidden from client wellbeing logs (403)
+  await test('حظر وصول الأدمن لسجلات مقياس السكينة اليومي للمستفيدين (403 Forbidden)', async () => {
+    const res = await makeRequest(`${BASE_URL}/api/user/wellbeing?phone=01000000000`, {
+      headers: { Cookie: adminCookie },
+    });
+    assert.strictEqual(res.status, 403, `Expected 403 but got ${res.status}`);
+    assert.strictEqual(res.body.code, 'FORBIDDEN');
+  });
+
+  // Test 15: Client 2 forbidden from accessing Client 1's journal (403)
+  await test('منع مستفيد من التجسس على خواطر ويوميات مستفيد آخر (403 Forbidden)', async () => {
+    const res = await makeRequest(`${BASE_URL}/api/user/journal?phone=01000000000`, {
+      headers: { Cookie: client2Cookie },
+    });
+    assert.strictEqual(res.status, 403, `Expected 403 but got ${res.status}`);
+    assert.strictEqual(res.body.code, 'FORBIDDEN');
+  });
+
+  // Test 16: Counselor permitted to read clinical SOAP records (200)
+  await test('سماح المعالج د. جلال فقط بالوصول السريري لسجلات SOAP (200 OK)', async () => {
+    const res = await makeRequest(`${BASE_URL}/api/clinical/soap?clientId=client-test-01`, {
+      headers: { Cookie: counselorCookie },
+    });
+    assert.strictEqual(res.status, 200, `Expected 200 but got ${res.status}`);
+    assert.strictEqual(res.body.success, true);
   });
 
   console.log('\n------------------------------------------------------');

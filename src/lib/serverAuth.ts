@@ -18,22 +18,84 @@ interface TokenPayload extends ServerSessionUser {
 }
 
 export const SESSION_COOKIE_NAME = 'galal_session';
-const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
+export const CURRENT_TOKEN_VERSION = 1;
+const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days max lifetime
+const ALLOWED_ROLES: ReadonlyArray<UserRole> = ['client', 'counselor', 'admin'];
 
-// Derive HMAC secret from environment or fallback secure static seed
+// In-memory token revocation list (e.g., on explicit logout or password reset)
+const revokedTokenSignatures = new Set<string>();
+
+export function revokeSessionToken(token: string): void {
+  if (!token || typeof token !== 'string') return;
+  const parts = token.split('.');
+  if (parts.length === 2) {
+    revokedTokenSignatures.add(parts[1]);
+  }
+}
+
+// In-memory ephemeral secret for development/testing if SESSION_SECRET is not explicitly set
+let devEphemeralSecret: string | null = null;
+
+/**
+ * Derives the HMAC signing secret from the environment.
+ * Strict Security Rules:
+ * 1. Requires SESSION_SECRET environment variable (min 32 characters).
+ * 2. Never uses SUPABASE_SERVICE_ROLE_KEY to sign application session tokens.
+ * 3. Never uses a hardcoded static fallback string.
+ * 4. Fails closed in production if SESSION_SECRET is missing or insecure.
+ */
 function getSessionSecret(): string {
-  const secret = process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || 'galal_secure_session_hmac_secret_2026';
-  return secret;
+  const secret = process.env.SESSION_SECRET;
+
+  if (secret && secret.trim().length >= 32) {
+    return secret.trim();
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error(
+      '[CRITICAL_SECURITY] SESSION_SECRET environment variable is missing or too short (< 32 chars) in production. Application refusing to start with insecure credentials.'
+    );
+  }
+
+  // Safe ephemeral fallback for development / testing environments only
+  if (!devEphemeralSecret) {
+    devEphemeralSecret = crypto.randomBytes(32).toString('hex');
+    console.warn(
+      '[SECURITY WARNING] SESSION_SECRET is missing or < 32 chars. An ephemeral in-memory secret has been generated for this local process.'
+    );
+  }
+  return devEphemeralSecret;
+}
+
+interface TokenPayload {
+  v: number;
+  id: string;
+  name: string;
+  role: UserRole;
+  phone?: string;
+  email?: string;
+  iat: number;
+  exp: number;
 }
 
 /**
- * Sign payload into a tamper-evident compact token: base64(payload).base64(hmac)
+ * Sign payload into a tamper-evident compact token: base64url(payload).base64url(hmac)
  */
 export function signSessionToken(user: ServerSessionUser): string {
+  if (!ALLOWED_ROLES.includes(user.role)) {
+    throw new Error(`[SECURITY] Cannot issue session token for invalid role: ${user.role}`);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
   const payload: TokenPayload = {
-    ...user,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS,
+    v: CURRENT_TOKEN_VERSION,
+    id: String(user.id).trim(),
+    name: String(user.name).trim(),
+    role: user.role,
+    phone: user.phone ? String(user.phone).trim() : undefined,
+    email: user.email ? String(user.email).trim().toLowerCase() : undefined,
+    iat: now,
+    exp: now + SESSION_TTL_SECONDS,
   };
 
   const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
@@ -46,7 +108,9 @@ export function signSessionToken(user: ServerSessionUser): string {
 }
 
 /**
- * Verify and decode session token. Returns null if invalid, expired, or tampered.
+ * Verify and decode session token.
+ * Performs cryptographic signature verification, claim bounds validation,
+ * role allowlisting, and revocation checks.
  */
 export function verifySessionToken(token: string): ServerSessionUser | null {
   if (!token || typeof token !== 'string') return null;
@@ -55,6 +119,11 @@ export function verifySessionToken(token: string): ServerSessionUser | null {
   if (parts.length !== 2) return null;
 
   const [payloadB64, signature] = parts;
+
+  // Check revocation set
+  if (revokedTokenSignatures.has(signature)) {
+    return null;
+  }
 
   try {
     const expectedSig = crypto
@@ -69,12 +138,32 @@ export function verifySessionToken(token: string): ServerSessionUser | null {
       return null;
     }
 
-    const payload: TokenPayload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf-8'));
+    const rawJson = Buffer.from(payloadB64, 'base64url').toString('utf-8');
+    const payload: TokenPayload = JSON.parse(rawJson);
 
-    // Check expiration
-    const now = Math.floor(Date.now() / 1000);
-    if (!payload.exp || payload.exp < now) {
+    // 1. Structure and Version checks
+    if (!payload || typeof payload !== 'object') return null;
+    if (payload.v !== CURRENT_TOKEN_VERSION) return null;
+
+    // 2. ID and Name checks
+    if (!payload.id || typeof payload.id !== 'string' || payload.id.length > 128) return null;
+    if (!payload.name || typeof payload.name !== 'string' || payload.name.length > 200) return null;
+
+    // 3. Strict Role Allowlist
+    if (!ALLOWED_ROLES.includes(payload.role)) {
       return null;
+    }
+
+    // 4. Timestamp validity checks (with 60-second clock skew tolerance)
+    const now = Math.floor(Date.now() / 1000);
+    if (typeof payload.iat !== 'number' || payload.iat > now + 60 || payload.iat < now - 365 * 24 * 3600) {
+      return null;
+    }
+    if (typeof payload.exp !== 'number' || payload.exp <= now - 60) {
+      return null; // Expired
+    }
+    if (payload.exp - payload.iat > SESSION_TTL_SECONDS + 120) {
+      return null; // Excessively long TTL rejected
     }
 
     return {

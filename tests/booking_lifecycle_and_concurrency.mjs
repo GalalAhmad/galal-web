@@ -27,10 +27,23 @@ if (fs.existsSync('.env.local')) {
 }
 
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3005';
-const SESSION_SECRET = process.env.SESSION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || 'galal_secure_session_hmac_secret_2026';
+
+// Safety check: ensure testing is strictly on localhost/staging, never production
+const parsedBase = new URL(BASE_URL);
+if (!['localhost', '127.0.0.1', '::1'].includes(parsedBase.hostname)) {
+  console.error('[CRITICAL] Tests cannot run against external/production hosts:', parsedBase.hostname);
+  process.exit(1);
+}
+
+const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET || SESSION_SECRET.length < 32) {
+  console.error('[CRITICAL] Valid SESSION_SECRET (>= 32 chars) required for integration testing.');
+  process.exit(1);
+}
 
 function createSessionCookie(user) {
   const payload = {
+    v: 1,
     ...user,
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
@@ -257,14 +270,57 @@ async function runTests() {
     assert.ok(res.body.error.includes('لا يمكن تعديل حالة جلسة مكتملة'));
   });
 
-  // 11. Cleanup test booking
-  await test('حذف الحجز التجريبي بعد انتهاء دورة الفحص بواسطة المعالج (200)', async () => {
+  // 11. Profile Hijacking Guard: Unauthenticated booking cannot overwrite existing profile name
+  await test('منع الحجز المجهول من تغيير اسم أو ملف مستخدم مسجل مسبقاً (Profile Hijacking Prevention)', async () => {
+    // Attempt booking with existing client-test-01 phone (01000000000) but an attacker-supplied name
+    const existingTargetPhone = '01000000000';
+    const hijackSlotDate = `2029-02-${Math.floor(10 + Math.random() * 15)}`;
     const res = await makeRequest(
       `${BASE_URL}/api/bookings`,
-      { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
-      { id: createdBookingId, action: 'delete' }
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+      {
+        clientName: 'مخترق مزيف للاسم',
+        clientPhone: existingTargetPhone,
+        clientEmail: 'hacker@example.com',
+        slotDate: hijackSlotDate,
+        slotTime: '06:00 PM',
+        track: 'psychological',
+        paymentMethod: 'instapay',
+      }
     );
-    assert.strictEqual(res.status, 200);
+
+    // If booking succeeded, check profile of existing client - name must NOT have changed
+    if (res.status === 200 && res.body?.booking?.id) {
+      // Clean up the hijack test booking
+      await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
+        { id: res.body.booking.id, action: 'delete' }
+      );
+    }
+
+    // Verify existing profile in local store / profiles was not mutated
+    const profiles = JSON.parse(fs.readFileSync('src/data/userProfiles.json', 'utf-8'));
+    const targetUser = profiles.find((p) => p.phone === existingTargetPhone);
+    assert.ok(targetUser, 'Existing user must exist in profile store');
+    assert.strictEqual(
+      targetUser.name,
+      'عميل تجريبي',
+      'Profile name was improperly overwritten by unauthenticated booking!'
+    );
+  });
+
+  // 12. Cleanup test booking
+  await test('حذف الحجز التجريبي بعد انتهاء دورة الفحص بواسطة المعالج (200)', async () => {
+    if (createdBookingId) {
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
+        { id: createdBookingId, action: 'delete' }
+      );
+      assert.strictEqual(res.status, 200);
+      createdBookingId = null;
+    }
   });
 
   console.log('\n------------------------------------------------------');

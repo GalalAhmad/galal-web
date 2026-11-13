@@ -1,6 +1,12 @@
 /**
  * In-memory sliding-window rate limiter for sensitive endpoints.
  * Thread-safe for Node.js event-loop concurrency.
+ *
+ * NOTE ON DISTRIBUTED PRODUCTION:
+ * This in-memory store tracks limits per Node.js server instance. In a horizontally
+ * scaled multi-container or serverless edge deployment across multiple regions,
+ * an external distributed key-value store (e.g. Upstash Redis / Redis Cluster)
+ * should be connected via standard sliding window scripts.
  */
 
 interface RateLimitRecord {
@@ -57,10 +63,35 @@ export function checkRateLimit(
   };
 }
 
+/**
+ * Extracts and sanitizes the client IP address from trusted reverse-proxy headers.
+ */
 export function getClientIp(request: Request): string {
+  // 1. Cloudflare True-Client-IP / CF-Connecting-IP
+  const cfConnecting = request.headers.get('cf-connecting-ip');
+  if (cfConnecting && isValidIp(cfConnecting.trim())) {
+    return cfConnecting.trim();
+  }
+
+  // 2. Vercel Real IP / Reverse-Proxy Real-IP
+  const vercelIp = request.headers.get('x-vercel-ip') || request.headers.get('x-real-ip');
+  if (vercelIp && isValidIp(vercelIp.trim())) {
+    return vercelIp.trim();
+  }
+
+  // 3. X-Forwarded-For (sanitized)
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {
-    return forwarded.split(',')[0].trim();
+    const parts = forwarded.split(',').map((p) => p.trim()).filter(Boolean);
+    if (parts.length > 0 && isValidIp(parts[0])) {
+      return parts[0];
+    }
   }
-  return request.headers.get('x-real-ip') || '127.0.0.1';
+
+  return '127.0.0.1';
+}
+
+function isValidIp(ip: string): boolean {
+  // Basic IPv4 or IPv6 format validation to prevent header injection in rate limit keys
+  return /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$|^[a-fA-F0-9:]+$/.test(ip);
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 import { sendClientJournalNotificationEmail } from '@/lib/email';
 import { getServerUserSession, requireAuth } from '@/lib/serverAuth';
+import { phonesMatch } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -13,7 +14,15 @@ export async function GET(req: NextRequest) {
       return authCheck.response;
     }
     const sessionUser = authCheck.user;
-    const isManagement = sessionUser.role === 'counselor' || sessionUser.role === 'admin';
+    const isCounselor = sessionUser.role === 'counselor';
+
+    // Platform admin is strictly prohibited from viewing client psychological journals
+    if (sessionUser.role === 'admin') {
+      return NextResponse.json(
+        { error: 'ممنوع: مفكرة الخواطر والمراسلات النفسية مشفرة وسرية بين المستفيد والمعالج فقط', code: 'FORBIDDEN' },
+        { status: 403 }
+      );
+    }
 
     const { searchParams } = new URL(req.url);
     const phone = searchParams.get('phone');
@@ -29,7 +38,21 @@ export async function GET(req: NextRequest) {
       .eq('test_id', 'client_journal')
       .order('created_at', { ascending: false });
 
-    if (!isManagement) {
+    if (!isCounselor) {
+      // Prevent client IDOR: if client requests another person's phone or email, explicitly return 403
+      if (phone && sessionUser.phone && !phonesMatch(phone, sessionUser.phone)) {
+        return NextResponse.json(
+          { error: 'ممنوع: لا تملك الصلاحية للاطلاع على بيانات مستفيد آخر', code: 'FORBIDDEN' },
+          { status: 403 }
+        );
+      }
+      if (email && sessionUser.email && email.trim().toLowerCase() !== sessionUser.email.trim().toLowerCase()) {
+        return NextResponse.json(
+          { error: 'ممنوع: لا تملك الصلاحية للاطلاع على بيانات مستفيد آخر', code: 'FORBIDDEN' },
+          { status: 403 }
+        );
+      }
+
       // Client can ONLY view their own entries
       const uPhone = sessionUser.phone || '';
       const uEmail = sessionUser.email || '';
@@ -43,7 +66,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ success: true, entries: [] });
       }
     } else {
-      // Counselor/admin: viewing shared entries, or filtered by specific client
+      // Counselor: viewing shared entries, or filtered by specific client
       if (phone && email) {
         query = query.or(`client_phone.eq.${phone},client_email.eq.${email}`);
       } else if (phone) {

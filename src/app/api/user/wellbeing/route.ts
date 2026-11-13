@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 import { getServerUserSession, requireAuth } from '@/lib/serverAuth';
+import { phonesMatch } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -12,7 +13,15 @@ export async function GET(req: NextRequest) {
       return authCheck.response;
     }
     const sessionUser = authCheck.user;
-    const isManagement = sessionUser.role === 'counselor' || sessionUser.role === 'admin';
+    const isCounselor = sessionUser.role === 'counselor';
+
+    // Platform admin is strictly prohibited from viewing client wellbeing logs
+    if (sessionUser.role === 'admin') {
+      return NextResponse.json(
+        { error: 'ممنوع: سجلات السكينة والمزاج اليومية مشفرة وسرية بين المستفيد والمعالج فقط', code: 'FORBIDDEN' },
+        { status: 403 }
+      );
+    }
 
     const { searchParams } = new URL(req.url);
     const phone = searchParams.get('phone');
@@ -21,7 +30,19 @@ export async function GET(req: NextRequest) {
     let filterPhone = phone;
     let filterEmail = email;
 
-    if (!isManagement) {
+    if (!isCounselor) {
+      if (phone && sessionUser.phone && !phonesMatch(phone, sessionUser.phone)) {
+        return NextResponse.json(
+          { error: 'ممنوع: لا تملك الصلاحية للاطلاع على بيانات مستفيد آخر', code: 'FORBIDDEN' },
+          { status: 403 }
+        );
+      }
+      if (email && sessionUser.email && email.trim().toLowerCase() !== sessionUser.email.trim().toLowerCase()) {
+        return NextResponse.json(
+          { error: 'ممنوع: لا تملك الصلاحية للاطلاع على بيانات مستفيد آخر', code: 'FORBIDDEN' },
+          { status: 403 }
+        );
+      }
       filterPhone = sessionUser.phone || null;
       filterEmail = sessionUser.email || null;
     }

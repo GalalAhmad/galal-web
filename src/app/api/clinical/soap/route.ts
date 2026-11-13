@@ -6,10 +6,10 @@ import { parseClinicalDossier } from '@/lib/clinical/dossierParser';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// GET: Retrieve SOAP notes for a specific client or session (Counselor/Admin only)
+// GET: Retrieve SOAP notes for a specific client or session (Counselor ONLY — Admin strictly prohibited)
 export async function GET(request: Request) {
   try {
-    const authCheck = requireRole(request, ['counselor', 'admin']);
+    const authCheck = requireRole(request, ['counselor']);
     if (!authCheck.user) {
       return authCheck.response;
     }
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const sessionId = searchParams.get('sessionId');
 
     if (!clientId && !sessionId) {
-      return NextResponse.json({ error: 'معرّف العميل أو الجلسة مطلوب' }, { status: 400 });
+      return NextResponse.json({ error: 'معرّف العميل أو الجلسة مطلوب للوصول إلى السجل الإكلينيكي' }, { status: 400 });
     }
 
     if (isSupabaseConfigured && supabaseAdmin) {
@@ -32,9 +32,15 @@ export async function GET(request: Request) {
       else if (clientId) query = query.eq('client_id', clientId);
 
       const { data, error } = await query;
-      if (!error && Array.isArray(data)) {
-        return NextResponse.json({ success: true, notes: data });
+      if (error) {
+        if (error.code === 'PGRST205' || error.message?.includes('schema cache')) {
+          console.warn('[SOAP] session_soap_notes table not yet present in Supabase cache. Returning empty list gracefully.');
+          return NextResponse.json({ success: true, notes: [] });
+        }
+        console.error('Supabase SOAP fetch error:', error);
+        return NextResponse.json({ error: 'فشل استرجاع سجلات SOAP من قاعدة البيانات' }, { status: 500 });
       }
+      return NextResponse.json({ success: true, notes: data || [] });
     }
 
     return NextResponse.json({ success: true, notes: [] });
@@ -44,10 +50,10 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: Save new SOAP note and link to client session (Counselor/Admin only)
+// POST: Save new SOAP note and link to client session (Counselor ONLY)
 export async function POST(request: Request) {
   try {
-    const authCheck = requireRole(request, ['counselor', 'admin']);
+    const authCheck = requireRole(request, ['counselor']);
     if (!authCheck.user) {
       return authCheck.response;
     }
@@ -64,6 +70,10 @@ export async function POST(request: Request) {
       homeworkTitle,
     } = body;
 
+    if (!clientId) {
+      return NextResponse.json({ error: 'معرّف المستفيد (clientId) مطلوب لربط السجل السريري بالملف الطبي' }, { status: 400 });
+    }
+
     if (!subjective && !objective && !assessment && !plan) {
       return NextResponse.json(
         { error: 'يجب كتابة عنصر واحد على الأقل من عناصر السجل الإكلينيكي SOAP' },
@@ -75,7 +85,7 @@ export async function POST(request: Request) {
     const newSoapNote = {
       id: noteId,
       session_id: sessionId || `ses-${Date.now()}`,
-      client_id: clientId || 'general',
+      client_id: clientId,
       subjective_notes: subjective || '',
       objective_observations: objective || '',
       assessment_notes: assessment || '',
@@ -86,33 +96,45 @@ export async function POST(request: Request) {
     };
 
     if (isSupabaseConfigured && supabaseAdmin) {
-      try {
-        await supabaseAdmin.from('session_soap_notes').insert([newSoapNote]);
+      const { error: soapInsertErr } = await supabaseAdmin
+        .from('session_soap_notes')
+        .insert([newSoapNote]);
 
-        // Also append summary to client's profile clinical notes
-        if (clientId) {
-          const { data: profile } = await supabaseAdmin
-            .from('profiles')
-            .select('*')
-            .eq('id', clientId)
-            .maybeSingle();
-
-          if (profile) {
-            const dossier = parseClinicalDossier(profile.clinical_notes);
-            const soapSummarySnippet = `\n[جلسة SOAP بتاريخ ${new Date().toLocaleDateString('ar-EG')}]: التقييم: ${assessment || 'متابعة'} | الخطة: ${plan || ''}`;
-            const updatedNotes = (dossier.notes ? dossier.notes + '\n' : '') + soapSummarySnippet;
-
-            await supabaseAdmin
-              .from('profiles')
-              .update({
-                clinical_notes: JSON.stringify({ ...dossier, notes: updatedNotes }),
-                updated_at: new Date().toISOString(),
-              })
-              .eq('id', profile.id);
-          }
+      if (soapInsertErr) {
+        if (soapInsertErr.code === 'PGRST205' || soapInsertErr.message?.includes('schema cache')) {
+          console.warn('[SOAP] session_soap_notes table not yet present in Supabase cache. Continuing with profile dossier update.');
+        } else {
+          console.error('Supabase SOAP note insert error:', soapInsertErr);
+          return NextResponse.json(
+            { error: 'تعذر حفظ السجل الإكلينيكي SOAP في قاعدة البيانات السحابية' },
+            { status: 500 }
+          );
         }
-      } catch (dbErr) {
-        console.error('Supabase SOAP note insert error:', dbErr);
+      }
+
+      // Append summary to client's clinical profile
+      try {
+        const { data: profile } = await supabaseAdmin
+          .from('profiles')
+          .select('*')
+          .eq('id', clientId)
+          .maybeSingle();
+
+        if (profile) {
+          const dossier = parseClinicalDossier(profile.clinical_notes);
+          const soapSummarySnippet = `\n[جلسة SOAP بتاريخ ${new Date().toLocaleDateString('ar-EG')}]: التقييم: ${assessment || 'متابعة'} | الخطة: ${plan || ''}`;
+          const updatedNotes = (dossier.notes ? dossier.notes + '\n' : '') + soapSummarySnippet;
+
+          await supabaseAdmin
+            .from('profiles')
+            .update({
+              clinical_notes: JSON.stringify({ ...dossier, notes: updatedNotes }),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', profile.id);
+        }
+      } catch (profileErr) {
+        console.warn('Profile clinical dossier summary update warning:', profileErr);
       }
     }
 

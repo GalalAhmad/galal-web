@@ -1,6 +1,7 @@
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 import fs from 'fs/promises';
 import path from 'path';
+import crypto from 'crypto';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB max
 const BUCKET_NAME = 'payment-receipts';
@@ -92,7 +93,8 @@ export async function storeReceiptFile(bookingId: string, base64Data: string): P
     throw new Error(validation.error || 'الملف المرفق غير صالح');
   }
 
-  const filename = `${bookingId}-${Date.now()}.${validation.ext}`;
+  const randomToken = crypto.randomBytes(16).toString('hex');
+  const filename = `${bookingId}-${randomToken}.${validation.ext}`;
 
   // 1. Try Supabase Storage Bucket
   if (isSupabaseConfigured && supabaseAdmin) {

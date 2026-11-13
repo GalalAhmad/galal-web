@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserSession | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Sync server session status with client state
+  // Sync server session status with client state. Server response is the sole authoritative source of truth.
   const syncServerSession = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/me', {
@@ -45,13 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         if (data.authenticated && data.user) {
-          // Merge with any cached profile fields
+          // Merge validated server identity with harmless client preference caches
           let cached: any = {};
           try {
             cached = JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || '{}');
           } catch {}
 
-          const merged: UserSession = {
+          const validatedUser: UserSession = {
             ...cached,
             id: data.user.id,
             name: data.user.name,
@@ -60,29 +60,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: data.user.email || cached.email,
           };
 
-          setUser(merged);
+          setUser(validatedUser);
           try {
-            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(merged));
+            localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(validatedUser));
           } catch {}
           return;
         }
       }
 
-      // If server says not authenticated, clear user and local cache
+      // If server returns unauthenticated (401 / !authenticated), purge state and cache immediately
       setUser(null);
       try {
         localStorage.removeItem(AUTH_STORAGE_KEY);
       } catch {}
-    } catch {
-      // In case of network interruption, fallback gracefully to cached session
+    } catch (err) {
+      // On network failure: fail-closed. localStorage is for display cache only and never grants authorization.
+      console.warn('[AUTH] Failed to verify server session over network. Failing closed.');
+      setUser(null);
       try {
-        const saved = localStorage.getItem(AUTH_STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && parsed.name) {
-            setUser(parsed);
-          }
-        }
+        localStorage.removeItem(AUTH_STORAGE_KEY);
       } catch {}
     } finally {
       setIsLoading(false);

@@ -273,6 +273,36 @@ async function runTests() {
     assert.strictEqual(res.body.success, true);
   });
 
+  // Test 17: Unauthenticated modification of availability rejected (401)
+  await test('منع تعديل جدول المواعيد وأيام العمل دون مصادقة إدارية (401)', async () => {
+    const res = await makeRequest(
+      `${BASE_URL}/api/availability`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+      { workingDays: [1, 2] }
+    );
+    assert.strictEqual(res.status, 401, `Expected 401 but got ${res.status}`);
+  });
+
+  // Test 18: Client forbidden from modifying availability (403)
+  await test('منع المستفيد العادي من تغيير أوقات وأيام عمل العيادة (403 Forbidden)', async () => {
+    const res = await makeRequest(
+      `${BASE_URL}/api/availability`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: client1Cookie } },
+      { workingDays: [1, 2] }
+    );
+    assert.strictEqual(res.status, 403, `Expected 403 but got ${res.status}`);
+  });
+
+  // Test 19: Client forbidden from modifying academy courses (403)
+  await test('منع المستفيد العادي من إضافة أو حذف دورات الأكاديمية (403 Forbidden)', async () => {
+    const res = await makeRequest(
+      `${BASE_URL}/api/admin/courses`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: client1Cookie } },
+      { title: 'دورة غير مصرحة' }
+    );
+    assert.strictEqual(res.status, 403, `Expected 403 but got ${res.status}`);
+  });
+
   console.log('\n------------------------------------------------------');
   console.log(`📊 نتيجة الفحص: نجح ${passed} | فشل ${failed}`);
   console.log('------------------------------------------------------\n');

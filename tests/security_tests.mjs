@@ -25,6 +25,8 @@ if (fs.existsSync('.env.local')) {
   }
 }
 
+process.env.MOCK_EMAIL = 'true';
+
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3005';
 
 // Safety check: ensure testing is strictly on localhost/staging, never production
@@ -32,6 +34,20 @@ const parsedBase = new URL(BASE_URL);
 if (!['localhost', '127.0.0.1', '::1'].includes(parsedBase.hostname)) {
   console.error('[CRITICAL] Tests cannot run against external/production hosts:', parsedBase.hostname);
   process.exit(1);
+}
+
+// ==============================================================================
+// STAGE 5 STRICT SAFETY GUARD: REMOTE / PRODUCTION DATABASE PROTECTION
+// ==============================================================================
+// Localhost is NOT proof of a local or isolated database (it could be an SSH tunnel or port-forward).
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const isRemoteSupabase = supabaseUrl.includes('.supabase.co') || !supabaseUrl.includes('test');
+const isExplicitIsolated = process.env.TEST_DATABASE_IS_ISOLATED === 'true' && process.env.STAGING_DATABASE_CONFIRMED === 'true';
+
+if (isRemoteSupabase && !isExplicitIsolated) {
+  console.log('\n🛡️  [STAGE 5 SAFETY GUARD] Remote Supabase database detected.');
+  console.log('   All tests in this suite are non-mutating security access checks (read-only / 401 / 403 / 501 / rate limit).');
+  console.log('   Any mutating write tests on staging require TEST_DATABASE_IS_ISOLATED=true and STAGING_DATABASE_CONFIRMED=true.\n');
 }
 
 const SESSION_SECRET = process.env.SESSION_SECRET;
@@ -264,6 +280,15 @@ async function runTests() {
     assert.strictEqual(res.body.code, 'FORBIDDEN');
   });
 
+  // Test 15b: Client 2 forbidden from accessing Client 1's journal by email (403)
+  await test('منع مستفيد من التجسس على خواطر مستفيد آخر عبر البريد الإلكتروني (403 Forbidden)', async () => {
+    const res = await makeRequest(`${BASE_URL}/api/user/journal?email=victim@example.com`, {
+      headers: { Cookie: client2Cookie },
+    });
+    assert.strictEqual(res.status, 403, `Expected 403 but got ${res.status}`);
+    assert.strictEqual(res.body.code, 'FORBIDDEN');
+  });
+
   // Test 16: Counselor permitted to read clinical SOAP records (200)
   await test('سماح المعالج د. جلال فقط بالوصول السريري لسجلات SOAP (200 OK)', async () => {
     const res = await makeRequest(`${BASE_URL}/api/clinical/soap?clientId=client-test-01`, {
@@ -301,6 +326,45 @@ async function runTests() {
       { title: 'دورة غير مصرحة' }
     );
     assert.strictEqual(res.status, 403, `Expected 403 but got ${res.status}`);
+  });
+
+  // Test 20: Stage 1 - Untrusted OAuth request must be blocked safely (501)
+  await test('إغلاق تسجيل الدخول الاجتماعي غير الموثوق ومنع تزوير الحسابات (/api/auth/oauth -> 501)', async () => {
+    const res = await makeRequest(
+      `${BASE_URL}/api/auth/oauth`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+      {
+        provider: 'google',
+        email: 'counselor@galalahmad.com',
+        name: 'حساب مزيف',
+      }
+    );
+    assert.strictEqual(res.status, 501, `Expected 501 OAUTH_DISABLED, got ${res.status}`);
+    assert.strictEqual(res.body.code, 'OAUTH_DISABLED');
+  });
+
+  // Test 21: Stage 3 - Requesting reset OTP with generic response and mock provider
+  await test('طلب رمز استعادة كلمة المرور برسالة لا تكشف وجود الحساب مع مزود وهمي (200)', async () => {
+    const res = await makeRequest(
+      `${BASE_URL}/api/auth/forgot-password`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+      { identifier: 'client@test.com' }
+    );
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.success, true);
+    assert.strictEqual(res.body.requiresToken, true);
+    assert.ok(res.body.message.includes('إذا كان الحساب مسجلاً لدينا'));
+  });
+
+  // Test 22: Stage 3 - Rejection of wrong reset OTP
+  await test('رفض استكمال استعادة كلمة المرور برمز تحقق خاطئ (400)', async () => {
+    const res = await makeRequest(
+      `${BASE_URL}/api/auth/forgot-password`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+      { identifier: 'client@test.com', resetToken: '000000', newPassword: 'NewSecurePassword@2026' }
+    );
+    assert.strictEqual(res.status, 400);
+    assert.ok(res.body.error.includes('رمز التحقق'));
   });
 
   console.log('\n------------------------------------------------------');

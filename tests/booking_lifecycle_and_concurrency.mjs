@@ -1,18 +1,18 @@
 /**
- * End-to-End Integration Suite for Stage 3 & 4:
- * Booking Lifecycle, Concurrency / Double-Booking Prevention,
- * Role Separation, and Receipt Vault.
+ * Booking Lifecycle, Concurrency & State Machine Integration Tests
+ * Verified against Next.js API Routes & Supabase Backend
  */
 
-import assert from 'assert';
 import http from 'http';
 import crypto from 'crypto';
-
+import assert from 'assert';
 import fs from 'fs';
+import path from 'path';
 
-// Load .env.local without logging or printing any secrets
-if (fs.existsSync('.env.local')) {
-  const envContent = fs.readFileSync('.env.local', 'utf-8');
+// Load .env.local safely
+const envPath = path.join(process.cwd(), '.env.local');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf-8');
   for (const line of envContent.split('\n')) {
     const trimmed = line.trim();
     if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
@@ -26,13 +26,22 @@ if (fs.existsSync('.env.local')) {
   }
 }
 
+process.env.MOCK_EMAIL = 'true';
+
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3005';
 
-// Safety check: ensure testing is strictly on localhost/staging, never production
-const parsedBase = new URL(BASE_URL);
-if (!['localhost', '127.0.0.1', '::1'].includes(parsedBase.hostname)) {
-  console.error('[CRITICAL] Tests cannot run against external/production hosts:', parsedBase.hostname);
-  process.exit(1);
+// ==============================================================================
+// STAGE 5 STRICT SAFETY GUARD: REMOTE / PRODUCTION DATABASE PROTECTION
+// ==============================================================================
+// Localhost is NOT proof of a local or isolated database (it could be an SSH tunnel or port-forward).
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const isRemoteSupabase = supabaseUrl.includes('.supabase.co') || !supabaseUrl.includes('test');
+const isExplicitIsolated = process.env.TEST_DATABASE_IS_ISOLATED === 'true' && process.env.STAGING_DATABASE_CONFIRMED === 'true';
+
+if (isRemoteSupabase && !isExplicitIsolated) {
+  console.log('\n🛡️  [STAGE 5 SAFETY GUARD] Remote Supabase database detected.');
+  console.log('   All mutating write tests are strictly SKIPPED to protect database integrity.');
+  console.log('   To enable write tests on staging, set TEST_DATABASE_IS_ISOLATED=true and STAGING_DATABASE_CONFIRMED=true.\n');
 }
 
 const SESSION_SECRET = process.env.SESSION_SECRET;
@@ -56,6 +65,7 @@ function createSessionCookie(user) {
   return `galal_session=${payloadB64}.${signature}`;
 }
 
+// Helper for HTTP requests
 function makeRequest(url, options = {}, body = null) {
   return new Promise((resolve, reject) => {
     const parsedUrl = new URL(url);
@@ -89,13 +99,20 @@ function makeRequest(url, options = {}, body = null) {
 
 async function runTests() {
   console.log('\n======================================================');
-  console.log('🧪 بدء اختبارات دورة حياة الحجز والتزامن والأمان (Stage 3 & 4)');
+  console.log('🧪 بدء اختبارات دورة حياة الحجز والتزامن والأمان (Stage 2 & 5)');
   console.log('======================================================\n');
 
   let passed = 0;
   let failed = 0;
+  let skipped = 0;
 
-  async function test(name, fn) {
+  async function test(name, fn, isMutating = false) {
+    if (isMutating && isRemoteSupabase && !isExplicitIsolated) {
+      console.log(`  ⏭️  [تخطي آمن - حماية القاعدة] ${name}`);
+      skipped++;
+      return;
+    }
+
     try {
       await fn();
       console.log(`  ✓ ${name}`);
@@ -126,205 +143,289 @@ async function runTests() {
 
   const counselorCookie = createSessionCookie(counselorUser);
 
-  // Unique slot for testing to prevent collision with actual data
   const testSlotDate = `2029-01-${Math.floor(10 + Math.random() * 18)}`;
   const testSlotTime = '07:30 PM';
   let createdBookingId = null;
+  const createdTestBookingIds = [];
 
-  // 1. Zod Server Validation: Missing required fields
-  await test('رفض حجز بدون رقم هاتف ورقم هاتف غير صالح عبر Zod (400)', async () => {
-    const res = await makeRequest(
-      `${BASE_URL}/api/bookings`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
-      { clientName: 'تجربة', clientPhone: '12', slotDate: testSlotDate, slotTime: testSlotTime }
-    );
-    assert.strictEqual(res.status, 400);
-    assert.ok(res.body.error);
-  });
-
-  // 2. Zod Server Validation: Invalid date format
-  await test('رفض حجز بتنسيق تاريخ غير متوافق مع معيار YYYY-MM-DD (400)', async () => {
-    const res = await makeRequest(
-      `${BASE_URL}/api/bookings`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
-      { clientName: 'تجربة حجز', clientPhone: '01019998877', slotDate: '15/01/2029', slotTime: testSlotTime }
-    );
-    assert.strictEqual(res.status, 400);
-  });
-
-  // 3. Successful Booking creation with receipt storage
-  await test('إنشاء حجز مستوفٍ للشروط واعتماد إيصال السداد المشفر (200)', async () => {
-    const validJpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01]);
-    const receiptBase64 = `data:image/jpeg;base64,${validJpeg.toString('base64')}`;
-
-    const res = await makeRequest(
-      `${BASE_URL}/api/bookings`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
-      {
-        clientName: 'عميل تجريبي معتمد',
-        clientPhone: clientUser.phone,
-        clientEmail: clientUser.email,
-        slotDate: testSlotDate,
-        slotTime: testSlotTime,
-        track: 'psychological',
-        trackLabel: 'استشارة نفسية فردية',
-        paymentMethod: 'instapay',
-        receiptNote: 'إيصال تحويل تجريبي للتأكد من السلامة',
-        receiptImage: receiptBase64,
-      }
-    );
-
-    assert.strictEqual(res.status, 200, `Expected 200, got ${res.status}: ${JSON.stringify(res.body)}`);
-    assert.strictEqual(res.body.success, true);
-    assert.ok(res.body.booking && res.body.booking.id);
-    createdBookingId = res.body.booking.id;
-  });
-
-  // 4. Concurrency / Anti-double-booking: Second client attempts booking the exact same slot
-  await test('منع الحجز المزدوج لنفس الموعد بالتزامن (409 Conflict)', async () => {
-    const res = await makeRequest(
-      `${BASE_URL}/api/bookings`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
-      {
-        clientName: 'مستفيد منافس آخر',
-        clientPhone: '01122334455',
-        clientEmail: 'other@example.com',
-        slotDate: testSlotDate,
-        slotTime: testSlotTime,
-        track: 'marriage',
-        paymentMethod: 'instapay',
-      }
-    );
-
-    assert.strictEqual(res.status, 409, `Expected 409 Conflict for double booking, got ${res.status}`);
-    assert.ok(res.body.error.includes('تم حجزه للتو'));
-  });
-
-  // 5. Secure Receipt Vault endpoint: unauthenticated access rejected
-  await test('منع الوصول غير المصادق لملفات الإيصالات البنكية عبر /api/bookings/receipt (401)', async () => {
-    const res = await makeRequest(`${BASE_URL}/api/bookings/receipt?id=${createdBookingId}`);
-    assert.strictEqual(res.status, 401);
-  });
-
-  // 6. Secure Receipt Vault endpoint: unauthorized third-party client rejected
-  await test('منع وصول مستفيد غريب لإيصال سداد مستفيد آخر (403 Forbidden)', async () => {
-    const strangerCookie = createSessionCookie({
-      id: 'stranger-999',
-      name: 'مستفيد غريب',
-      phone: '01055554433',
-      role: 'client',
-    });
-
-    const res = await makeRequest(`${BASE_URL}/api/bookings/receipt?id=${createdBookingId}`, {
-      headers: { Cookie: strangerCookie },
-    });
-    assert.strictEqual(res.status, 403);
-  });
-
-  // 7. State Machine: Client cannot confirm their own booking
-  await test('منع المستفيد من ترقية حالة حجزه بنفسه إلى مؤكد (403 Forbidden)', async () => {
-    const res = await makeRequest(
-      `${BASE_URL}/api/bookings`,
-      { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: clientCookie } },
-      { id: createdBookingId, status: 'confirmed' }
-    );
-    assert.strictEqual(res.status, 403);
-    assert.ok(res.body.error.includes('المعالج'));
-  });
-
-  // 8. State Machine: Counselor approves booking and sets meeting room
-  await test('سماح المعالج باعتماد وتأكيد الحجز وتعيين رابط قاعة اللقاء (200)', async () => {
-    const res = await makeRequest(
-      `${BASE_URL}/api/bookings`,
-      { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
-      {
-        id: createdBookingId,
-        status: 'confirmed',
-        meetLink: 'https://meet.google.com/galal-clinic-room',
-      }
-    );
-    assert.strictEqual(res.status, 200, `Expected 200, got ${res.status}: ${JSON.stringify(res.body)}`);
-    assert.strictEqual(res.body.booking.status, 'confirmed');
-    assert.strictEqual(res.body.booking.meetLink, 'https://meet.google.com/galal-clinic-room');
-  });
-
-  // 9. State Machine: Counselor completes session
-  await test('ترقية الحجز المؤكد إلى مكتمل بعد انعقاد الجلسة السريرية (200)', async () => {
-    const res = await makeRequest(
-      `${BASE_URL}/api/bookings`,
-      { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
-      { id: createdBookingId, status: 'completed' }
-    );
-    assert.strictEqual(res.status, 200);
-    assert.strictEqual(res.body.booking.status, 'completed');
-  });
-
-  // 10. State Machine: Terminal State enforcement on completed session
-  await test('منع التراجع أو العبث بجلسة مكتملة وموثقة سريرياً (400 Terminal State)', async () => {
-    const res = await makeRequest(
-      `${BASE_URL}/api/bookings`,
-      { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
-      { id: createdBookingId, status: 'pending_verification' }
-    );
-    assert.strictEqual(res.status, 400);
-    assert.ok(res.body.error.includes('لا يمكن تعديل حالة جلسة مكتملة'));
-  });
-
-  // 11. Profile Hijacking Guard: Unauthenticated booking cannot overwrite existing profile name
-  await test('منع الحجز المجهول من تغيير اسم أو ملف مستخدم مسجل مسبقاً (Profile Hijacking Prevention)', async () => {
-    // Attempt booking with existing client-test-01 phone (01000000000) but an attacker-supplied name
-    const existingTargetPhone = '01000000000';
-    const hijackSlotDate = `2029-02-${Math.floor(10 + Math.random() * 15)}`;
-    const res = await makeRequest(
-      `${BASE_URL}/api/bookings`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' } },
-      {
-        clientName: 'مخترق مزيف للاسم',
-        clientPhone: existingTargetPhone,
-        clientEmail: 'hacker@example.com',
-        slotDate: hijackSlotDate,
-        slotTime: '06:00 PM',
-        track: 'psychological',
-        paymentMethod: 'instapay',
-      }
-    );
-
-    // If booking succeeded, check profile of existing client - name must NOT have changed
-    if (res.status === 200 && res.body?.booking?.id) {
-      // Clean up the hijack test booking
-      await makeRequest(
+  try {
+    // 1. Zod Server Validation: Missing required fields (Non-mutating rejection)
+    await test('رفض حجز بدون رقم هاتف ورقم هاتف غير صالح عبر Zod (400)', async () => {
+      const res = await makeRequest(
         `${BASE_URL}/api/bookings`,
-        { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
-        { id: res.body.booking.id, action: 'delete' }
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+        { clientName: 'تجربة', clientPhone: '12', slotDate: testSlotDate, slotTime: testSlotTime }
       );
-    }
+      assert.strictEqual(res.status, 400);
+      assert.ok(res.body.error);
+    }, false);
 
-    // Verify existing profile in local store / profiles was not mutated
-    const profiles = JSON.parse(fs.readFileSync('src/data/userProfiles.json', 'utf-8'));
-    const targetUser = profiles.find((p) => p.phone === existingTargetPhone);
-    assert.ok(targetUser, 'Existing user must exist in profile store');
-    assert.strictEqual(
-      targetUser.name,
-      'عميل تجريبي',
-      'Profile name was improperly overwritten by unauthenticated booking!'
-    );
-  });
+    // 2. Zod Server Validation: Invalid date format (Non-mutating rejection)
+    await test('رفض حجز بتنسيق تاريخ غير متوافق مع معيار YYYY-MM-DD (400)', async () => {
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+        { clientName: 'تجربة حجز', clientPhone: '01019998877', slotDate: '15/01/2029', slotTime: testSlotTime }
+      );
+      assert.strictEqual(res.status, 400);
+    }, false);
 
-  // 12. Cleanup test booking
-  await test('حذف الحجز التجريبي بعد انتهاء دورة الفحص بواسطة المعالج (200)', async () => {
-    if (createdBookingId) {
+    // 2b. Price Tampering Validation (Non-mutating rejection)
+    await test('رفض محاولة التلاعب بالرسوم وتخفيض السعر من العميل (400 Bad Request)', async () => {
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+        {
+          clientName: 'مخترق أسعار',
+          clientPhone: '01019998877',
+          slotDate: testSlotDate,
+          slotTime: testSlotTime,
+          track: 'psychological',
+          fee: '10 ر.س', // Attempted tampering from 250 to 10
+        }
+      );
+      assert.strictEqual(res.status, 400, `Expected 400 for tampered fee, got ${res.status}`);
+      assert.ok(res.body.error.includes('غير مطابقة للتسعيرة الرسمية'));
+    }, false);
+
+    // 2c. Invalid Track Whitelist Validation (Non-mutating rejection)
+    await test('رفض اختيار مسار استشاري غير معتمد في القائمة البيضاء (400 Bad Request)', async () => {
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+        {
+          clientName: 'مسار عشوائي',
+          clientPhone: '01019998877',
+          slotDate: testSlotDate,
+          slotTime: testSlotTime,
+          track: 'unauthorized_hacked_track',
+        }
+      );
+      assert.strictEqual(res.status, 400, `Expected 400 for invalid track, got ${res.status}`);
+      assert.ok(res.body.error.includes('غير معتمد في المنصة'));
+    }, false);
+
+    // 3. Successful Booking creation with receipt storage (Mutating write)
+    await test('إنشاء حجز مستوفٍ للشروط واعتماد إيصال السداد المشفر (200)', async () => {
+      const validJpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01]);
+      const receiptBase64 = `data:image/jpeg;base64,${validJpeg.toString('base64')}`;
+
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+        {
+          clientName: 'عميل تجريبي معتمد',
+          clientPhone: clientUser.phone,
+          clientEmail: clientUser.email,
+          slotDate: testSlotDate,
+          slotTime: testSlotTime,
+          track: 'psychological',
+          trackLabel: 'استشارة نفسية فردية',
+          paymentMethod: 'instapay',
+          receiptNote: 'إيصال تحويل تجريبي للتأكد من السلامة',
+          receiptImage: receiptBase64,
+        }
+      );
+
+      assert.strictEqual(res.status, 200, `Expected 200, got ${res.status}: ${JSON.stringify(res.body)}`);
+      assert.strictEqual(res.body.success, true);
+      assert.ok(res.body.booking && res.body.booking.id);
+      createdBookingId = res.body.booking.id;
+      createdTestBookingIds.push(createdBookingId);
+    }, true);
+
+    // 4. Concurrency / Anti-double-booking (Mutating write)
+    await test('منع الحجز المزدوج لنفس الموعد بالتزامن (409 Conflict)', async () => {
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+        {
+          clientName: 'مستفيد منافس آخر',
+          clientPhone: '01122334455',
+          clientEmail: 'other@example.com',
+          slotDate: testSlotDate,
+          slotTime: testSlotTime,
+          track: 'marriage',
+          paymentMethod: 'instapay',
+        }
+      );
+
+      assert.strictEqual(res.status, 409, `Expected 409 Conflict for double booking, got ${res.status}`);
+      assert.ok(res.body.error.includes('تم حجزه للتو') || res.body.error.includes('يتعارض'));
+    }, true);
+
+    // 4b. Overlapping slot with DIFFERENT time format (07:30 PM vs 19:45) (Mutating write)
+    await test('منع تداخل المواعيد بصيغ مختلفة (07:30 PM مقابل 19:45) بنظام 409 Conflict', async () => {
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+        {
+          clientName: 'مستفيد بتوقيت متداخل',
+          clientPhone: '01199887766',
+          clientEmail: 'overlap@example.com',
+          slotDate: testSlotDate,
+          slotTime: '19:45', // 24-hour format overlapping with 07:30 PM (19:30 to 20:20)
+          track: 'psychological',
+          paymentMethod: 'instapay',
+        }
+      );
+
+      if (res.status === 200 && res.body?.booking?.id) {
+        createdTestBookingIds.push(res.body.booking.id);
+      }
+
+      assert.strictEqual(res.status, 409, `Expected 409 Conflict for overlapping slot, got ${res.status}`);
+      assert.ok(res.body.error.includes('يتعارض') || res.body.error.includes('تم حجزه'));
+    }, true);
+
+    // 5. Secure Receipt Vault endpoint: unauthenticated access rejected (Non-mutating)
+    await test('منع الوصول غير المصادق لملفات الإيصالات البنكية عبر /api/bookings/receipt (401)', async () => {
+      const targetId = createdBookingId || 'BK-10001';
+      const res = await makeRequest(`${BASE_URL}/api/bookings/receipt?id=${targetId}`);
+      assert.strictEqual(res.status, 401);
+    }, false);
+
+    // 6. Secure Receipt Vault endpoint: unauthorized third-party client rejected (Non-mutating)
+    await test('منع وصول مستفيد غريب لإيصال سداد مستفيد آخر (403 Forbidden)', async () => {
+      const strangerCookie = createSessionCookie({
+        id: 'stranger-999',
+        name: 'مستفيد غريب',
+        phone: '01055554433',
+        role: 'client',
+      });
+
+      const targetId = createdBookingId || 'BK-10001';
+      const res = await makeRequest(`${BASE_URL}/api/bookings/receipt?id=${targetId}`, {
+        headers: { Cookie: strangerCookie },
+      });
+      assert.strictEqual(res.status, 403);
+    }, false);
+
+    // 7. State Machine: Client cannot confirm their own booking (Mutating state check)
+    await test('منع المستفيد من ترقية حالة حجزه بنفسه إلى مؤكد (403 Forbidden)', async () => {
+      if (!createdBookingId) return;
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: clientCookie } },
+        { id: createdBookingId, status: 'confirmed' }
+      );
+      assert.strictEqual(res.status, 403);
+      assert.ok(res.body.error.includes('المعالج'));
+    }, true);
+
+    // 8. State Machine: Counselor approves booking and sets meeting room (Mutating write)
+    await test('سماح المعالج باعتماد وتأكيد الحجز وتعيين رابط قاعة اللقاء (200)', async () => {
+      if (!createdBookingId) return;
       const res = await makeRequest(
         `${BASE_URL}/api/bookings`,
         { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
-        { id: createdBookingId, action: 'delete' }
+        {
+          id: createdBookingId,
+          status: 'confirmed',
+          meetLink: 'https://meet.google.com/galal-clinic-room',
+        }
+      );
+      assert.strictEqual(res.status, 200, `Expected 200, got ${res.status}: ${JSON.stringify(res.body)}`);
+      assert.strictEqual(res.body.booking.status, 'confirmed');
+      assert.strictEqual(res.body.booking.meetLink, 'https://meet.google.com/galal-clinic-room');
+    }, true);
+
+    // 9. State Machine: Counselor completes session (Mutating write)
+    await test('ترقية الحجز المؤكد إلى مكتمل بعد انعقاد الجلسة السريرية (200)', async () => {
+      if (!createdBookingId) return;
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
+        { id: createdBookingId, status: 'completed' }
       );
       assert.strictEqual(res.status, 200);
-      createdBookingId = null;
+      assert.strictEqual(res.body.booking.status, 'completed');
+    }, true);
+
+    // 10. State Machine: Terminal State enforcement on completed session (Mutating state check)
+    await test('منع التراجع أو العبث بجلسة مكتملة وموثقة سريرياً (400 Terminal State)', async () => {
+      if (!createdBookingId) return;
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
+        { id: createdBookingId, status: 'pending_verification' }
+      );
+      assert.strictEqual(res.status, 400);
+      assert.ok(res.body.error.includes('لا يمكن تعديل حالة جلسة مكتملة'));
+    }, true);
+
+    // 11. Profile Hijacking Guard: Unauthenticated booking cannot overwrite existing profile name (Mutating write)
+    await test('منع الحجز المجهول من تغيير اسم أو ملف مستخدم مسجل مسبقاً (Profile Hijacking Prevention)', async () => {
+      const existingTargetPhone = '01000000000';
+      const hijackSlotDate = `2029-02-${Math.floor(10 + Math.random() * 15)}`;
+      const res = await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' } },
+        {
+          clientName: 'مخترق مزيف للاسم',
+          clientPhone: existingTargetPhone,
+          clientEmail: 'hacker@example.com',
+          slotDate: hijackSlotDate,
+          slotTime: '06:00 PM',
+          track: 'psychological',
+          paymentMethod: 'instapay',
+        }
+      );
+
+      if (res.status === 200 && res.body?.booking?.id) {
+        createdTestBookingIds.push(res.body.booking.id);
+      }
+
+      // Verify existing profile in local store was not mutated
+      const profiles = JSON.parse(fs.readFileSync('src/data/userProfiles.json', 'utf-8'));
+      const targetUser = profiles.find((p) => p.phone === existingTargetPhone);
+      assert.ok(targetUser, 'Existing user must exist in profile store');
+      assert.strictEqual(
+        targetUser.name,
+        'عميل تجريبي',
+        'Profile name was improperly overwritten by unauthenticated booking!'
+      );
+    }, true);
+
+    // 12. Cleanup test booking
+    await test('حذف الحجز التجريبي بعد انتهاء دورة الفحص بواسطة المعالج (200)', async () => {
+      if (createdBookingId) {
+        const res = await makeRequest(
+          `${BASE_URL}/api/bookings`,
+          { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
+          { id: createdBookingId, action: 'delete' }
+        );
+        assert.strictEqual(res.status, 200);
+        createdBookingId = null;
+      }
+    }, true);
+  } finally {
+    // =========================================================================
+    // STAGE 5 GUARANTEED CLEANUP: Restore state for all bookings, profiles, receipts
+    // =========================================================================
+    for (const id of createdTestBookingIds) {
+      await makeRequest(
+        `${BASE_URL}/api/bookings`,
+        { method: 'PUT', headers: { 'Content-Type': 'application/json', Cookie: counselorCookie } },
+        { id, action: 'delete' }
+      ).catch(() => {});
     }
-  });
+
+    // Ensure local JSON files have no test artifacts
+    try {
+      const bFile = path.join(process.cwd(), 'src', 'data', 'bookings.json');
+      if (fs.existsSync(bFile)) {
+        const list = JSON.parse(fs.readFileSync(bFile, 'utf-8'));
+        const filtered = list.filter((b) => !createdTestBookingIds.includes(b.id));
+        if (filtered.length !== list.length) {
+          fs.writeFileSync(bFile, JSON.stringify(filtered, null, 2) + '\n');
+        }
+      }
+    } catch {}
+  }
 
   console.log('\n------------------------------------------------------');
-  console.log(`📊 نتيجة الفحص: نجح ${passed} | فشل ${failed}`);
+  console.log(`📊 نتيجة الفحص: نجح ${passed} | فشل ${failed} | تخطي آمن ${skipped}`);
   console.log('------------------------------------------------------\n');
 
   if (failed > 0) {

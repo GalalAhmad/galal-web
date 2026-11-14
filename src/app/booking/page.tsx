@@ -137,7 +137,7 @@ const TIME_SLOTS = [
 ];
 
 function BookingWizardContent() {
-  const { user } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const trackParam = searchParams.get('track');
 
@@ -465,17 +465,19 @@ function BookingWizardContent() {
         { date: selectedDateIso, time: bookingPayload.slotTime },
       ]);
 
-      // Save user session for client profile integration
+      // Save user session for client profile integration only if not already authenticated
       try {
-        localStorage.setItem(
-          'galal_user_session',
-          JSON.stringify({
-            name: bookingPayload.clientName,
-            phone: bookingPayload.clientPhone,
-            email: bookingPayload.clientEmail,
-            provider: 'booking',
-          })
-        );
+        if (!user?.id) {
+          localStorage.setItem(
+            'galal_user_session',
+            JSON.stringify({
+              name: bookingPayload.clientName,
+              phone: bookingPayload.clientPhone,
+              email: bookingPayload.clientEmail,
+              provider: 'booking',
+            })
+          );
+        }
       } catch (e) {}
 
       setIsPaymentDrawerOpen(false);
@@ -510,7 +512,27 @@ function BookingWizardContent() {
     return `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(msg)}`;
   };
 
-  if (!user?.name) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#070B11] text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-[#4E7E76] selection:text-white">
+        <Navbar />
+        <main className="flex-1 flex flex-col items-center justify-center py-20 px-4 text-center">
+          <div className="w-16 h-16 mx-auto rounded-3xl bg-[#4E7E76]/10 text-[#4E7E76] dark:text-[#5E988E] flex items-center justify-center mb-5 animate-pulse">
+            <Calendar className="w-8 h-8 animate-spin" />
+          </div>
+          <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 mb-2">
+            جاري التحقق من جلسة الحجز الآمنة...
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            يرجى الانتظار لحظات لتهيئة نموذج الحجز الموثق.
+          </p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !user?.name) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-[#070B11] text-slate-900 dark:text-slate-100 flex flex-col justify-between selection:bg-[#4E7E76] selection:text-white">
         <Navbar />

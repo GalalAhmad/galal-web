@@ -28,6 +28,23 @@ export async function GET(req: NextRequest) {
     const phone = searchParams.get('phone');
     const email = searchParams.get('email');
 
+    // Strict Anti-IDOR: Clients are strictly confined to their own authenticated phone/email.
+    // This ownership verification must occur BEFORE any storage checks or empty fallbacks.
+    if (!isCounselor) {
+      if (phone && (!sessionUser.phone || !phonesMatch(phone, sessionUser.phone))) {
+        return NextResponse.json(
+          { error: 'ممنوع: لا تملك الصلاحية للاطلاع على بيانات مستفيد آخر', code: 'FORBIDDEN' },
+          { status: 403 }
+        );
+      }
+      if (email && (!sessionUser.email || email.trim().toLowerCase() !== sessionUser.email.trim().toLowerCase())) {
+        return NextResponse.json(
+          { error: 'ممنوع: لا تملك الصلاحية للاطلاع على بيانات مستفيد آخر', code: 'FORBIDDEN' },
+          { status: 403 }
+        );
+      }
+    }
+
     if (!isSupabaseConfigured || !supabaseAdmin) {
       return NextResponse.json({ success: true, entries: [] });
     }
@@ -39,20 +56,6 @@ export async function GET(req: NextRequest) {
       .order('created_at', { ascending: false });
 
     if (!isCounselor) {
-      // Prevent client IDOR: if client requests another person's phone or email, explicitly return 403
-      if (phone && sessionUser.phone && !phonesMatch(phone, sessionUser.phone)) {
-        return NextResponse.json(
-          { error: 'ممنوع: لا تملك الصلاحية للاطلاع على بيانات مستفيد آخر', code: 'FORBIDDEN' },
-          { status: 403 }
-        );
-      }
-      if (email && sessionUser.email && email.trim().toLowerCase() !== sessionUser.email.trim().toLowerCase()) {
-        return NextResponse.json(
-          { error: 'ممنوع: لا تملك الصلاحية للاطلاع على بيانات مستفيد آخر', code: 'FORBIDDEN' },
-          { status: 403 }
-        );
-      }
-
       // Client can ONLY view their own entries
       const uPhone = sessionUser.phone || '';
       const uEmail = sessionUser.email || '';
@@ -109,6 +112,14 @@ export async function POST(req: NextRequest) {
       return authCheck.response;
     }
     const sessionUser = authCheck.user;
+
+    // Platform admin is strictly prohibited from participating in client psychological journals
+    if (sessionUser.role === 'admin') {
+      return NextResponse.json(
+        { error: 'ممنوع: مفكرة الخواطر والمراسلات النفسية مخصصة للمستفيد والمعالج فقط', code: 'FORBIDDEN' },
+        { status: 403 }
+      );
+    }
 
     const body = await req.json();
     const { title, content, sharedWithAdvisor, moodTag } = body;

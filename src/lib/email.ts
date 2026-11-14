@@ -480,7 +480,76 @@ export async function sendNewsletterBroadcastEmail(params: {
   return await dispatchEmail(to, subject, htmlContent);
 }
 
+// In-memory mock email box for tests and local development
+export interface MockSentEmail {
+  to: string;
+  subject: string;
+  html: string;
+  sentAt: string;
+}
+export const mockSentEmails: MockSentEmail[] = [];
+
+export function getMockSentEmails(): MockSentEmail[] {
+  return [...mockSentEmails];
+}
+
+export function clearMockSentEmails(): void {
+  mockSentEmails.length = 0;
+}
+
+export async function sendPasswordResetEmail(params: {
+  to: string;
+  clientName?: string;
+  resetToken: string;
+}): Promise<{ success: boolean; id?: string }> {
+  const { to, clientName, resetToken } = params;
+  const subject = `رمز استعادة كلمة المرور 🔐 | د. جلال أحمد`;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html dir="rtl" lang="ar">
+    <head><meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F8FAFC; color: #1E293B; margin: 0; padding: 20px; line-height: 1.6; text-align: right; }
+        .container { max-width: 520px; margin: 0 auto; background: #FFFFFF; border-radius: 20px; overflow: hidden; border: 1px solid #E2E8F0; padding: 32px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .otp-box { background: #EDF7F5; border: 2px dashed #4E7E76; border-radius: 16px; padding: 18px; text-align: center; margin: 24px 0; }
+        .otp-code { font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #4E7E76; font-family: monospace; }
+        .note { font-size: 12px; color: #64748B; line-height: 1.7; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h2 style="color: #0F172A; margin-top: 0;">أهلاً بك أ. ${clientName || 'الكريم'} 🌿</h2>
+        <p style="font-size: 14px; color: #334155;">
+          تلقينا طلباً لاستعادة كلمة المرور الخاصة بحسابك في منصة د. جلال أحمد للاستشارات.
+        </p>
+        <div class="otp-box">
+          <div style="font-size: 12px; color: #64748B; margin-bottom: 6px;">رمز التحقق الخاص بك:</div>
+          <div class="otp-code">${resetToken}</div>
+        </div>
+        <p class="note">
+          • صلاحية هذا الرمز هي <strong>15 دقيقة فقط</strong> وصالح للاستخدام مرة واحدة.<br/>
+          • إذا لم تقم بطلب استعادة كلمة المرور، يمكنك تجاهل هذه الرسالة بأمان؛ حسابك محمي بالكامل.
+        </p>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return await dispatchEmail(to, subject, htmlContent);
+}
+
 async function dispatchEmail(to: string, subject: string, html: string): Promise<{ success: boolean; id?: string }> {
+  // Test and Mock Guard: never send real emails during testing or when MOCK_EMAIL is set
+  if (process.env.MOCK_EMAIL === 'true' || process.env.NODE_ENV === 'test') {
+    mockSentEmails.push({
+      to,
+      subject,
+      html,
+      sentAt: new Date().toISOString(),
+    });
+    return { success: true, id: `mock-${Date.now()}` };
+  }
+
   const resendApiKey = process.env.RESEND_API_KEY;
 
   if (resendApiKey) {

@@ -186,7 +186,7 @@ export async function GET(request: Request) {
           maritalStatus: dbProfile.marital_status || '',
           country: dbProfile.country || '',
           city: dbProfile.city || '',
-          clinicalNotes: sessionUser.role === 'counselor' ? dossier.notes : '',
+          clinicalNotes: sessionUser.role === 'counselor' ? dossier.notes : undefined,
           homework: dossier.homework,
           courses: dossier.courses,
           readingPlan: dossier.readingPlan,
@@ -225,7 +225,7 @@ export async function GET(request: Request) {
     const safeProfile = localProfile
       ? (({ passwordHash, clinicalNotes, ...rest }: any) => ({
           ...rest,
-          clinicalNotes: sessionUser.role === 'counselor' ? clinicalNotes : '',
+          clinicalNotes: sessionUser.role === 'counselor' ? clinicalNotes : undefined,
         }))(localProfile)
       : null;
     return NextResponse.json(

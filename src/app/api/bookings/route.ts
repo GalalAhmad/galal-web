@@ -11,6 +11,7 @@ import {
   createBookingSchema,
   updateBookingSchema,
   validateBookingTransition,
+  validateBookingPricing,
 } from '@/lib/validations/booking';
 
 export const dynamic = 'force-dynamic';
@@ -99,62 +100,69 @@ function parseTimeToMinutes(timeStr: string): number | null {
 }
 
 /**
- * Checks if two appointment time slots overlap given a standard clinical duration (default 50 mins).
+ * Clinical session duration based on consultation track (minutes).
  */
-function doSlotsOverlap(timeAStr: string, timeBStr: string, durationMinutes = 50): boolean {
+function getTrackDuration(track?: string): number {
+  if (track === 'marital') return 75; // 75 minutes for couples/marital
+  return 50; // Standard 50 minutes for psychological and parenting
+}
+
+/**
+ * Checks if two appointment time slots overlap given their clinical durations.
+ * Interval overlap condition: (startA < endB AND startB < endA)
+ */
+function doSlotsOverlap(
+  timeAStr: string,
+  timeBStr: string,
+  durationAMinutes = 50,
+  durationBMinutes = 50
+): boolean {
   const tA = parseTimeToMinutes(timeAStr);
   const tB = parseTimeToMinutes(timeBStr);
   if (tA === null || tB === null) {
     return timeAStr.trim() === timeBStr.trim();
   }
   const startA = tA;
-  const endA = tA + durationMinutes;
+  const endA = tA + durationAMinutes;
   const startB = tB;
-  const endB = tB + durationMinutes;
+  const endB = tB + durationBMinutes;
 
   return startA < endB && startB < endA;
 }
 
 async function syncProfile(name: string, phone: string, email?: string, authenticatedUserId?: string) {
+  // STRICT SECURITY GUARD: Never create or mutate user profiles for unauthenticated guest bookings.
+  // Bookings by guests must not automatically create an account or link to an existing profile.
+  if (!authenticatedUserId) {
+    return;
+  }
+
   const cleanPhone = phone ? phone.replace(/[^\d]/g, '') : '';
   const cleanEmail = email ? email.trim().toLowerCase() : '';
 
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
-      // Find if profile exists by phone or email
-      let query = supabaseAdmin.from('profiles').select('*');
-      if (cleanPhone) query = query.eq('phone', cleanPhone);
-      else if (cleanEmail) query = query.eq('email', cleanEmail);
-      else query = query.eq('name', name);
-
-      const { data: existing } = await query.maybeSingle();
+      // Find profile strictly by authenticated user id
+      const { data: existing } = await supabaseAdmin
+        .from('profiles')
+        .select('*')
+        .eq('id', authenticatedUserId)
+        .maybeSingle();
 
       if (existing) {
-        // SECURITY GATE: Only allow updating profile data if the booking was created by
-        // the authenticated owner of this profile. Unauthenticated guest bookings MUST NOT mutate existing user accounts!
-        if (authenticatedUserId && existing.id === authenticatedUserId) {
-          await supabaseAdmin.from('profiles').update({
-            name: name || existing.name,
-            phone: cleanPhone || existing.phone,
-            email: cleanEmail || existing.email,
-            updated_at: new Date().toISOString(),
-          }).eq('id', existing.id);
-        }
-      } else {
-        // Create new provisional client profile safely
-        await supabaseAdmin.from('profiles').insert({
-          name: name || 'مستفيد جديد',
-          phone: cleanPhone || null,
-          email: cleanEmail || null,
-          role: 'client',
-        });
+        await supabaseAdmin.from('profiles').update({
+          name: name || existing.name,
+          phone: cleanPhone || existing.phone,
+          email: cleanEmail || existing.email,
+          updated_at: new Date().toISOString(),
+        }).eq('id', existing.id);
       }
     } catch (e) {
       console.error('Supabase profile sync error:', e);
     }
   }
 
-  // Also mirror to local safely
+  // Also mirror to local safely for authenticated user only
   try {
     let profiles: any[] = [];
     try {
@@ -162,24 +170,13 @@ async function syncProfile(name: string, phone: string, email?: string, authenti
     } catch (e) {
       profiles = [];
     }
-    const idx = profiles.findIndex((p: any) => (cleanPhone && p.phone === cleanPhone) || (cleanEmail && p.email === cleanEmail) || p.name === name);
+    const idx = profiles.findIndex((p: any) => p.id === authenticatedUserId);
     if (idx >= 0) {
-      if (authenticatedUserId && profiles[idx].id === authenticatedUserId) {
-        if (name) profiles[idx].name = name;
-        if (cleanPhone) profiles[idx].phone = cleanPhone;
-        if (cleanEmail) profiles[idx].email = cleanEmail;
-      }
-    } else {
-      profiles.unshift({
-        id: `user-${Date.now()}`,
-        name: name || 'مستفيد جديد',
-        phone: cleanPhone || '',
-        email: cleanEmail || '',
-        role: 'client',
-        createdAt: new Date().toISOString(),
-      });
+      if (name) profiles[idx].name = name;
+      if (cleanPhone) profiles[idx].phone = cleanPhone;
+      if (cleanEmail) profiles[idx].email = cleanEmail;
+      await fs.writeFile(profilesPath, JSON.stringify(profiles, null, 2), 'utf-8');
     }
-    await fs.writeFile(profilesPath, JSON.stringify(profiles, null, 2), 'utf-8');
   } catch (e) {}
 }
 
@@ -306,6 +303,15 @@ export async function POST(request: Request) {
       fee,
     } = parseResult.data;
 
+    // Server-Side Authoritative Pricing & Track Whitelist Check (Blocks price tampering)
+    const pricingValidation = validateBookingPricing(track, fee, paymentMethod);
+    if (!pricingValidation.valid) {
+      return NextResponse.json({ error: pricingValidation.error }, { status: 400 });
+    }
+    const durationMinutes = pricingValidation.durationMinutes;
+    const authoritativeFee = pricingValidation.authoritativeFee;
+    const authoritativeTrackLabel = pricingValidation.authoritativeLabel;
+
     // 2. Concurrency Lock: Prevent simultaneous identical slot submissions
     const slotLockKey = `${slotDate}:${slotTime.trim()}`;
     if (inMemorySlotLocks.has(slotLockKey)) {
@@ -348,7 +354,8 @@ export async function POST(request: Request) {
             const existPhone = (existing.client_phone || '').replace(/[^\d]/g, '');
             // Exact phone digits match only (no loose suffix matching)
             const phoneMatches = existPhone.length >= 8 && existPhone === cleanPhoneDigits;
-            const timeMatches = doSlotsOverlap(existing.slot_time || '', slotTime, 50);
+            const existDuration = getTrackDuration(existing.track);
+            const timeMatches = doSlotsOverlap(existing.slot_time || '', slotTime, existDuration, getTrackDuration(track));
             return phoneMatches && timeMatches;
           });
 
@@ -362,98 +369,187 @@ export async function POST(request: Request) {
         }
       }
 
-      // 5. Conflict check on Supabase & Local using normalized temporal overlap
+      const durationMinutes = getTrackDuration(track);
+      const startMinutes = parseTimeToMinutes(slotTime) ?? 0;
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const bookingId = `BK-${Date.now().toString().slice(-4)}${randomSuffix}`;
+      const initialMeetLink = '';
+      let createdBooking: any = null;
+
+      // 5. Conflict check & Atomic Reservation on Supabase
       if (isSupabaseConfigured && supabaseAdmin) {
-        const { data: conflicts } = await supabaseAdmin
-          .from('bookings')
-          .select('id, slot_date, slot_time, status')
-          .eq('slot_date', slotDate)
-          .neq('status', 'cancelled')
-          .neq('status', 'rejected');
+        let rpcCallError: any = null;
+        try {
+          const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc('create_booking_atomic', {
+            p_id: bookingId,
+            p_client_name: clientName,
+            p_client_phone: clientPhone,
+            p_client_email: clientEmail || null,
+            p_track: track || 'psychological',
+            p_track_label: authoritativeTrackLabel,
+            p_age: age ? String(age) : null,
+            p_marital_status: maritalStatus || 'غير محدد',
+            p_slot_date: slotDate,
+            p_slot_time: slotTime,
+            p_slot_start_minutes: startMinutes,
+            p_duration_minutes: durationMinutes,
+            p_fee: authoritativeFee,
+            p_payment_method: paymentMethod || 'instapay',
+            p_receipt_note: receiptNote || '',
+            p_receipt_image: storedReceiptRef,
+            p_answers: answers || {},
+            p_meet_link: initialMeetLink,
+          });
 
-        const isConflict = (conflicts || []).some((b: any) => {
-          return doSlotsOverlap(b.slot_time || '', slotTime, 50);
-        });
+          if (rpcErr) {
+            rpcCallError = rpcErr;
+          } else if (rpcRes) {
+            if (!rpcRes.success) {
+              if (rpcRes.code === 'CONFLICT') {
+                return NextResponse.json(
+                  { error: rpcRes.error || 'عذراً، هذا الموعد يتعارض مع موعد محجوز مسبقاً. يرجى اختيار موعد آخر متاح.' },
+                  { status: 409 }
+                );
+              }
+              if (rpcRes.code === 'INVALID_INPUT') {
+                return NextResponse.json(
+                  { error: rpcRes.error || 'بيانات الحجز غير صالحة' },
+                  { status: 400 }
+                );
+              }
+              return NextResponse.json(
+                { error: rpcRes.error || 'تعذر إتمام الحجز' },
+                { status: 400 }
+              );
+            }
 
-        if (isConflict) {
-          return NextResponse.json(
-            { error: 'عذراً، هذا الموعد تم حجزه للتو من قِبل مستفيد آخر. يرجى اختيار موعد آخر متاح.' },
-            { status: 409 }
-          );
+            if (rpcRes.success) {
+              createdBooking = {
+                id: bookingId,
+                clientName,
+                clientPhone,
+                clientEmail: clientEmail || '',
+                track: track || 'psychological',
+                trackLabel: authoritativeTrackLabel,
+                age: age || null,
+                maritalStatus: maritalStatus || 'غير محدد',
+                slotDate,
+                slotTime,
+                paymentMethod: paymentMethod || 'instapay',
+                receiptNote: receiptNote || '',
+                receiptImage: storedReceiptRef,
+                fee: authoritativeFee,
+                status: 'pending_verification',
+                meetLink: initialMeetLink,
+                created_at: new Date().toISOString(),
+              };
+            }
+          }
+        } catch (err: any) {
+          rpcCallError = err;
+        }
+
+        // Fail-Closed Enforcement: In production, NEVER silently fall back to racy check-then-insert
+        if (!createdBooking) {
+          const isProduction = process.env.NODE_ENV === 'production';
+          if (isProduction || rpcCallError) {
+            console.error('[CRITICAL-FAIL-CLOSED] Atomic booking RPC failed in Supabase environment:', rpcCallError);
+            if (isProduction) {
+              return NextResponse.json(
+                {
+                  error: 'نظام الحجز الذري غير متاح حالياً لمنع تضارب المواعيد. يرجى المحاولة لاحقاً أو التواصل مع الإدارة.',
+                  code: 'ATOMIC_BOOKING_UNAVAILABLE',
+                },
+                { status: 503 }
+              );
+            }
+          }
+
+          // In dev/test offline mode only: query-level interval check
+          const { data: conflicts } = await supabaseAdmin
+            .from('bookings')
+            .select('id, slot_date, slot_time, track, status')
+            .eq('slot_date', slotDate)
+            .neq('status', 'cancelled')
+            .neq('status', 'rejected');
+
+          const isConflict = (conflicts || []).some((b: any) => {
+            const bDuration = getTrackDuration(b.track);
+            return doSlotsOverlap(b.slot_time || '', slotTime, bDuration, durationMinutes);
+          });
+
+          if (isConflict) {
+            return NextResponse.json(
+              { error: 'عذراً، هذا الموعد يتعارض مع موعد محجوز مسبقاً. يرجى اختيار موعد آخر متاح.' },
+              { status: 409 }
+            );
+          }
+
+          const { data, error } = await supabaseAdmin
+            .from('bookings')
+            .insert({
+              id: bookingId,
+              client_name: clientName,
+              client_phone: clientPhone,
+              client_email: clientEmail || null,
+              track: track || 'psychological',
+              track_label: authoritativeTrackLabel,
+              age: age || null,
+              marital_status: maritalStatus || 'غير محدد',
+              slot_date: slotDate,
+              slot_time: slotTime,
+              meet_link: initialMeetLink,
+              status: 'pending_verification',
+              payment_method: paymentMethod || 'instapay',
+              fee: authoritativeFee,
+              receipt_note: receiptNote || '',
+              receipt_image: storedReceiptRef,
+              answers: answers || {},
+            })
+            .select()
+            .single();
+
+          if (error) {
+            console.error('Supabase booking insert error:', error);
+            if (error.code === '23505') {
+              return NextResponse.json(
+                { error: 'عذراً، هذا الموعد تم حجزه للتو من قِبل مستفيد آخر. يرجى اختيار موعد آخر متاح.' },
+                { status: 409 }
+              );
+            }
+            return NextResponse.json(
+              { error: 'تعذر تسجيل الحجز في قاعدة البيانات السحابية، يرجى مراجعة الاتصال والمحاولة ثانية.' },
+              { status: 500 }
+            );
+          }
+
+          if (data) {
+            createdBooking = toFrontendBooking(data);
+          }
         }
       } else {
         const localList = await readBookingsLocal();
         const isConflict = localList.some((b: any) => {
           if (b.status === 'cancelled' || b.status === 'rejected') return false;
           if (b.slotDate !== slotDate) return false;
-          return doSlotsOverlap(b.slotTime || '', slotTime, 50);
+          const bDuration = getTrackDuration(b.track);
+          return doSlotsOverlap(b.slotTime || '', slotTime, bDuration, durationMinutes);
         });
+
         if (isConflict) {
           return NextResponse.json(
-            { error: 'عذراً، هذا الموعد تم حجزه للتو من قِبل مستفيد آخر. يرجى اختيار موعد آخر متاح.' },
+            { error: 'عذراً، هذا الموعد يتعارض مع موعد محجوز مسبقاً. يرجى اختيار موعد آخر متاح.' },
             { status: 409 }
           );
         }
-      }
 
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const bookingId = `BK-${Date.now().toString().slice(-4)}${randomSuffix}`;
-      // Meet link is generated and issued upon confirmation, not arbitrarily beforehand
-      const initialMeetLink = '';
-
-      let createdBooking: any = null;
-
-      // 6. Insert into Supabase (Single Source of Truth)
-      if (isSupabaseConfigured && supabaseAdmin) {
-        const { data, error } = await supabaseAdmin
-          .from('bookings')
-          .insert({
-            id: bookingId,
-            client_name: clientName,
-            client_phone: clientPhone,
-            client_email: clientEmail || null,
-            track: track || 'psychological',
-            track_label: trackLabel || 'استشارة نفسية فردية',
-            age: age || null,
-            marital_status: maritalStatus || 'غير محدد',
-            slot_date: slotDate,
-            slot_time: slotTime,
-            meet_link: initialMeetLink,
-            status: 'pending_verification',
-            payment_method: paymentMethod || 'instapay',
-            fee: fee || '250 ر.س',
-            receipt_note: receiptNote || '',
-            receipt_image: storedReceiptRef,
-            answers: answers || {},
-          })
-          .select()
-          .single();
-
-        if (error) {
-          console.error('Supabase booking insert error:', error);
-          if (error.code === '23505') {
-            return NextResponse.json(
-              { error: 'عذراً، هذا الموعد تم حجزه للتو من قِبل مستفيد آخر. يرجى اختيار موعد آخر متاح.' },
-              { status: 409 }
-            );
-          }
-          return NextResponse.json(
-            { error: 'تعذر تسجيل الحجز في قاعدة البيانات السحابية، يرجى مراجعة الاتصال والمحاولة ثانية.' },
-            { status: 500 }
-          );
-        }
-
-        if (data) {
-          createdBooking = toFrontendBooking(data);
-        }
-      } else {
         createdBooking = {
           id: bookingId,
           clientName,
           clientPhone,
           clientEmail: clientEmail || '',
           track: track || 'psychological',
-          trackLabel: trackLabel || 'استشارة نفسية فردية',
+          trackLabel: authoritativeTrackLabel,
           age: age || null,
           maritalStatus: maritalStatus || 'غير محدد',
           answers: answers || {},
@@ -462,7 +558,7 @@ export async function POST(request: Request) {
           paymentMethod: paymentMethod || 'instapay',
           receiptNote: receiptNote || '',
           receiptImage: storedReceiptRef,
-          fee: fee || '250 ر.س',
+          fee: authoritativeFee,
           status: 'pending_verification',
           meetLink: initialMeetLink,
           created_at: new Date().toISOString(),
@@ -642,44 +738,104 @@ export async function PUT(request: Request) {
         return NextResponse.json({ success: true, message: 'تم حذف الحجز بنجاح' });
       }
 
-      // Check conflict if rescheduling to a new slot
-      if ((slotDate || slotTime) && status !== 'cancelled' && status !== 'rejected') {
-        const targetDate = slotDate || existingBooking.slot_date;
-        const targetTime = slotTime || existingBooking.slot_time;
-
-        const { data: conflicts } = await supabaseAdmin
-          .from('bookings')
-          .select('id, slot_date, slot_time, status')
-          .neq('id', id)
-          .neq('status', 'cancelled')
-          .neq('status', 'rejected')
-          .eq('slot_date', targetDate);
-
-        const isConflict = (conflicts || []).some((b: any) => {
-          return doSlotsOverlap(b.slot_time || '', targetTime, 50);
-        });
-
-        if (isConflict) {
-          return NextResponse.json(
-            { error: 'عذراً، هذا الموعد البديل محجوز بالفعل لحجز آخر. يرجى اختيار موعد شاغر.' },
-            { status: 409 }
-          );
-        }
-      }
-
       const updateData: any = { updated_at: new Date().toISOString() };
       if (status !== undefined) updateData.status = status;
-      if (slotDate !== undefined) updateData.slot_date = slotDate;
-      if (slotTime !== undefined) updateData.slot_time = slotTime;
       if (meetLink !== undefined) updateData.meet_link = meetLink;
       if (notes !== undefined) updateData.notes = notes;
 
-      const { data, error } = await supabaseAdmin
-        .from('bookings')
-        .update(updateData)
-        .eq('id', id)
-        .select()
-        .single();
+      // Atomic Reschedule with Interval Overlap Prevention & Advisory Locking
+      if ((slotDate || slotTime) && status !== 'cancelled' && status !== 'rejected') {
+        const targetDate = slotDate || existingBooking.slot_date;
+        const targetTime = slotTime || existingBooking.slot_time;
+        const targetDuration = getTrackDuration(existingBooking.track);
+        const targetStartMinutes = parseTimeToMinutes(targetTime);
+
+        if (targetStartMinutes === null) {
+          return NextResponse.json({ error: 'صيغة توقيت الموعد غير صالحة' }, { status: 400 });
+        }
+
+        // Try calling the atomic stored procedure first (enforces pg_advisory_xact_lock)
+        let rpcExecuted = false;
+        try {
+          const { data: rpcRes, error: rpcErr } = await supabaseAdmin.rpc('reschedule_booking_atomic', {
+            p_id: id,
+            p_slot_date: targetDate,
+            p_slot_time: targetTime.trim(),
+            p_slot_start_minutes: targetStartMinutes,
+            p_duration_minutes: targetDuration,
+            p_status: status || 'rescheduled',
+            p_meet_link: meetLink || null,
+            p_notes: notes || null,
+          });
+
+          if (!rpcErr && rpcRes) {
+            rpcExecuted = true;
+            if (!rpcRes.success) {
+              if (rpcRes.code === 'CONFLICT') {
+                return NextResponse.json({ error: rpcRes.error }, { status: 409 });
+              }
+              return NextResponse.json({ error: rpcRes.error }, { status: 400 });
+            }
+          }
+        } catch (rpcCatchErr) {
+          // RPC not deployed in current environment; proceed with serialized fallback
+        }
+
+        if (!rpcExecuted) {
+          const { data: conflicts } = await supabaseAdmin
+            .from('bookings')
+            .select('id, slot_date, slot_time, track, status, slot_start_minutes, duration_minutes')
+            .neq('id', id)
+            .neq('status', 'cancelled')
+            .neq('status', 'rejected')
+            .eq('slot_date', targetDate);
+
+          const isConflict = (conflicts || []).some((b: any) => {
+            const bDur = b.duration_minutes || getTrackDuration(b.track);
+            return doSlotsOverlap(b.slot_time || '', targetTime, bDur, targetDuration);
+          });
+
+          if (isConflict) {
+            return NextResponse.json(
+              { error: 'عذراً، هذا الموعد البديل محجوز بالفعل لحجز آخر. يرجى اختيار موعد شاغر.' },
+              { status: 409 }
+            );
+          }
+
+          updateData.slot_date = targetDate;
+          updateData.slot_time = targetTime.trim();
+          updateData.slot_start_minutes = targetStartMinutes;
+          updateData.duration_minutes = targetDuration;
+          updateData.slot_end_minutes = targetStartMinutes + targetDuration;
+          if (status === undefined) updateData.status = 'rescheduled';
+        }
+      } else {
+        if (slotDate !== undefined) updateData.slot_date = slotDate;
+        if (slotTime !== undefined) updateData.slot_time = slotTime;
+      }
+
+      let data: any = null;
+      let error: any = null;
+
+      // If already updated via RPC, retrieve the authoritative row; otherwise execute update
+      if (Object.keys(updateData).length > 1) {
+        const res = await supabaseAdmin
+          .from('bookings')
+          .update(updateData)
+          .eq('id', id)
+          .select()
+          .single();
+        data = res.data;
+        error = res.error;
+      } else {
+        const res = await supabaseAdmin
+          .from('bookings')
+          .select('*')
+          .eq('id', id)
+          .single();
+        data = res.data;
+        error = res.error;
+      }
 
       if (!error && data) {
         const updated = toFrontendBooking(data);
@@ -771,11 +927,14 @@ export async function PUT(request: Request) {
     if ((slotDate || slotTime) && status !== 'cancelled' && status !== 'rejected') {
       const targetDate = slotDate || currentList[idx].slotDate;
       const targetTime = slotTime || currentList[idx].slotTime;
+      const targetDuration = getTrackDuration(currentList[idx].track);
+
       const isConflict = currentList.some((b: any) => {
         if (b.id === id) return false;
         if (b.status === 'cancelled' || b.status === 'rejected') return false;
         if (b.slotDate !== targetDate) return false;
-        return doSlotsOverlap(b.slotTime || '', targetTime, 50);
+        const bDuration = getTrackDuration(b.track);
+        return doSlotsOverlap(b.slotTime || '', targetTime, bDuration, targetDuration);
       });
       if (isConflict) {
         return NextResponse.json(
@@ -783,6 +942,11 @@ export async function PUT(request: Request) {
           { status: 409 }
         );
       }
+
+      currentList[idx].slot_start_minutes = parseTimeToMinutes(targetTime);
+      currentList[idx].duration_minutes = targetDuration;
+      currentList[idx].slot_end_minutes = (currentList[idx].slot_start_minutes ?? 0) + targetDuration;
+      if (status === undefined) currentList[idx].status = 'rescheduled';
     }
 
     if (status !== undefined) currentList[idx].status = status;

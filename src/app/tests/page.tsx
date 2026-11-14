@@ -24,7 +24,8 @@ import {
   ShieldCheck,
   Info,
   Check,
-  Share2
+  Share2,
+  LogIn
 } from 'lucide-react';
 import { allTestsData, TestItem } from '@/data/testsData';
 import { SCIENTIFIC_TESTS_METADATA } from '@/data/scientificTestsMetadata';
@@ -165,11 +166,6 @@ export default function PsychologicalTestsPage() {
     } catch (err) {
       console.error('Error saving test result:', err);
     }
-  };
-
-  // Social Sign-in -> Redirect to real auth portal
-  const handleSocialLogin = (provider: 'google' | 'apple' | 'facebook') => {
-    window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`;
   };
 
   // Quick Phone / Name Sign-in
@@ -845,41 +841,13 @@ export default function PsychologicalTestsPage() {
             </div>
 
             <div className="space-y-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => handleSocialLogin('google')}
-                className="w-full py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-3 shadow-xs cursor-pointer"
+              <Link
+                href="/login?redirect=%2Ftests"
+                className="w-full py-3 px-4 rounded-xl bg-[#154F9C] hover:bg-[#103D7A] text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-xs cursor-pointer"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                <span>المتابعة باستخدام حساب Google</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSocialLogin('apple')}
-                className="w-full py-3 px-4 rounded-xl bg-black hover:bg-slate-900 text-white text-xs font-bold transition flex items-center justify-center gap-3 shadow-xs cursor-pointer"
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 170 170">
-                  <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.69-3.04-7.69-7.85-12.01-14.42-5.74-8.8-10.24-18.73-13.51-29.77-3.27-11.04-4.91-21.84-4.91-32.4 0-14.28 3.59-26.24 10.77-35.88 7.18-9.64 16.27-14.59 27.27-14.85 4.69 0 10.15 1.34 16.39 4.02 6.23 2.68 10.18 4.07 11.84 4.17 1.89 0 6.04-1.51 12.44-4.53 6.4-3.02 12.03-4.32 16.9-3.9 12.44.88 22.38 5.67 29.83 14.37-10.88 6.64-16.21 15.72-15.99 27.23.23 9.06 3.65 16.82 10.27 23.28 6.62 6.46 14.62 10.11 24.01 10.96-2.01 6.18-4.43 12.28-7.27 18.28zM119.22 33.15c0-7.25 2.66-14.16 7.99-20.72 5.33-6.57 11.88-10.78 19.66-12.63.12 1 .18 1.95.18 2.87 0 7.14-2.82 14.15-8.46 21.03-5.64 6.88-12.23 10.9-19.78 12.07-.12-.87-.19-1.74-.19-2.62z"/>
-                </svg>
-                <span>المتابعة باستخدام Apple</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSocialLogin('facebook')}
-                className="w-full py-3 px-4 rounded-xl bg-[#1877F2] hover:bg-[#166FE5] text-white text-xs font-bold transition flex items-center justify-center gap-3 shadow-xs cursor-pointer"
-              >
-                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-                <span>المتابعة باستخدام Facebook</span>
-              </button>
+                <LogIn className="w-4 h-4" />
+                <span>تسجيل الدخول عبر البوابة الرسمية</span>
+              </Link>
             </div>
 
             <div className="relative flex py-1 items-center">

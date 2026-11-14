@@ -22,28 +22,34 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'معرّف العميل أو الجلسة مطلوب للوصول إلى السجل الإكلينيكي' }, { status: 400 });
     }
 
-    if (isSupabaseConfigured && supabaseAdmin) {
-      let query = supabaseAdmin
-        .from('session_soap_notes')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (sessionId) query = query.eq('session_id', sessionId);
-      else if (clientId) query = query.eq('client_id', clientId);
-
-      const { data, error } = await query;
-      if (error) {
-        if (error.code === 'PGRST205' || error.message?.includes('schema cache')) {
-          console.warn('[SOAP] session_soap_notes table not yet present in Supabase cache. Returning empty list gracefully.');
-          return NextResponse.json({ success: true, notes: [] });
-        }
-        console.error('Supabase SOAP fetch error:', error);
-        return NextResponse.json({ error: 'فشل استرجاع سجلات SOAP من قاعدة البيانات' }, { status: 500 });
+    if (!isSupabaseConfigured || !supabaseAdmin) {
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json(
+          { error: 'خدمة التوثيق السريري غير متصلة بقاعدة البيانات', code: 'STORAGE_UNAVAILABLE' },
+          { status: 503 }
+        );
       }
-      return NextResponse.json({ success: true, notes: data || [] });
+      return NextResponse.json({ success: true, notes: [] });
     }
 
-    return NextResponse.json({ success: true, notes: [] });
+    let query = supabaseAdmin
+      .from('session_soap_notes')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (sessionId) query = query.eq('session_id', sessionId);
+    else if (clientId) query = query.eq('client_id', clientId);
+
+    const { data, error } = await query;
+    if (error) {
+      if (error.code === 'PGRST205' || error.message?.includes('schema cache')) {
+        console.warn('[SOAP] session_soap_notes table not yet present in Supabase cache. Returning empty list gracefully.');
+        return NextResponse.json({ success: true, notes: [] });
+      }
+      console.error('Supabase SOAP fetch error:', error);
+      return NextResponse.json({ error: 'فشل استرجاع سجلات SOAP من قاعدة البيانات' }, { status: 500 });
+    }
+    return NextResponse.json({ success: true, notes: data || [] });
   } catch (error) {
     console.error('Error fetching SOAP notes:', error);
     return NextResponse.json({ error: 'تعذر جلب سجلات SOAP الإكلينيكية' }, { status: 500 });
@@ -95,47 +101,71 @@ export async function POST(request: Request) {
       created_at: new Date().toISOString(),
     };
 
-    if (isSupabaseConfigured && supabaseAdmin) {
-      const { error: soapInsertErr } = await supabaseAdmin
-        .from('session_soap_notes')
-        .insert([newSoapNote]);
-
-      if (soapInsertErr) {
-        if (soapInsertErr.code === 'PGRST205' || soapInsertErr.message?.includes('schema cache')) {
-          console.warn('[SOAP] session_soap_notes table not yet present in Supabase cache. Continuing with profile dossier update.');
-        } else {
-          console.error('Supabase SOAP note insert error:', soapInsertErr);
-          return NextResponse.json(
-            { error: 'تعذر حفظ السجل الإكلينيكي SOAP في قاعدة البيانات السحابية' },
-            { status: 500 }
-          );
-        }
+    if (!isSupabaseConfigured || !supabaseAdmin) {
+      if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json(
+          { error: 'تعذر حفظ السجل الإكلينيكي SOAP لعدم اتصال قاعدة البيانات السحابية', code: 'STORAGE_UNAVAILABLE' },
+          { status: 503 }
+        );
       }
+      return NextResponse.json({
+        success: true,
+        message: 'تم اعتماد وحفظ السجل الإكلينيكي SOAP محلياً (بيئة تطوير)',
+        note: newSoapNote,
+      });
+    }
 
-      // Append summary to client's clinical profile
-      try {
-        const { data: profile } = await supabaseAdmin
+    // Verify client existence before recording clinical notes in production
+    if (process.env.NODE_ENV === 'production') {
+      const { data: p } = await supabaseAdmin.from('profiles').select('id').eq('id', clientId).maybeSingle();
+      const { data: b } = p ? { data: null } : await supabaseAdmin.from('bookings').select('id').eq('id', clientId).maybeSingle();
+      if (!p && !b) {
+        return NextResponse.json(
+          { error: 'الملف الإكلينيكي للمستفيد غير موجود في سجلات العيادة', code: 'CLIENT_NOT_FOUND' },
+          { status: 404 }
+        );
+      }
+    }
+
+    const { error: soapInsertErr } = await supabaseAdmin
+      .from('session_soap_notes')
+      .insert([newSoapNote]);
+
+    if (soapInsertErr) {
+      if (soapInsertErr.code === 'PGRST205' || soapInsertErr.message?.includes('schema cache')) {
+        console.warn('[SOAP] session_soap_notes table not yet present in Supabase cache. Continuing with profile dossier update.');
+      } else {
+        console.error('Supabase SOAP note insert error:', soapInsertErr);
+        return NextResponse.json(
+          { error: 'تعذر حفظ السجل الإكلينيكي SOAP في قاعدة البيانات السحابية' },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Append summary to client's clinical profile
+    try {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('*')
+        .eq('id', clientId)
+        .maybeSingle();
+
+      if (profile) {
+        const dossier = parseClinicalDossier(profile.clinical_notes);
+        const soapSummarySnippet = `\n[جلسة SOAP بتاريخ ${new Date().toLocaleDateString('ar-EG')}]: التقييم: ${assessment || 'متابعة'} | الخطة: ${plan || ''}`;
+        const updatedNotes = (dossier.notes ? dossier.notes + '\n' : '') + soapSummarySnippet;
+
+        await supabaseAdmin
           .from('profiles')
-          .select('*')
-          .eq('id', clientId)
-          .maybeSingle();
-
-        if (profile) {
-          const dossier = parseClinicalDossier(profile.clinical_notes);
-          const soapSummarySnippet = `\n[جلسة SOAP بتاريخ ${new Date().toLocaleDateString('ar-EG')}]: التقييم: ${assessment || 'متابعة'} | الخطة: ${plan || ''}`;
-          const updatedNotes = (dossier.notes ? dossier.notes + '\n' : '') + soapSummarySnippet;
-
-          await supabaseAdmin
-            .from('profiles')
-            .update({
-              clinical_notes: JSON.stringify({ ...dossier, notes: updatedNotes }),
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', profile.id);
-        }
-      } catch (profileErr) {
-        console.warn('Profile clinical dossier summary update warning:', profileErr);
+          .update({
+            clinical_notes: JSON.stringify({ ...dossier, notes: updatedNotes }),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', profile.id);
       }
+    } catch (profileErr) {
+      console.warn('Profile clinical dossier summary update warning:', profileErr);
     }
 
     return NextResponse.json({

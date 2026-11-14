@@ -129,3 +129,104 @@ export function validateBookingTransition(
     error: `انتقال غير مسموح لحالة الحجز من "${currentStatus}" إلى "${targetStatus}"`,
   };
 }
+
+/**
+ * Authoritative Server-Side Consultation Track Whitelist & Official Pricing
+ */
+export const AUTHORITATIVE_TRACKS: Record<
+  string,
+  { label: string; durationMinutes: number; fee: string; allowedFees: string[] }
+> = {
+  psychological: {
+    label: 'استشارة نفسية فردية',
+    durationMinutes: 50,
+    fee: '250 ر.س',
+    allowedFees: ['250 ر.س', 'تبدأ من 250 ر.س', '250'],
+  },
+  marital: {
+    label: 'استشارة زوجية وأسرية',
+    durationMinutes: 75,
+    fee: '350 ر.س',
+    allowedFees: ['350 ر.س', 'تبدأ من 350 ر.س', '350'],
+  },
+  marriage: {
+    label: 'استشارة زوجية وأسرية',
+    durationMinutes: 75,
+    fee: '350 ر.س',
+    allowedFees: ['350 ر.س', 'تبدأ من 350 ر.س', '350'],
+  },
+  parenting: {
+    label: 'إرشاد تربوي ووالدي',
+    durationMinutes: 50,
+    fee: '250 ر.س',
+    allowedFees: ['250 ر.س', 'تبدأ من 250 ر.س', '250'],
+  },
+  emergency: {
+    label: 'حجز طارئ وعاجل (24 ساعة)',
+    durationMinutes: 50,
+    fee: '500 ر.س',
+    allowedFees: ['500 ر.س', '500'],
+  },
+};
+
+/**
+ * Validates track against authoritative whitelist and strictly prevents client-side price tampering.
+ */
+export function validateBookingPricing(
+  track: string,
+  fee?: string,
+  paymentMethod?: string
+): {
+  valid: boolean;
+  error?: string;
+  authoritativeFee: string;
+  durationMinutes: number;
+  authoritativeLabel: string;
+} {
+  if (paymentMethod === 'free_consultation') {
+    return {
+      valid: true,
+      authoritativeFee: '0 ر.س (استشارة مجانية)',
+      durationMinutes: 50,
+      authoritativeLabel: 'جلسة استشارية مجانية',
+    };
+  }
+
+  const trackConfig = AUTHORITATIVE_TRACKS[track];
+  if (!trackConfig) {
+    return {
+      valid: false,
+      error: `المسار الاستشاري المحدد (${track}) غير معتمد في المنصة`,
+      authoritativeFee: '250 ر.س',
+      durationMinutes: 50,
+      authoritativeLabel: 'استشارة نفسية فردية',
+    };
+  }
+
+  // Validate fee against authoritative whitelist
+  if (fee && fee.trim()) {
+    const cleanFeeDigits = fee.replace(/[^\d]/g, '');
+    const cleanExpectedDigits = trackConfig.fee.replace(/[^\d]/g, '');
+
+    const matchesExpected =
+      cleanFeeDigits === cleanExpectedDigits ||
+      trackConfig.allowedFees.some((f) => f.replace(/[^\d]/g, '') === cleanFeeDigits);
+
+    if (!matchesExpected) {
+      return {
+        valid: false,
+        error: `قيمة الرسوم المدخلة (${fee}) غير مطابقة للتسعيرة الرسمية المعتمدة لمسار (${trackConfig.label}) وهي (${trackConfig.fee})`,
+        authoritativeFee: trackConfig.fee,
+        durationMinutes: trackConfig.durationMinutes,
+        authoritativeLabel: trackConfig.label,
+      };
+    }
+  }
+
+  return {
+    valid: true,
+    authoritativeFee: trackConfig.fee,
+    durationMinutes: trackConfig.durationMinutes,
+    authoritativeLabel: trackConfig.label,
+  };
+}

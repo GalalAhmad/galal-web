@@ -270,6 +270,68 @@ export default function CounselorWorkspacePage() {
     }
   };
 
+  // إتمام الجلسة وتوثيق انتهائها
+  const handleCompleteBooking = async (booking: any) => {
+    if (typeof window !== 'undefined' && !window.confirm(`هل تؤكد إتمام وتوثيق جلسة العميل ${booking.clientName}؟`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: booking.id,
+          status: 'completed',
+        }),
+      });
+
+      if (res.ok) {
+        showToast(`تم توثيق إتمام جلسة ${booking.clientName} بنجاح ✓`);
+        setBookingsList((prev) =>
+          prev.map((b) => (b.id === booking.id ? { ...b, status: 'completed' } : b))
+        );
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast(errData.error || 'تعذر إتمام الجلسة');
+      }
+    } catch (err) {
+      console.error('Error completing booking:', err);
+      showToast('حدث خطأ أثناء إتمام الجلسة');
+    }
+  };
+
+  // إلغاء الحجز
+  const handleCancelBooking = async (booking: any) => {
+    if (typeof window !== 'undefined' && !window.confirm(`هل أنت متأكد من رغبتك في إلغاء حجز ${booking.clientName}؟`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: booking.id,
+          status: 'cancelled',
+        }),
+      });
+
+      if (res.ok) {
+        showToast(`تم إلغاء حجز ${booking.clientName}`);
+        setBookingsList((prev) =>
+          prev.map((b) => (b.id === booking.id ? { ...b, status: 'cancelled' } : b))
+        );
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast(errData.error || 'تعذر إلغاء الحجز');
+      }
+    } catch (err) {
+      console.error('Error cancelling booking:', err);
+      showToast('حدث خطأ أثناء إلغاء الحجز');
+    }
+  };
+
   // 3. إعادة جدولة موعد الجلسة
   const handleSaveReschedule = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -781,7 +843,7 @@ export default function CounselorWorkspacePage() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {b.status === 'pending_verification' && (
                         <button
                           type="button"
@@ -792,21 +854,51 @@ export default function CounselorWorkspacePage() {
                         </button>
                       )}
                       {b.status === 'confirmed' && (
-                        <span className="text-[11px] bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-xl font-bold">
-                          مؤكدة ومجدولة ✓
+                        <>
+                          <span className="text-[11px] bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2.5 py-1 rounded-xl font-bold">
+                            مؤكدة ومجدولة ✓
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCompleteBooking(b)}
+                            className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition cursor-pointer"
+                          >
+                            إتمام ✓
+                          </button>
+                        </>
+                      )}
+                      {b.status === 'completed' && (
+                        <span className="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-xl font-bold">
+                          مكتملة وموثقة ✓
                         </span>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setRescheduleBooking(b);
-                          setNewSlotDate(b.slotDate || '');
-                          setNewSlotTime(b.slotTime || '');
-                        }}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300"
-                      >
-                        تعديل الموعد
-                      </button>
+                      {b.status === 'cancelled' && (
+                        <span className="text-[10px] bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 px-2 py-0.5 rounded-full font-bold">
+                          ملغاة
+                        </span>
+                      )}
+                      {b.status !== 'completed' && b.status !== 'cancelled' && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRescheduleBooking(b);
+                              setNewSlotDate(b.slotDate || '');
+                              setNewSlotTime(b.slotTime || '');
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300"
+                          >
+                            تعديل الموعد
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleCancelBooking(b)}
+                            className="px-2.5 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-900 text-xs font-bold text-rose-700 dark:text-rose-300"
+                          >
+                            إلغاء
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -948,7 +1040,7 @@ export default function CounselorWorkspacePage() {
                             )}
                           </td>
                           <td className="p-4 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
+                            <div className="flex items-center justify-center gap-1.5 flex-wrap">
                               {b.status === 'pending_verification' && (
                                 <button
                                   type="button"
@@ -957,6 +1049,17 @@ export default function CounselorWorkspacePage() {
                                   title="تأكيد الحجز وتوليد رابط الاجتماع"
                                 >
                                   تأكيد ✓
+                                </button>
+                              )}
+
+                              {b.status === 'confirmed' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCompleteBooking(b)}
+                                  className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[11px] transition"
+                                  title="إتمام الجلسة وتوثيق انتهائها"
+                                >
+                                  إتمام ✓
                                 </button>
                               )}
 
@@ -977,18 +1080,31 @@ export default function CounselorWorkspacePage() {
                                 الملف 📂
                               </button>
 
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setRescheduleBooking(b);
-                                  setNewSlotDate(b.slotDate || '');
-                                  setNewSlotTime(b.slotTime || '');
-                                }}
-                                className="px-2 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px]"
-                                title="تعديل تاريخ وساعة الجلسة"
-                              >
-                                جدولة
-                              </button>
+                              {b.status !== 'completed' && b.status !== 'cancelled' && (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setRescheduleBooking(b);
+                                      setNewSlotDate(b.slotDate || '');
+                                      setNewSlotTime(b.slotTime || '');
+                                    }}
+                                    className="px-2 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px]"
+                                    title="تعديل تاريخ وساعة الجلسة"
+                                  >
+                                    جدولة
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCancelBooking(b)}
+                                    className="px-2 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 font-bold text-[11px] transition"
+                                    title="إلغاء هذا الحجز"
+                                  >
+                                    إلغاء
+                                  </button>
+                                </>
+                              )}
 
                               <button
                                 type="button"

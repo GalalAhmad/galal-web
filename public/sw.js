@@ -1,5 +1,6 @@
 // Service Worker for Galal Ahmad PWA
-const CACHE_NAME = 'galal-web-v1';
+// STRICT PRIVACY POLICY: Never cache sensitive, authenticated, or clinical routes.
+const CACHE_NAME = 'galal-web-v2';
 
 const STATIC_ASSETS = [
   '/',
@@ -13,7 +14,22 @@ const STATIC_ASSETS = [
   '/manifest.json'
 ];
 
-// Install: Cache initial static shell assets
+// Sensitive surfaces that must NEVER be cached by the service worker under any circumstance
+const NEVER_CACHE_PREFIXES = [
+  '/api',
+  '/admin',
+  '/counselor',
+  '/profile',
+  '/login',
+  '/register',
+  '/forgot-password'
+];
+
+function isSensitiveRoute(pathname) {
+  return NEVER_CACHE_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
+// Install: Cache initial static public shell assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -39,22 +55,58 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch: Network-first for HTML pages, Cache-first for static assets
+// Message listener: Allow application to instruct SW to clear caches (e.g. on logout)
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'CLEAR_USER_CACHE') {
+    caches.keys().then((keys) => {
+      keys.forEach((key) => caches.delete(key));
+    });
+  }
+});
+
+// Fetch: Strictly enforce network-only for sensitive / authenticated routes
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Ignore non-GET requests and external URLs like Google analytics or whatsapp
+  // Ignore non-GET requests and external URLs
   if (req.method !== 'GET' || !url.origin.includes(self.location.origin)) {
     return;
   }
 
-  // 1. Navigation requests (Pages/HTML): Network-first with cache fallback
+  // 1. Strictly bypass Service Worker cache for all sensitive / authenticated / API paths
+  if (isSensitiveRoute(url.pathname)) {
+    event.respondWith(
+      fetch(req).catch(() => {
+        // If offline and accessing sensitive route, DO NOT return any cached data.
+        // Return a privacy-preserving offline notice.
+        return new Response(
+          JSON.stringify({
+            error: 'Offline',
+            message: 'هذه الصفحة غير متاحة في وضع عدم الاتصال حفاظاً على خصوصية بياناتك.'
+          }),
+          {
+            status: 503,
+            statusText: 'Service Unavailable (Offline Protected)',
+            headers: {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-store'
+            }
+          }
+        );
+      })
+    );
+    return;
+  }
+
+  // 2. Navigation requests (Public Pages/HTML): Network-first with cache fallback
   if (req.mode === 'navigate') {
     event.respondWith(
       fetch(req)
         .then((networkRes) => {
-          if (networkRes && networkRes.status === 200) {
+          // Verify response does not mandate no-store
+          const cacheControl = networkRes.headers.get('Cache-Control') || '';
+          if (networkRes && networkRes.status === 200 && !cacheControl.includes('no-store')) {
             const resClone = networkRes.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
           }
@@ -69,7 +121,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Static Assets (_next/static, images, fonts, icons): Cache-first with network fallback
+  // 3. Static Assets (_next/static, images, fonts, icons): Cache-first with network fallback
   if (
     url.pathname.startsWith('/_next/static') ||
     url.pathname.startsWith('/assets') ||

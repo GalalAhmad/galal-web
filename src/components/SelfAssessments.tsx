@@ -740,7 +740,7 @@ export default function SelfAssessments() {
 
                 <div className="space-y-3 pt-2">
                   <a
-                    href="#booking"
+                    href="/booking"
                     onClick={closeModal}
                     className="w-full py-3.5 bg-accent-500 hover:bg-accent-600 text-white text-xs font-bold rounded-xl transition shadow-md flex items-center justify-center gap-2 text-center"
                   >

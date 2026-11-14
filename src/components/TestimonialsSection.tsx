@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Star, ShieldCheck, HeartHandshake } from 'lucide-react';
 import { testimonialsData, Testimonial } from '@/data/testimonials';
 
@@ -19,15 +19,21 @@ export default function TestimonialsSection({
 }: TestimonialsSectionProps) {
   const [allTestimonials, setAllTestimonials] = useState<Testimonial[]>(testimonialsData);
 
-  // Fetch dynamic published reviews from Admin & Community feedback
+  // Fetch dynamic published reviews from Admin & Community feedback with explicit consent
   useEffect(() => {
     fetch('/api/feedback', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data && Array.isArray(data.feedback)) {
-          const published = data.feedback.filter((item: any) => item.isPublished);
-          if (published.length > 0) {
-            const formatted: Testimonial[] = published.map((item: any) => ({
+          // Strictly verify that feedback is published AND client has given explicit consent
+          const publishedWithConsent = data.feedback.filter(
+            (item: any) =>
+              item.isPublished &&
+              (item.consentToPublish === true || item.consent === true || item.hasConsent === true || item.clientConsent === true)
+          );
+
+          if (publishedWithConsent.length > 0) {
+            const formatted: Testimonial[] = publishedWithConsent.map((item: any) => ({
               id: item.id,
               name: item.clientName || 'مستفيد كريم',
               sessionType: item.sessionType || 'استشارة استماع وبناء',
@@ -41,10 +47,11 @@ export default function TestimonialsSection({
               avatarText: 'text-white',
             }));
 
-            // Merge dynamic reviews at the front
+            // Merge dynamic reviews without duplication
             setAllTestimonials((prev) => {
-              const base = prev.filter((p) => !formatted.some((f) => f.id === p.id));
-              return [...formatted, ...base];
+              const seenIds = new Set(formatted.map(f => f.id));
+              const deduplicatedBase = prev.filter(p => !seenIds.has(p.id));
+              return [...formatted, ...deduplicatedBase];
             });
           }
         }
@@ -58,10 +65,22 @@ export default function TestimonialsSection({
     ? allTestimonials.filter((t) => t.serviceCategory === filterCategory)
     : allTestimonials;
 
-  const items = limit ? filtered.slice(0, limit) : filtered;
+  // Strict deduplication by ID and feedback text
+  const uniqueItems = useMemo(() => {
+    const seen = new Set<string>();
+    const result: Testimonial[] = [];
+    for (const item of filtered) {
+      const key = `${item.id}-${item.feedback.slice(0, 30)}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        result.push(item);
+      }
+    }
+    return limit ? result.slice(0, limit) : result;
+  }, [filtered, limit]);
 
-  // Duplicate items for infinite seamless scroll
-  const marqueeItems = [...items, ...items];
+  // Use unique items for rendering without repeating duplicates
+  const marqueeItems = uniqueItems;
 
   return (
     <section className="py-14 sm:py-20 bg-[#FAFCFA] dark:bg-[#0D1117] transition-colors overflow-hidden">

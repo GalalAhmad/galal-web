@@ -46,20 +46,20 @@ export default function HeroClean() {
 
         {/* Primary Direct CTAs */}
         <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-          <a
-            href="#booking"
+          <Link
+            href="/booking"
             className="px-8 py-4 bg-accent-500 hover:bg-accent-600 text-white text-sm sm:text-base font-bold rounded-full transition shadow-lg shadow-accent-500/25 flex items-center gap-2 group"
           >
             <span>احجز جلستك الآن</span>
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          </a>
+          </Link>
 
-          <a
-            href="#services"
+          <Link
+            href="/services"
             className="px-6 py-4 bg-slate-800/80 dark:bg-slate-800/80 bg-slate-100 hover:bg-slate-700/60 dark:hover:bg-slate-700/60 hover:bg-slate-200 text-slate-200 dark:text-slate-200 text-slate-800 text-sm sm:text-base font-bold rounded-full transition border border-slate-700/60 dark:border-slate-700/60 border-slate-300"
           >
             استكشف مسارات الاستشارة
-          </a>
+          </Link>
         </div>
 
         {/* Arab Therapy Style Reassurance Chips */}

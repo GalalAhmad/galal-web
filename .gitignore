@@ -51,3 +51,8 @@ src/data/userProfiles.json
 src/data/subscribers.json
 src/data/clinical_audit_logs.jsonl
 scripts/*.json
+
+# screenshots and evidence (local visual test outputs)
+docs/screenshots/
+*.png.backup
+browser_evidence/

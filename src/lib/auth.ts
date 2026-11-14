@@ -132,14 +132,34 @@ export function generateTotpToken(secret: string, timestampSeconds = Math.floor(
   return (code % Math.pow(10, digits)).toString().padStart(digits, '0');
 }
 
+// Replay protection cache for TOTP tokens: prevents reusing the same token in its window
+const usedTotpTokens = new Map<string, number>();
+
+function cleanUsedTotpTokens() {
+  const now = Date.now();
+  usedTotpTokens.forEach((expiresAt, key) => {
+    if (expiresAt <= now) {
+      usedTotpTokens.delete(key);
+    }
+  });
+}
+
 /**
  * Verifies a 6-digit TOTP token against a secret with ±window steps tolerance (default window = 1 -> ±30s).
+ * Enforces replay protection by tracking consumed tokens within their validity window.
  * Constant-time comparison prevents timing attacks.
  */
-export function verifyTotpToken(token: string, secret: string, window = 1): boolean {
+export function verifyTotpToken(token: string, secret: string, identifier = 'global', window = 1): boolean {
   if (!token || !secret) return false;
   const cleanToken = token.trim();
   if (!/^\d{6}$/.test(cleanToken)) return false;
+
+  cleanUsedTotpTokens();
+  const replayKey = `${identifier}:${cleanToken}`;
+  if (usedTotpTokens.has(replayKey)) {
+    // Replay detected! Token was already consumed within its window
+    return false;
+  }
 
   const nowSeconds = Math.floor(Date.now() / 1000);
   for (let offset = -window; offset <= window; offset++) {
@@ -149,6 +169,9 @@ export function verifyTotpToken(token: string, secret: string, window = 1): bool
         cleanToken.length === expectedToken.length &&
         crypto.timingSafeEqual(Buffer.from(cleanToken, 'utf-8'), Buffer.from(expectedToken, 'utf-8'))
       ) {
+        // Record token consumption until window expiration (now + (window + 1) * 30 seconds)
+        const ttlMs = (window + 1) * 30 * 1000;
+        usedTotpTokens.set(replayKey, Date.now() + ttlMs);
         return true;
       }
     } catch {
@@ -156,6 +179,68 @@ export function verifyTotpToken(token: string, secret: string, window = 1): bool
     }
   }
   return false;
+}
+
+/**
+ * Hashes a backup recovery code using SHA-256 with salt.
+ */
+export function hashRecoveryCode(code: string): string {
+  const normalized = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  return crypto.createHash('sha256').update(`recovery:${normalized}`).digest('hex');
+}
+
+/**
+ * Generates an array of 10 cryptographically random single-use recovery codes.
+ * Returns both plain codes (for one-time display to user) and hashed codes (for storage).
+ */
+export function generateRecoveryCodes(count = 10): { plainCodes: string[]; hashedCodes: string[] } {
+  const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ'; // Base32 without 0, 1, I, O to prevent ambiguity
+  const plainCodes: string[] = [];
+  const hashedCodes: string[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const bytes = crypto.randomBytes(8);
+    let codeStr = '';
+    for (let b = 0; b < 8; b++) {
+      codeStr += chars[bytes[b] % chars.length];
+    }
+    // Format as XXXX-XXXX for readability
+    const formattedCode = `${codeStr.slice(0, 4)}-${codeStr.slice(4, 8)}`;
+    plainCodes.push(formattedCode);
+    hashedCodes.push(hashRecoveryCode(formattedCode));
+  }
+
+  return { plainCodes, hashedCodes };
+}
+
+/**
+ * Verifies a single-use recovery code and consumes it from the user's stored hashed codes.
+ * Returns valid = true and the updated array of remaining hashed codes.
+ */
+export function verifyAndConsumeRecoveryCode(
+  inputCode: string,
+  storedHashedCodes: string[]
+): { valid: boolean; remainingHashedCodes: string[] } {
+  if (!inputCode || !Array.isArray(storedHashedCodes) || storedHashedCodes.length === 0) {
+    return { valid: false, remainingHashedCodes: storedHashedCodes || [] };
+  }
+
+  const inputHash = hashRecoveryCode(inputCode);
+  const matchIndex = storedHashedCodes.findIndex(storedHash => {
+    return (
+      storedHash.length === inputHash.length &&
+      crypto.timingSafeEqual(Buffer.from(storedHash, 'utf-8'), Buffer.from(inputHash, 'utf-8'))
+    );
+  });
+
+  if (matchIndex === -1) {
+    return { valid: false, remainingHashedCodes: storedHashedCodes };
+  }
+
+  // Consume code: remove it from array
+  const remainingHashedCodes = [...storedHashedCodes];
+  remainingHashedCodes.splice(matchIndex, 1);
+  return { valid: true, remainingHashedCodes };
 }
 
 /**

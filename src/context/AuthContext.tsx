@@ -115,6 +115,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
       localStorage.removeItem(AUTH_STORAGE_KEY);
+      sessionStorage.clear();
+
+      // Clear Service Worker Cache to guarantee client privacy
+      if (typeof window !== 'undefined' && 'caches' in window) {
+        try {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        } catch {}
+      }
+      if (typeof navigator !== 'undefined' && navigator.serviceWorker?.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_USER_CACHE' });
+      }
+
       setUser(null);
       window.dispatchEvent(new Event(AUTH_EVENT_NAME));
     } catch (e) {

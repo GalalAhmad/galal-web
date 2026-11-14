@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, AlertCircle, Zap, ShieldCheck } from 'lucide-react';
 import { VectorDialogue, VectorHarmony, VectorGrowth, VectorUrgent } from './Vectors';
 
@@ -61,13 +62,13 @@ export default function ServicesClean() {
 
             <div className="pt-6 mt-6 border-t border-slate-800/80 dark:border-slate-800/80 border-slate-100 flex items-center justify-between">
               <span className="text-[11px] font-medium text-slate-400">Google Meet أونلاين</span>
-              <a
-                href="#booking"
+              <Link
+                href="/booking"
                 className="px-4 py-2.5 bg-accent-500 hover:bg-accent-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5"
               >
                 <span>حجز موعد</span>
                 <ArrowLeft className="w-3.5 h-3.5" />
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -107,13 +108,13 @@ export default function ServicesClean() {
 
             <div className="pt-6 mt-6 border-t border-slate-800/80 dark:border-slate-800/80 border-slate-100 flex items-center justify-between">
               <span className="text-[11px] font-medium text-slate-400">Google Meet أونلاين</span>
-              <a
-                href="#booking"
+              <Link
+                href="/booking"
                 className="px-4 py-2.5 bg-accent-500 hover:bg-accent-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5"
               >
                 <span>حجز موعد</span>
                 <ArrowLeft className="w-3.5 h-3.5" />
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -153,13 +154,13 @@ export default function ServicesClean() {
 
             <div className="pt-6 mt-6 border-t border-slate-800/80 dark:border-slate-800/80 border-slate-100 flex items-center justify-between">
               <span className="text-[11px] font-medium text-slate-400">Google Meet أونلاين</span>
-              <a
-                href="#booking"
+              <Link
+                href="/booking"
                 className="px-4 py-2.5 bg-accent-500 hover:bg-accent-600 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5"
               >
                 <span>حجز موعد</span>
                 <ArrowLeft className="w-3.5 h-3.5" />
-              </a>
+              </Link>
             </div>
           </div>
 

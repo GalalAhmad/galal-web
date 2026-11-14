@@ -32,10 +32,10 @@ export default function NavbarClean() {
 
         {/* Minimal Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-300 dark:text-slate-300 text-slate-700">
-          <a href="#services" className="hover:text-accent-500 transition">الاستشارات</a>
-          <a href="#how-it-works" className="hover:text-accent-500 transition">كيف تسير الجلسة؟</a>
-          <a href="#books" className="hover:text-accent-500 transition">المؤلفات والكتب</a>
-          <a href="#about" className="hover:text-accent-500 transition">عن جلال أحمد</a>
+          <Link href="/services" className="hover:text-accent-500 transition">الاستشارات</Link>
+          <Link href="/#how-it-works" className="hover:text-accent-500 transition">كيف تسير الجلسة؟</Link>
+          <Link href="/#books" className="hover:text-accent-500 transition">المؤلفات والكتب</Link>
+          <Link href="/about" className="hover:text-accent-500 transition">عن جلال أحمد</Link>
         </nav>
 
         {/* Theme Toggle & CTA */}
@@ -54,13 +54,13 @@ export default function NavbarClean() {
             )}
           </button>
 
-          <a
-            href="#booking"
+          <Link
+            href="/booking"
             className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 bg-accent-500 hover:bg-accent-600 text-white text-xs font-bold rounded-full transition shadow-md shadow-accent-500/20"
           >
             <Calendar className="w-3.5 h-3.5" />
             <span>احجز جلستك</span>
-          </a>
+          </Link>
 
           {/* Mobile Menu Button */}
           <button

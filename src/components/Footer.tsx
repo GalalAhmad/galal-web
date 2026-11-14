@@ -6,6 +6,7 @@ import { Mail, Phone, Video, Shield, Clock, Linkedin } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { siteConfig } from '@/data/siteConfig';
 import NewsletterWidget from '@/components/NewsletterWidget';
+import EmergencyHotlines from '@/components/EmergencyHotlines';
 
 export default function Footer() {
   const { theme } = useTheme();
@@ -110,13 +111,8 @@ export default function Footer() {
 
         </div>
 
-        {/* إخلاء المسؤولية المهنية وتوجيه الطوارئ */}
-        <div className="p-4 rounded-2xl bg-white dark:bg-[#12171E] border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 leading-relaxed flex items-start gap-3 shadow-xs">
-          <Shield className="w-4 h-4 text-[#4E7E76] shrink-0 mt-0.5" />
-          <p>
-            <strong>تنويه مهني وأخلاقي:</strong> الجلسات والاستشارات المقدمة مخصصة للدعم النفسي، والإرشاد الأسري والتربوي، وتخضع لأعلى معايير السرية المهنية. هذه الخدمات ليست بديلاً عن التدخل الطبي الطارئ. في حالات الأزمات يرجى التوجه لأقرب طوارئ أو الاتصال بخطوط المساندة المجانية (مصر: <strong>16328</strong> • السعودية: <strong>920033360</strong> • الأردن: <strong>110</strong> • الإمارات: <strong>800-4673</strong>).
-          </p>
-        </div>
+        {/* إخلاء المسؤولية المهنية وتوجيه الطوارئ الموحد */}
+        <EmergencyHotlines variant="footer" />
 
         {/* سطر الحقوق ورقم الإصدار */}
         <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
@@ -128,8 +124,6 @@ export default function Footer() {
           </div>
           <div className="flex gap-4 text-slate-500 font-semibold">
             <Link href="/policies" className="hover:underline">السياسات والخصوصية</Link>
-            <span>•</span>
-            <Link href="/admin" className="hover:underline text-slate-400">لوحة الإدارة</Link>
           </div>
         </div>
 

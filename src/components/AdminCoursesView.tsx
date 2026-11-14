@@ -734,6 +734,7 @@ export default function AdminCoursesView({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {courses.map((course) => {
             const isEditingBatch = editingBatchCourseId === course.id;
+            // TODO: [Launch Prep] Update mithaqNextBatch with the official live cohort date agreed with Dr. Galal before production launch
             const currentBatch =
               course.id === 'rifq-mithaq' || course.id === 'mithaq'
                 ? siteSettings.mithaqNextBatch || 'نوفمبر 2026'

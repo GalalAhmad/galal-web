@@ -1,35 +1,68 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Routes requiring strict per-request nonce injection (authenticated / sensitive surfaces)
+const AUTHENTICATED_PREFIXES = ['/admin', '/counselor', '/profile'];
+
+function isAuthenticatedOrManagementPath(pathname: string): boolean {
+  return AUTHENTICATED_PREFIXES.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`));
+}
+
 export function middleware(request: NextRequest) {
-  // Generate a cryptographically random per-request nonce (Base64)
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+  const pathname = request.nextUrl.pathname;
   const isDev = process.env.NODE_ENV !== 'production';
-
-  // Strict CSP: In production, script-src enforces the cryptographic nonce and strict-dynamic,
-  // eliminating 'unsafe-inline' for modern browsers. In dev, 'unsafe-eval' is permitted for React Fast Refresh/HMR.
-  const scriptDirectives = isDev
-    ? `'self' 'unsafe-eval' 'unsafe-inline' 'nonce-${nonce}' https://challenges.cloudflare.com`
-    : `'self' 'nonce-${nonce}' 'strict-dynamic' https://challenges.cloudflare.com`;
-
-  const cspHeader = `
-    default-src 'self';
-    script-src ${scriptDirectives};
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    img-src 'self' blob: data: https:;
-    font-src 'self' https://fonts.gstatic.com data:;
-    connect-src 'self' https://*.supabase.co https://*.sentry.io https://sentry.io;
-    frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;
-    frame-ancestors 'self';
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-  `.replace(/\s{2,}/g, ' ').trim();
+  const isProtected = isAuthenticatedOrManagementPath(pathname);
 
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-nonce', nonce);
+  let cspHeader = '';
 
-  // Handle Host redirect or header for Vercel staging
+  if (isProtected) {
+    // 1. Authenticated & Management Surfaces:
+    // Generate a per-request cryptographically random nonce and enforce strict-dynamic
+    const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+    requestHeaders.set('x-nonce', nonce);
+
+    const scriptDirectives = isDev
+      ? `'self' 'unsafe-eval' 'unsafe-inline' 'nonce-${nonce}'`
+      : `'self' 'nonce-${nonce}' 'strict-dynamic'`;
+
+    cspHeader = `
+      default-src 'self';
+      script-src ${scriptDirectives};
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      img-src 'self' blob: data: https:;
+      font-src 'self' https://fonts.gstatic.com data:;
+      connect-src 'self' https://*.supabase.co https://*.sentry.io https://sentry.io;
+      frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;
+      frame-ancestors 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+    `.replace(/\s{2,}/g, ' ').trim();
+  } else {
+    // 2. Public Static Surfaces:
+    // Preserve SSG / ISR and Edge CDN caching by omitting per-request nonces.
+    // Static CSP protects public pages while avoiding dynamic de-optimization.
+    const scriptDirectives = isDev
+      ? `'self' 'unsafe-eval' 'unsafe-inline'`
+      : `'self' 'unsafe-inline'`;
+
+    cspHeader = `
+      default-src 'self';
+      script-src ${scriptDirectives};
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      img-src 'self' blob: data: https:;
+      font-src 'self' https://fonts.gstatic.com data:;
+      connect-src 'self' https://*.supabase.co https://*.sentry.io https://sentry.io;
+      frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;
+      frame-ancestors 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+    `.replace(/\s{2,}/g, ' ').trim();
+  }
+
+  // Handle Host header for staging indexing protection
   const host = request.headers.get('host') || '';
   const isVercelStaging = host === 'galal-web.vercel.app';
 
@@ -40,6 +73,13 @@ export function middleware(request: NextRequest) {
   });
 
   response.headers.set('Content-Security-Policy', cspHeader);
+
+  // Prevent caching on authenticated responses
+  if (isProtected) {
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '0');
+  }
 
   if (isVercelStaging) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');

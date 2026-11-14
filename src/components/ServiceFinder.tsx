@@ -118,7 +118,7 @@ export default function ServiceFinder() {
 
                   <div className="pt-6 border-t border-slate-800/60 dark:border-slate-800/60 border-slate-100">
                     <Link
-                      href={`#booking?type=${item.trackParam}`}
+                      href={`/booking?track=${item.trackParam}`}
                       className="w-full py-2.5 bg-slate-800/80 dark:bg-slate-800/80 bg-slate-100 hover:bg-accent-500 dark:hover:bg-accent-500 hover:text-white dark:hover:text-white text-slate-200 dark:text-slate-200 text-slate-800 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 group-hover:bg-accent-500 group-hover:text-white"
                     >
                       <span>ابدأ الآن</span>

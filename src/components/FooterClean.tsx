@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Mail, Phone, Video, Linkedin, Shield, Clock } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import EmergencyHotlines from '@/components/EmergencyHotlines';
 
 export default function FooterClean() {
   const { theme } = useTheme();
@@ -45,11 +46,11 @@ export default function FooterClean() {
               أقسام الموقع
             </h4>
             <ul className="text-xs text-slate-400 dark:text-slate-400 text-slate-600 space-y-2.5 font-medium">
-              <li><a href="#services" className="hover:text-accent-500 transition">مسارات الاستشارات</a></li>
-              <li><a href="#how-it-works" className="hover:text-accent-500 transition">كيف تسير الجلسة؟</a></li>
-              <li><a href="#books" className="hover:text-accent-500 transition">المؤلفات والكتب</a></li>
-              <li><a href="#about" className="hover:text-accent-500 transition">عن جلال أحمد</a></li>
-              <li><a href="#booking" className="hover:text-accent-500 transition">حجز موعد أونلاين</a></li>
+              <li><Link href="/services" className="hover:text-accent-500 transition">مسارات الاستشارات</Link></li>
+              <li><Link href="/#how-it-works" className="hover:text-accent-500 transition">كيف تسير الجلسة؟</Link></li>
+              <li><Link href="/#books" className="hover:text-accent-500 transition">المؤلفات والكتب</Link></li>
+              <li><Link href="/about" className="hover:text-accent-500 transition">عن جلال أحمد</Link></li>
+              <li><Link href="/booking" className="hover:text-accent-500 transition">حجز موعد أونلاين</Link></li>
             </ul>
           </div>
 
@@ -91,13 +92,8 @@ export default function FooterClean() {
 
         </div>
 
-        {/* Ethical Disclaimer */}
-        <div className="p-4 rounded-2xl bg-[#12171E] dark:bg-[#12171E] bg-white border border-slate-800 dark:border-slate-800 border-slate-200 text-[11px] text-slate-400 leading-relaxed flex items-start gap-3">
-          <Shield className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
-          <p>
-            <strong>تنويه مهني وأخلاقي:</strong> الجلسات والاستشارات المقدمة عبر هذا الموقع مخصصة للدعم النفسي، والإرشاد الأسري والتربوي، وتخضع لأعلى معايير السرية المهنية. هذه الخدمات ليست بديلاً عن التدخل الطبي النفسي الطارئ. في حالات الخطر المباشر يرجى التوجه فوراً لأقرب مشفى أو مركز طوارئ طبي معتمد في بلدك.
-          </p>
-        </div>
+        {/* Unified Ethical Disclaimer & Emergency Hotlines */}
+        <EmergencyHotlines variant="footer" />
 
         {/* Copyright */}
         <div className="pt-6 border-t border-slate-800/80 dark:border-slate-800/80 border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
@@ -106,8 +102,6 @@ export default function FooterClean() {
           </div>
           <div className="flex gap-4 text-slate-400">
             <Link href="/policies" className="hover:underline">الخصوصية والسياسات</Link>
-            <span>•</span>
-            <Link href="/admin" className="hover:underline text-slate-500">بوابة الإدارة</Link>
           </div>
         </div>
 

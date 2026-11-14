@@ -33,9 +33,9 @@ const TEST_USERS: Record<string, ServerSessionUser> = {
 };
 
 export async function GET(request: Request) {
-  // Strictly disabled in production
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not available in production' }, { status: 404 });
+  // Strictly disabled in production AND requires explicit opt-in flag ENABLE_DEV_SESSION=true
+  if (process.env.NODE_ENV === 'production' || process.env.ENABLE_DEV_SESSION !== 'true') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
   const { searchParams } = new URL(request.url);

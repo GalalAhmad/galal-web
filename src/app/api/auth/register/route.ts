@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const ip = getClientIp(request);
 
     // Rate Limiting: max 5 registration attempts per 15 minutes per IP
-    const rateCheck = checkRateLimit(`register:${ip}`, 5, 15 * 60);
+    const rateCheck = await checkRateLimit(`register:${ip}`, 5, 15 * 60);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         {

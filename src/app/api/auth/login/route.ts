@@ -1,7 +1,15 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
-import { verifyPassword, hashPassword, isLegacyHash, phonesMatch, normalizePhone } from '@/lib/auth';
+import {
+  verifyPassword,
+  hashPassword,
+  isLegacyHash,
+  needsRehash,
+  verifyTotpToken,
+  phonesMatch,
+  normalizePhone,
+} from '@/lib/auth';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 import { signSessionToken, createSessionCookie, ServerSessionUser } from '@/lib/serverAuth';
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit';
@@ -15,7 +23,7 @@ export async function POST(request: Request) {
   try {
     const ip = getClientIp(request);
     const body = await request.json().catch(() => ({}));
-    const { identifier, password } = body;
+    const { identifier, password, totpCode } = body;
 
     if (!identifier || typeof identifier !== 'string' || !identifier.trim()) {
       return NextResponse.json(
@@ -37,7 +45,7 @@ export async function POST(request: Request) {
 
     // 1. Rate limiting: 10 attempts per 15 minutes per IP+Identifier
     const rateLimitKey = `login:${ip}:${cleanPhone || cleanEmail}`;
-    const rateCheck = checkRateLimit(rateLimitKey, 10, 15 * 60);
+    const rateCheck = await checkRateLimit(rateLimitKey, 10, 15 * 60);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         {
@@ -125,8 +133,8 @@ export async function POST(request: Request) {
         if (!dbErr && users && users.length > 0) {
           const user = users[0];
           if (user.password_hash && verifyPassword(password, user.password_hash)) {
-            // Automatically upgrade legacy hash to PBKDF2 upon successful verification
-            if (isLegacyHash(user.password_hash)) {
+            // Automatically upgrade legacy or lower-iteration hash to PBKDF2 210,000 iterations upon successful verification
+            if (needsRehash(user.password_hash)) {
               const upgradedHash = hashPassword(password);
               await supabaseAdmin
                 .from('profiles')
@@ -165,8 +173,8 @@ export async function POST(request: Request) {
         if (foundIndex !== -1) {
           const localUser = profiles[foundIndex];
           if (localUser.passwordHash && verifyPassword(password, localUser.passwordHash)) {
-            // Upgrade legacy hash in local store
-            if (isLegacyHash(localUser.passwordHash)) {
+            // Progressive hash upgrade in local store
+            if (needsRehash(localUser.passwordHash)) {
               localUser.passwordHash = hashPassword(password);
               profiles[foundIndex] = localUser;
               await fs.writeFile(filePath, JSON.stringify(profiles, null, 2), 'utf-8').catch(() => {});
@@ -195,6 +203,38 @@ export async function POST(request: Request) {
       );
     }
 
+    // 5. TOTP 2FA Enforcement for Counselor and Admin
+    if (authenticatedUser.role === 'admin' || authenticatedUser.role === 'counselor') {
+      const configuredTotpSecret =
+        authenticatedUser.role === 'admin'
+          ? (process.env.ADMIN_TOTP_SECRET || fullUserProfile?.totp_secret)
+          : (process.env.COUNSELOR_TOTP_SECRET || fullUserProfile?.totp_secret);
+
+      if (configuredTotpSecret) {
+        if (!totpCode || typeof totpCode !== 'string' || !totpCode.trim()) {
+          return NextResponse.json(
+            {
+              requires2FA: true,
+              role: authenticatedUser.role,
+              message: 'يرجى إدخال رمز التحقق بخطوتين (TOTP 2FA) المكون من 6 أرقام من تطبيق المصادقة.',
+            },
+            { status: 200 }
+          );
+        }
+
+        const is2FAValid = verifyTotpToken(totpCode.trim(), configuredTotpSecret);
+        if (!is2FAValid) {
+          return NextResponse.json(
+            {
+              error: 'رمز التحقق بخطوتين (TOTP) غير صحيح أو انتهت صلاحيته، يرجى إدخال الرمز الحالي من التطبيق.',
+              code: 'INVALID_2FA_TOKEN',
+            },
+            { status: 401 }
+          );
+        }
+      }
+    }
+
     // 5. Issue cryptographically signed session token and HttpOnly cookie
     const token = signSessionToken(authenticatedUser);
     const cookieHeader = createSessionCookie(token);
@@ -217,6 +257,7 @@ export async function POST(request: Request) {
       success: true,
       user: safeUser,
       token,
+      requiresPasswordReset: Boolean(fullUserProfile?.force_password_reset),
     });
 
     response.headers.set('Set-Cookie', cookieHeader);

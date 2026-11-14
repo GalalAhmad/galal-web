@@ -286,7 +286,7 @@ export async function POST(request: Request) {
     const ip = getClientIp(request);
 
     // Rate Limiting: 10 booking attempts per hour per IP
-    const rateCheck = checkRateLimit(`booking:${ip}`, 10, 3600);
+    const rateCheck = await checkRateLimit(`booking:${ip}`, 10, 3600);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         {

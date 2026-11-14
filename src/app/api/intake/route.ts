@@ -8,7 +8,7 @@ export const revalidate = 0;
 export async function POST(request: Request) {
   try {
     const ip = getClientIp(request);
-    const rateCheck = checkRateLimit(`intake:${ip}`, 10, 15 * 60);
+    const rateCheck = await checkRateLimit(`intake:${ip}`, 10, 15 * 60);
     if (!rateCheck.allowed) {
       return NextResponse.json({ error: 'تم تجاوز الحد المسموح لإرسال الطلبات', code: 'RATE_LIMITED' }, { status: 429 });
     }

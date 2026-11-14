@@ -70,6 +70,13 @@ const config: Config = {
           amber: "#FEF9EC",
           amberBorder: "#FDF0CD",
         },
+        // 4 Core Design Tokens with Explicit Clinical & UI Semantics
+        tokens: {
+          green: "#4E7E76", // الاتزان النفسي، الصحة والتعافي، والسكينة
+          blue: "#154F9C",  // الموثوقية الأكاديمية، الرصانة العلمية، وبناء الإنسان
+          amber: "#D97706", // التنبيهات الإكلينيكية، المؤشرات النشطة، والمتابعة
+          coral: "#CC4E46", // الإجراءات الحاسمة، حجز الجلسات، والاستجابة للطوارئ
+        },
       },
       fontFamily: {
         sans: ["var(--font-cairo)", "Cairo", "var(--font-tajawal)", "Tajawal", "system-ui", "sans-serif"],

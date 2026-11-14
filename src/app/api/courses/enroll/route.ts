@@ -10,7 +10,7 @@ export const revalidate = 0;
 export async function POST(request: Request) {
   try {
     const ip = getClientIp(request);
-    const rateCheck = checkRateLimit(`enroll:${ip}`, 10, 15 * 60);
+    const rateCheck = await checkRateLimit(`enroll:${ip}`, 10, 15 * 60);
     if (!rateCheck.allowed) {
       return NextResponse.json({ error: 'تم تجاوز الحد المسموح لطلبات التسجيل', code: 'RATE_LIMITED' }, { status: 429 });
     }

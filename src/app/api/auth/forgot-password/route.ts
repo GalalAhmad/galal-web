@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     const storeKey = cleanPhone || cleanEmail;
 
     // 1. Rate limiting: 5 requests per 30 minutes per IP/identifier
-    const rateCheck = checkRateLimit(`forgot:${ip}:${storeKey}`, 5, 30 * 60);
+    const rateCheck = await checkRateLimit(`forgot:${ip}:${storeKey}`, 5, 30 * 60);
     if (!rateCheck.allowed) {
       return NextResponse.json(
         {

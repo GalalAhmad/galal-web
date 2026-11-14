@@ -32,10 +32,10 @@ export async function logClinicalAccess(entry: ClinicalAuditEntry): Promise<void
     timestamp: entry.timestamp || new Date().toISOString(),
   };
 
-  // 1. Try Supabase clinical_audit_logs table
+  // 1. Immutable write to Supabase clinical_audit_logs table (Primary authoritative store)
   if (isSupabaseConfigured && supabaseAdmin) {
     try {
-      await supabaseAdmin.from('clinical_audit_logs').insert({
+      const { error } = await supabaseAdmin.from('clinical_audit_logs').insert({
         actor_id: record.actorId,
         actor_role: record.actorRole,
         action: record.action,
@@ -46,16 +46,26 @@ export async function logClinicalAccess(entry: ClinicalAuditEntry): Promise<void
         details: record.details || {},
         created_at: record.timestamp,
       });
-    } catch {
-      // Table might not exist yet; fall back silently to append log
+
+      if (error) {
+        console.error('[AUDIT_ERROR] Failed to record clinical audit log to Supabase:', error);
+      }
+    } catch (sbErr) {
+      console.error('[AUDIT_CRITICAL] Exception recording clinical audit log to Supabase:', sbErr);
     }
+  } else if (process.env.NODE_ENV === 'production') {
+    console.error(
+      '[AUDIT_CRITICAL] Remote database is unconfigured in production! Clinical audit log cannot be securely committed.'
+    );
   }
 
-  // 2. Append to local audit file (except in production if storage is read-only)
-  try {
-    const line = JSON.stringify(record) + '\n';
-    await fs.appendFile(AUDIT_FILE, line, 'utf8');
-  } catch (e) {
-    console.warn('[AUDIT] Failed to append to local audit log:', e);
+  // 2. Local scratch file write ONLY in non-production development environments
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      const line = JSON.stringify(record) + '\n';
+      await fs.appendFile(AUDIT_FILE, line, 'utf8');
+    } catch (e) {
+      console.warn('[AUDIT] Failed to append to local dev audit log:', e);
+    }
   }
 }

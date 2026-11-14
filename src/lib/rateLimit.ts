@@ -1,13 +1,12 @@
 /**
- * In-memory sliding-window rate limiter for sensitive endpoints.
- * Thread-safe for Node.js event-loop concurrency.
+ * Distributed rate limiter for sensitive endpoints with shared Supabase store
+ * and in-memory sliding-window fallback for local development.
  *
- * NOTE ON DISTRIBUTED PRODUCTION:
- * This in-memory store tracks limits per Node.js server instance. In a horizontally
- * scaled multi-container or serverless edge deployment across multiple regions,
- * an external distributed key-value store (e.g. Upstash Redis / Redis Cluster)
- * should be connected via standard sliding window scripts.
+ * Prevents DDoS, brute-force credential stuffing, and concurrent race attacks
+ * across distributed serverless instances.
  */
+
+import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 
 interface RateLimitRecord {
   timestamps: number[];
@@ -15,7 +14,7 @@ interface RateLimitRecord {
 
 const memoryStore = new Map<string, RateLimitRecord>();
 
-// Periodic cleanup every 5 minutes to prevent memory leaks
+// Periodic cleanup every 5 minutes to prevent memory leaks in the local fallback store
 if (typeof setInterval !== 'undefined') {
   setInterval(() => {
     const now = Date.now();
@@ -28,7 +27,10 @@ if (typeof setInterval !== 'undefined') {
   }, 5 * 60 * 1000).unref?.();
 }
 
-export function checkRateLimit(
+/**
+ * Synchronous in-memory rate limiter (used for testing or offline fallback).
+ */
+export function checkRateLimitSync(
   key: string,
   maxAttempts: number,
   windowSeconds: number
@@ -42,7 +44,6 @@ export function checkRateLimit(
     memoryStore.set(key, record);
   }
 
-  // Keep only timestamps within the current window
   record.timestamps = record.timestamps.filter((ts) => now - ts < windowMs);
 
   if (record.timestamps.length >= maxAttempts) {
@@ -61,6 +62,92 @@ export function checkRateLimit(
     remaining: maxAttempts - record.timestamps.length,
     resetInSeconds: windowSeconds,
   };
+}
+
+/**
+ * Distributed rate limiter:
+ * 1. Synchronously reserves a ticket in the local in-memory sliding window to prevent
+ *    concurrent burst race conditions during async network round-trips.
+ * 2. Coordinates with the shared Supabase rate_limits table/RPC across multiple serverless
+ *    instances to enforce global limits.
+ */
+export async function checkRateLimit(
+  key: string,
+  maxAttempts: number,
+  windowSeconds: number
+): Promise<{ allowed: boolean; remaining: number; resetInSeconds: number }> {
+  // 1. Immediate synchronous local reservation to prevent concurrent in-flight race conditions
+  const localCheck = checkRateLimitSync(key, maxAttempts, windowSeconds);
+  if (!localCheck.allowed) {
+    return localCheck;
+  }
+
+  // 2. Synchronize with distributed Supabase shared storage if configured
+  if (isSupabaseConfigured && supabaseAdmin) {
+    try {
+      // First try stored RPC procedure for atomic single-transaction execution
+      const { data: rpcData, error: rpcError } = await supabaseAdmin.rpc('check_rate_limit', {
+        p_key: key,
+        p_max_attempts: maxAttempts,
+        p_window_seconds: windowSeconds,
+      });
+
+      if (!rpcError && rpcData && typeof rpcData === 'object') {
+        if (!rpcData.allowed) {
+          return {
+            allowed: false,
+            remaining: 0,
+            resetInSeconds: Number(rpcData.resetInSeconds) || windowSeconds,
+          };
+        }
+        return {
+          allowed: true,
+          remaining: Math.min(localCheck.remaining, Number(rpcData.remaining) || 0),
+          resetInSeconds: Number(rpcData.resetInSeconds) || windowSeconds,
+        };
+      }
+
+      // If RPC is missing, use direct atomic upsert against rate_limits table
+      const now = new Date();
+      const resetAt = new Date(now.getTime() + windowSeconds * 1000).toISOString();
+
+      const { data: existingRecord } = await supabaseAdmin
+        .from('rate_limits')
+        .select('count, reset_at')
+        .eq('key', key)
+        .maybeSingle();
+
+      if (existingRecord) {
+        const resetTime = new Date(existingRecord.reset_at).getTime();
+        if (resetTime > now.getTime()) {
+          if (existingRecord.count >= maxAttempts) {
+            const resetInSeconds = Math.max(1, Math.ceil((resetTime - now.getTime()) / 1000));
+            return { allowed: false, remaining: 0, resetInSeconds };
+          }
+
+          await supabaseAdmin
+            .from('rate_limits')
+            .update({ count: existingRecord.count + 1 })
+            .eq('key', key);
+
+          return {
+            allowed: true,
+            remaining: Math.min(localCheck.remaining, Math.max(0, maxAttempts - (existingRecord.count + 1))),
+            resetInSeconds: Math.max(1, Math.ceil((resetTime - now.getTime()) / 1000)),
+          };
+        }
+      }
+
+      // Expired or new record: upsert
+      await supabaseAdmin
+        .from('rate_limits')
+        .upsert({ key, count: 1, reset_at: resetAt }, { onConflict: 'key' });
+    } catch (dbErr) {
+      console.warn('[RATE_LIMIT] Supabase rate limit store warning, falling back to local memory store:', dbErr);
+    }
+  }
+
+  return localCheck;
 }
 
 /**

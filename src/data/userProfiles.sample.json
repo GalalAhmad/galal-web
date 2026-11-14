@@ -1,0 +1,16 @@
+[
+  {
+    "id": "sample-client-01",
+    "name": "مستفيد تجريبي",
+    "email": "client@example.com",
+    "phone": "01000000000",
+    "role": "client",
+    "passwordHash": "$pbkdf2$v=1$100000$sample$samplekey",
+    "country": "مصر",
+    "city": "القاهرة",
+    "ageGroup": "26-35",
+    "maritalStatus": "أعزب",
+    "gender": "ذكر",
+    "createdAt": "2026-11-14T12:00:00.000Z"
+  }
+]

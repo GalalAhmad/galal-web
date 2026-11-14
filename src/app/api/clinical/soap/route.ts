@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured } from '@/lib/supabase/admin';
 import { requireRole } from '@/lib/serverAuth';
 import { parseClinicalDossier } from '@/lib/clinical/dossierParser';
+import { logClinicalAccess } from '@/lib/clinical/auditLogger';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -49,6 +50,20 @@ export async function GET(request: Request) {
       console.error('Supabase SOAP fetch error:', error);
       return NextResponse.json({ error: 'فشل استرجاع سجلات SOAP من قاعدة البيانات' }, { status: 500 });
     }
+
+    // Immutable clinical audit logging
+    await logClinicalAccess({
+      actorId: authCheck.user.id,
+      actorName: authCheck.user.name,
+      actorRole: authCheck.user.role,
+      action: 'READ_SOAP_NOTES',
+      targetClientId: clientId || undefined,
+      targetSessionId: sessionId || undefined,
+      ip: request.headers.get('x-forwarded-for') || undefined,
+      status: 'SUCCESS',
+      details: { recordCount: data ? data.length : 0 },
+    });
+
     return NextResponse.json({ success: true, notes: data || [] });
   } catch (error) {
     console.error('Error fetching SOAP notes:', error);
@@ -167,6 +182,19 @@ export async function POST(request: Request) {
     } catch (profileErr) {
       console.warn('Profile clinical dossier summary update warning:', profileErr);
     }
+
+    // Immutable clinical audit logging
+    await logClinicalAccess({
+      actorId: authCheck.user.id,
+      actorName: authCheck.user.name,
+      actorRole: authCheck.user.role,
+      action: 'WRITE_SOAP_NOTE',
+      targetClientId: clientId,
+      targetSessionId: sessionId || undefined,
+      ip: request.headers.get('x-forwarded-for') || undefined,
+      status: 'SUCCESS',
+      details: { noteId },
+    });
 
     return NextResponse.json({
       success: true,

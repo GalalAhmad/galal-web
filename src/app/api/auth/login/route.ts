@@ -53,8 +53,64 @@ export async function POST(request: Request) {
     let authenticatedUser: ServerSessionUser | null = null;
     let fullUserProfile: any = null;
 
-    // 2. Query Supabase profiles table
-    if (isSupabaseConfigured && supabaseAdmin) {
+    // 2. Production Fail-Closed Safety Guard
+    if (process.env.NODE_ENV === 'production' && (!isSupabaseConfigured || !supabaseAdmin)) {
+      return NextResponse.json(
+        { error: 'خدمة تسجيل الدخول غير متاحة حالياً بسبب نقص إعدادات الخادم (Supabase unconfigured).' },
+        { status: 503 }
+      );
+    }
+
+    // Check environment-driven Admin credentials (strictly hashed verification, no plaintext defaults)
+    const envAdminEmail = (process.env.ADMIN_EMAIL || 'admin@galalahmad.com').trim().toLowerCase();
+    const envAdminPhone = normalizePhone(process.env.ADMIN_PHONE || '');
+    const envAdminHash = process.env.ADMIN_PASSWORD_HASH;
+
+    if (envAdminHash && (cleanEmail === envAdminEmail || (cleanPhone && cleanPhone === envAdminPhone))) {
+      if (verifyPassword(password, envAdminHash)) {
+        authenticatedUser = {
+          id: 'admin-env',
+          name: 'مدير المنصة',
+          role: 'admin',
+          phone: envAdminPhone || undefined,
+          email: envAdminEmail,
+        };
+        fullUserProfile = {
+          id: 'admin-env',
+          name: 'مدير المنصة',
+          role: 'admin',
+          phone: envAdminPhone,
+          email: envAdminEmail,
+        };
+      }
+    }
+
+    // Check environment-driven Counselor credentials (strictly hashed verification, no plaintext defaults)
+    const envCounselorEmail = (process.env.COUNSELOR_EMAIL || 'counselor@galalahmad.com').trim().toLowerCase();
+    const envCounselorPhone = normalizePhone(process.env.COUNSELOR_PHONE || '');
+    const envCounselorHash = process.env.COUNSELOR_PASSWORD_HASH;
+
+    if (!authenticatedUser && envCounselorHash && (cleanEmail === envCounselorEmail || (cleanPhone && cleanPhone === envCounselorPhone))) {
+      if (verifyPassword(password, envCounselorHash)) {
+        authenticatedUser = {
+          id: 'counselor-env',
+          name: 'د. جلال أحمد',
+          role: 'counselor',
+          phone: envCounselorPhone || undefined,
+          email: envCounselorEmail,
+        };
+        fullUserProfile = {
+          id: 'counselor-env',
+          name: 'د. جلال أحمد',
+          role: 'counselor',
+          phone: envCounselorPhone,
+          email: envCounselorEmail,
+        };
+      }
+    }
+
+    // 3. Query Supabase profiles table
+    if (!authenticatedUser && isSupabaseConfigured && supabaseAdmin) {
       try {
         let query = supabaseAdmin.from('profiles').select('*');
         if (cleanPhone && cleanEmail) {
@@ -93,8 +149,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Fallback to local user store if not resolved in Supabase
-    if (!authenticatedUser) {
+    // 4. Fallback to local user store ONLY in non-production environments
+    if (!authenticatedUser && process.env.NODE_ENV !== 'production') {
       try {
         const raw = await fs.readFile(filePath, 'utf-8');
         const profiles: any[] = JSON.parse(raw);

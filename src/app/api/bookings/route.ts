@@ -248,7 +248,14 @@ export async function GET(request: Request) {
       }
     }
 
-    // Local Fallback
+    // Local Fallback ONLY in non-production
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'تعذر الاتصال بقاعدة البيانات في بيئة الإنتاج' },
+        { status: 503 }
+      );
+    }
+
     const localData = await readBookingsLocal();
     let filtered = localData;
 
@@ -276,6 +283,30 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+
+    // Rate Limiting: 10 booking attempts per hour per IP
+    const rateCheck = checkRateLimit(`booking:${ip}`, 10, 3600);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: `تم تجاوز الحد المسموح لمحاولات الحجز. يرجى الانتظار لمدة ${Math.ceil(
+            rateCheck.resetInSeconds / 60
+          )} دقيقة قبل المحاولة مجدداً.`,
+          code: 'RATE_LIMITED',
+        },
+        { status: 429 }
+      );
+    }
+
+    // Production Fail-Closed Safety Guard:
+    if (process.env.NODE_ENV === 'production' && (!isSupabaseConfigured || !supabaseAdmin)) {
+      return NextResponse.json(
+        { error: 'خدمة الحجز غير متاحة حالياً بسبب نقص إعدادات الخادم (Supabase unconfigured).' },
+        { status: 503 }
+      );
+    }
+
     const rawBody = await request.json();
 
     // 1. Zod Input Validation
@@ -528,6 +559,13 @@ export async function POST(request: Request) {
           }
         }
       } else {
+        if (process.env.NODE_ENV === 'production') {
+          return NextResponse.json(
+            { error: 'تعذر الاتصال بقاعدة البيانات لتنفيذ الحجز الذري الآمن في بيئة الإنتاج.' },
+            { status: 503 }
+          );
+        }
+
         const localList = await readBookingsLocal();
         const isConflict = localList.some((b: any) => {
           if (b.status === 'cancelled' || b.status === 'rejected') return false;
@@ -565,12 +603,14 @@ export async function POST(request: Request) {
         };
       }
 
-      // Mirror to local JSON
-      try {
-        const currentList = await readBookingsLocal();
-        currentList.unshift(createdBooking);
-        await writeBookingsLocal(currentList);
-      } catch (e) {}
+      // Mirror to local JSON (strictly non-production)
+      if (process.env.NODE_ENV !== 'production') {
+        try {
+          const currentList = await readBookingsLocal();
+          currentList.unshift(createdBooking);
+          await writeBookingsLocal(currentList);
+        } catch (e) {}
+      }
 
       // Auto-sync client profile in Supabase & local (Safe: will never hijack existing profile)
       const authSession = getServerUserSession(request);
@@ -668,7 +708,7 @@ export async function PUT(request: Request) {
       if (found) existingBooking = found;
     }
 
-    if (!existingBooking) {
+    if (!existingBooking && process.env.NODE_ENV !== 'production') {
       const localList = await readBookingsLocal();
       existingBooking = localList.find((b: any) => b.id === id);
     }
@@ -731,10 +771,12 @@ export async function PUT(request: Request) {
     if (isSupabaseConfigured && supabaseAdmin) {
       if (action === 'delete') {
         await supabaseAdmin.from('bookings').delete().eq('id', id);
-        try {
-          const currentList = await readBookingsLocal();
-          await writeBookingsLocal(currentList.filter((b: any) => b.id !== id));
-        } catch (e) {}
+        if (process.env.NODE_ENV !== 'production') {
+          try {
+            const currentList = await readBookingsLocal();
+            await writeBookingsLocal(currentList.filter((b: any) => b.id !== id));
+          } catch (e) {}
+        }
         return NextResponse.json({ success: true, message: 'تم حذف الحجز بنجاح' });
       }
 
@@ -898,17 +940,26 @@ export async function PUT(request: Request) {
           }
         }
 
-        // mirror local
-        try {
-          const currentList = await readBookingsLocal();
-          const idx = currentList.findIndex((b: any) => b.id === id);
-          if (idx !== -1) {
-            currentList[idx] = { ...currentList[idx], ...updated };
-            await writeBookingsLocal(currentList);
-          }
-        } catch (e) {}
+        // mirror local (non-production only)
+        if (process.env.NODE_ENV !== 'production') {
+          try {
+            const currentList = await readBookingsLocal();
+            const idx = currentList.findIndex((b: any) => b.id === id);
+            if (idx !== -1) {
+              currentList[idx] = { ...currentList[idx], ...updated };
+              await writeBookingsLocal(currentList);
+            }
+          } catch (e) {}
+        }
         return NextResponse.json({ success: true, booking: updated });
       }
+    }
+
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { error: 'تعذر الاتصال بقاعدة البيانات في بيئة الإنتاج' },
+        { status: 503 }
+      );
     }
 
     // Local fallback

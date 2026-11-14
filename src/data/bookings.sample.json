@@ -1,0 +1,23 @@
+[
+  {
+    "id": "BK-SAMPLE-0001",
+    "clientName": "مستفيد تجريبي",
+    "clientPhone": "01000000000",
+    "clientEmail": "client@example.com",
+    "track": "psychological",
+    "trackLabel": "استشارة نفسية فردية",
+    "age": 30,
+    "maritalStatus": "أعزب",
+    "slotDate": "2026-11-20",
+    "slotTime": "04:00 PM",
+    "meetLink": "https://meet.google.com/sample-meet",
+    "status": "confirmed",
+    "paymentMethod": "instapay",
+    "fee": "250 ر.س",
+    "receiptNote": "إيصال تجريبي",
+    "receiptImage": "",
+    "answers": {},
+    "notes": "جلسة تجريبية أولى",
+    "created_at": "2026-11-14T12:00:00.000Z"
+  }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "fb-sample-01",
+    "clientName": "مستفيد",
+    "rating": 5,
+    "sessionType": "استشارة نفسية فردية",
+    "feedback": "تجربة استشارية ممتازة ومهنية.",
+    "isPublished": true,
+    "created_at": "2026-11-14T12:00:00.000Z"
+  }
+]

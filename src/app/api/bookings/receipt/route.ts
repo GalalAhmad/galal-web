@@ -49,7 +49,7 @@ export async function GET(request: Request) {
       }
     }
 
-    if (!booking) {
+    if (!booking && process.env.NODE_ENV !== 'production') {
       const localBookings = await readBookingsLocal();
       booking = localBookings.find((b: any) => b.id === bookingId);
     }

@@ -42,3 +42,12 @@ resources/
 # local vaults
 src/data/receipts_vault/*
 !src/data/receipts_vault/.gitkeep
+
+# local application data files (PII / client data untracked)
+src/data/bookings.json
+src/data/feedback.json
+src/data/inquiries.json
+src/data/userProfiles.json
+src/data/subscribers.json
+src/data/clinical_audit_logs.jsonl
+scripts/*.json

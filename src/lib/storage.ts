@@ -193,3 +193,26 @@ export async function retrieveReceiptFile(
 
   return null;
 }
+
+/**
+ * Generates a short-lived signed URL (default 5 minutes / 300s) for private bucket access.
+ */
+export async function createSignedReceiptUrl(receiptRef: string, expiresInSeconds = 300): Promise<string | null> {
+  if (!receiptRef || !receiptRef.startsWith('storage://')) return null;
+  const raw = receiptRef.replace('storage://', '');
+  const slashIdx = raw.indexOf('/');
+  if (slashIdx === -1) return null;
+  const bucket = raw.substring(0, slashIdx);
+  const filePath = raw.substring(slashIdx + 1);
+  if (isSupabaseConfigured && supabaseAdmin) {
+    try {
+      const { data, error } = await supabaseAdmin.storage.from(bucket).createSignedUrl(filePath, expiresInSeconds);
+      if (!error && data?.signedUrl) {
+        return data.signedUrl;
+      }
+    } catch (e) {
+      console.error('Failed to create signed URL for receipt:', e);
+    }
+  }
+  return null;
+}

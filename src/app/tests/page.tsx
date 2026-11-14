@@ -64,8 +64,9 @@ export default function PsychologicalTestsPage() {
   // Quick symptom/disorder filter pills (like NAYA Psych top pills)
   const quickFilters = [
     { label: 'الكل', key: 'الكل' },
-    { label: 'اكتئاب', key: 'اكتئاب' },
-    { label: 'قلق وتوتر', key: 'قلق' },
+    { label: '⭐ معايير DSM-5 المقننة', key: 'dsm5' },
+    { label: 'اكتئاب ومزاج', key: 'اكتئاب' },
+    { label: 'قلق وتوتر وهلع', key: 'قلق' },
     { label: 'علاقات وأسرة', key: 'علاقات' },
     { label: 'شخصية ونرجسية', key: 'شخصية' },
     { label: 'ADHD وأطفال', key: 'أطفال' },
@@ -95,14 +96,18 @@ export default function PsychologicalTestsPage() {
 
       let matchQuick = true;
       if (activeQuickFilter !== 'الكل') {
-        const textToMatch = `${t.title} ${t.desc} ${meta?.clinicalPurpose || ''} ${meta?.originalName || ''} ${meta?.code || ''}`.toLowerCase();
-        if (activeQuickFilter === 'اكتئاب') matchQuick = textToMatch.includes('اكتئاب') || textToMatch.includes('phq');
-        else if (activeQuickFilter === 'قلق') matchQuick = textToMatch.includes('قلق') || textToMatch.includes('gad') || textToMatch.includes('توتر') || textToMatch.includes('رهاب');
-        else if (activeQuickFilter === 'علاقات') matchQuick = textToMatch.includes('حب') || textToMatch.includes('علاق') || textToMatch.includes('زواج') || textToMatch.includes('شريك') || textToMatch.includes('غير');
-        else if (activeQuickFilter === 'شخصية') matchQuick = textToMatch.includes('شخصي') || textToMatch.includes('نرجس') || textToMatch.includes('حدي') || textToMatch.includes('انطواء');
-        else if (activeQuickFilter === 'أطفال') matchQuick = textToMatch.includes('طفل') || textToMatch.includes('أطفال') || textToMatch.includes('adhd') || textToMatch.includes('تربية');
-        else if (activeQuickFilter === 'وسواس') matchQuick = textToMatch.includes('وسواس') || textToMatch.includes('صدم') || textToMatch.includes('ptsd') || textToMatch.includes('oci');
-        else if (activeQuickFilter === 'عمل') matchQuick = textToMatch.includes('عمل') || textToMatch.includes('احتراق') || textToMatch.includes('وظي') || textToMatch.includes('مهن');
+        if (activeQuickFilter === 'dsm5') {
+          matchQuick = Boolean(meta?.isStandardizedDsm5);
+        } else {
+          const textToMatch = `${t.title} ${t.desc} ${meta?.clinicalPurpose || ''} ${meta?.originalName || ''} ${meta?.code || ''}`.toLowerCase();
+          if (activeQuickFilter === 'اكتئاب') matchQuick = textToMatch.includes('اكتئاب') || textToMatch.includes('phq') || textToMatch.includes('مزاج');
+          else if (activeQuickFilter === 'قلق') matchQuick = textToMatch.includes('قلق') || textToMatch.includes('gad') || textToMatch.includes('توتر') || textToMatch.includes('رهاب') || textToMatch.includes('هلع');
+          else if (activeQuickFilter === 'علاقات') matchQuick = textToMatch.includes('حب') || textToMatch.includes('علاق') || textToMatch.includes('زواج') || textToMatch.includes('شريك') || textToMatch.includes('غير');
+          else if (activeQuickFilter === 'شخصية') matchQuick = textToMatch.includes('شخصي') || textToMatch.includes('نرجس') || textToMatch.includes('حدي') || textToMatch.includes('انطواء');
+          else if (activeQuickFilter === 'أطفال') matchQuick = textToMatch.includes('طفل') || textToMatch.includes('أطفال') || textToMatch.includes('adhd') || textToMatch.includes('تربية');
+          else if (activeQuickFilter === 'وسواس') matchQuick = textToMatch.includes('وسواس') || textToMatch.includes('صدم') || textToMatch.includes('ptsd') || textToMatch.includes('oci');
+          else if (activeQuickFilter === 'عمل') matchQuick = textToMatch.includes('عمل') || textToMatch.includes('احتراق') || textToMatch.includes('وظي') || textToMatch.includes('مهن');
+        }
       }
 
       const matchSearch = 
@@ -115,6 +120,10 @@ export default function PsychologicalTestsPage() {
         ));
 
       return matchCat && matchQuick && matchSearch;
+    }).sort((a, b) => {
+      const aDsm = SCIENTIFIC_TESTS_METADATA[a.id]?.isStandardizedDsm5 ? 1 : 0;
+      const bDsm = SCIENTIFIC_TESTS_METADATA[b.id]?.isStandardizedDsm5 ? 1 : 0;
+      return bDsm - aDsm;
     });
   }, [activeCategory, activeQuickFilter, searchQuery]);
 
@@ -295,17 +304,17 @@ export default function PsychologicalTestsPage() {
       <section className="pt-12 pb-8 sm:pt-16 sm:pb-12 px-4 sm:px-6 bg-white dark:bg-[#0E1524] border-b border-slate-100 dark:border-slate-800/80">
         <div className="max-w-4xl mx-auto text-center space-y-4">
           
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EDF5FD] dark:bg-[#122238] border border-[#D6E6F8] dark:border-[#1E3A5F] text-xs font-bold text-[#154F9C] dark:text-[#60A5FA]">
-            <Brain className="w-3.5 h-3.5" />
-            <span>بوابة المقاييس النفسية المقننة • وفق المعايير الأكاديمية العالمية</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>مقاييس إكلينيكية مقننة وفق الدليل التشخيصي الخامس (DSM-5 & ICD-10)</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-white tracking-tight">
-            اختبارات ومقاييس
+            المقاييس النفسية والإكلينيكية المعتمدة
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
-            مكتبة علمية متخصصة تضم 41 مقياساً مقنناً لاكتشاف الذات وفحص مؤشرات الصحة النفسية، الأنماط الشخصية، والعلاقات الأسرية في بيئة آمنة وخاصة تماماً.
+            مكتبة علمية متخصصة تجمع بين مقاييس الفحص الإكلينيكي المعتمدة دولياً والمعايير التشخيصية (DSM-5 & ICD-10) لتقديم مادة تثقيفية موثوقة وفحص استرشادي دقيق تحت إشراف د. جلال أحمد.
           </p>
 
           {/* Pilot Phase Notice (مجانية لفترة تجريبية) */}
@@ -457,15 +466,27 @@ export default function PsychologicalTestsPage() {
                     
                     {/* Top Row: Academic Code & Badges */}
                     <div className="flex items-center justify-between flex-wrap gap-1.5">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         {meta?.code && (
                           <span className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-slate-900 text-white shadow-2xs">
                             {meta.code}
                           </span>
                         )}
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/80 dark:bg-black/40 text-slate-800 dark:text-slate-200 border border-black/5">
-                          عالمي
-                        </span>
+                        {meta?.isStandardizedDsm5 ? (
+                          <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#4E7E76] text-white flex items-center gap-1 shadow-2xs">
+                            <BookOpen className="w-2.5 h-2.5" />
+                            <span>معيار DSM-5</span>
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/80 dark:bg-black/40 text-slate-800 dark:text-slate-200 border border-black/5">
+                            سيكومتري
+                          </span>
+                        )}
+                        {meta?.icd10Code && (
+                          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-blue-900/80 text-white">
+                            {meta.icd10Code}
+                          </span>
+                        )}
                         <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/90 text-white">
                           تجريبي مجاناً
                         </span>
@@ -630,6 +651,25 @@ export default function PsychologicalTestsPage() {
                         <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px]">{activeTestMeta.scoringGuide}</p>
                       </div>
                     </div>
+
+                    {activeTestMeta.isStandardizedDsm5 && (
+                      <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80 flex items-start gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="block text-emerald-900 dark:text-emerald-300 font-bold">
+                            معيار DSM-5 الإكلينيكي {activeTestMeta.icd10Code && `(ICD-10: ${activeTestMeta.icd10Code})`}:
+                          </strong>
+                          <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px]">
+                            {activeTestMeta.diagnosticCriteriaSummary || 'مقياس إكلينيكي مقنن مربوط بالمعايير التشخيصية المعتمدة.'}
+                          </p>
+                          {activeTestMeta.durationRequirement && (
+                            <div className="text-[10px] text-amber-700 dark:text-amber-400 mt-1 font-semibold">
+                              ⏱️ شرط المدة الزمنية: {activeTestMeta.durationRequirement}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 

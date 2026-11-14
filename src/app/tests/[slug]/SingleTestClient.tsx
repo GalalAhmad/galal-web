@@ -27,6 +27,7 @@ import {
   UserPlus
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import DSM5CriteriaCard from '@/components/tests/DSM5CriteriaCard';
 
 interface Props {
   test: TestItem;
@@ -209,6 +210,15 @@ export default function SingleTestClient({ test, toolBadge, isSensitive }: Props
             </div>
           </div>
         </div>
+
+        {/* DSM-5 Criteria & Standardized Psychoeducation Card */}
+        <DSM5CriteriaCard
+          disorderId={meta?.dsmDisorderId}
+          testTitle={test.title}
+          testCode={meta?.code}
+          meta={meta}
+          defaultOpen={true}
+        />
 
         {/* AUTH GUARD: If user is not logged in, prompt them to login to take test & save result */}
         {!user?.name ? (

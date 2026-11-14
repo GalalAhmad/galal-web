@@ -15,7 +15,8 @@ export type DSM5CategoryCode =
   | 'sleep_wake'
   | 'personality'
   | 'neurodevelopmental'
-  | 'relational_problems';
+  | 'relational_problems'
+  | 'psychotic';
 
 export interface DSM5Criterion {
   letter: string; // 'A', 'B', 'C', 'D', 'E', 'F'
